@@ -1,0 +1,10 @@
+FROM docker.tech.beegroup-cimne.com/admin/enma-job:latest
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN pip install -r requirements.txt
+
+RUN git clone https://github.com/BeeGroup-cimne/beegroup_importing_tool.git
+
+WORKDIR beegroup_importing_tool
+
+RUN pip install -r requirements.txt
