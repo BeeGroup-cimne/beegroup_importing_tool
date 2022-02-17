@@ -24,7 +24,7 @@ if __name__ == '__main__':
                 break
         if table:
             try:
-                save_to_hbase(message['data'], table, config['hbase'], [("info", "all")],
+                save_to_hbase(message['data'], table, config['hbase_store_raw_data'], [("info", "all")],
                               row_fields=message['row_keys'])
                 mongo_logger.log(f"part {message_part} successfully stored to HBASE")
             except Exception as e:
