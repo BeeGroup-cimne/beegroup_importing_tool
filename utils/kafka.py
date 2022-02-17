@@ -29,10 +29,4 @@ def read_from_kafka(topic, group_id, config):
     kafka_servers = [f"{host}:{port}" for host, port in zip(config['hosts'], config['ports'])]
     consumer = KafkaConsumer(topic, enable_auto_commit=False, bootstrap_servers=kafka_servers, group_id=group_id,
                              value_deserializer=lambda v: pickle.loads(v))
-    for m in consumer:
-        try:
-            yield m
-            consumer.commit()
-        except Exception as e:
-            log_string(f"Kafka error: {e}")
-            continue
+    return consumer
