@@ -4,6 +4,8 @@ import pkgutil
 import sys
 from .mongo import mongo_logger
 import settings
+import logging
+logging.basicConfig(filename='myapp.log', level=logging.DEBUG)
 
 
 def load_plugins():
@@ -25,4 +27,4 @@ def read_config(conf_file):
 
 def log_string(text):
     mongo_logger.log(text)
-    sys.stderr.write(f"{text}\n")
+    logging.log(text)
