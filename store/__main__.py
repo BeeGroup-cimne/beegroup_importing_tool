@@ -9,6 +9,7 @@ if __name__ == '__main__':
     sources_available = load_plugins()
     consumer = read_from_kafka(config['kafka']['topic'], config['kafka']['group_store'], config['kafka']['connection'])
     for m in consumer:
+        m.commit()
         print("processing_message")
         message = m.value
         if 'logger' in message:
@@ -18,6 +19,7 @@ if __name__ == '__main__':
             message_part = message['message_part']
 
         log_string(f"received part {message_part} from {message['source']} to store")
+        table = None
         for k, v in sources_available.items():
             if message['source'] == k:
                 log_string(f"{k}, {v}, {message['source']}")

@@ -39,7 +39,7 @@ spec:
       containers:
         - name: bigg-store-dl
           image: docker.tech.beegroup-cimne.com/jobs/importing_tool:latest
-          command: ["python3", "-m", "store"]
+          command: ["sleep", "36000"] # ["python3", "-m", "store"]
           volumeMounts:
           - name: biggsecrets
             mountPath: /home/ubuntu/beegroup_importing_tool/config.json
