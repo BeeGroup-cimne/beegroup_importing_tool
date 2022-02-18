@@ -5,7 +5,7 @@ import sys
 from .mongo import mongo_logger
 import settings
 import logging
-logging.basicConfig(filename='myapp.log', level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 def load_plugins():
@@ -27,4 +27,4 @@ def read_config(conf_file):
 
 def log_string(text):
     mongo_logger.log(text)
-    logging.log(text)
+    logging.info(text)
