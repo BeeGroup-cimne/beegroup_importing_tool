@@ -58,7 +58,7 @@ def harmonize_data(data, **kwargs):
                         ns0__measurementUnit: "kWh",
                         ns0__measurementFrequency: "{freq}",
                         ns0__measurementReadingType: "{",".join(reading_type)}",
-                        ns0__measuredProperty: "electricity"
+                        ns0__measuredProperty: "electricityConsumption"
                     }})<-[:ns0__hasMeasurementLists]-(device)
                     SET
                         list.ns0__measurementListStart = CASE 
@@ -76,11 +76,11 @@ def harmonize_data(data, **kwargs):
                     return list
                 """)
                 data_group['listKey'] = new_d_id
-                device_table = f"data_{freq}_{user}_device"
+                device_table = f"electricityConsumption_{freq}_device_{user}"
                 save_to_hbase(data_group.to_dict(orient="records"), device_table, hbase_conn2,
                               [("info", ['measurement_end']), ("v", ['value'])],
                               row_fields=['listKey', 'measurement_ini'])
-                period_table = f"data_{freq}_{user}_period"
+                period_table = f"electricityConsumption_{freq}_period_{user}"
                 save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn2,
                               [("info", ['measurement_end']), ("v", ['value'])],
                               row_fields=['measurement_ini', 'listKey'])

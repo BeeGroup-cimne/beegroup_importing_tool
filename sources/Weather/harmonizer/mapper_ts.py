@@ -80,10 +80,10 @@ def harmonize_data(data, **kwargs):
                     return list
                 """)
                 data_group['listKey'] = new_d_id
-                station_table = f"data_{freq}_weather_device"
+                station_table = f"meteo_{freq}_device_"
                 save_to_hbase(data_group.to_dict(orient="records"), station_table, hbase_conn2,
                               [("info", ['measurement_end']), ("v", list(keys_remap.values()))], row_fields=['listKey', 'measurement_ini'])
-                period_table = f"data_{freq}_weather_period"
+                period_table = f"meteo_{freq}_period_"
                 save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn2,
                               [("info", ['measurement_end']), ("v", list(keys_remap.values()))], row_fields=['measurement_ini', 'listKey'])
                 print(f"harmonized {station_table}_{station_id}: {len(data_group)}")
