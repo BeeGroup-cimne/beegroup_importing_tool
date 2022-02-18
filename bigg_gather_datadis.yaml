@@ -7,10 +7,10 @@ spec:
   schedule: "0 0 * * 1,2,3,4,5,6"
   successfulJobsHistoryLimit: 0
   failedJobsHistoryLimit: 0
-  startingDeadlineSeconds: 10800
+  startingDeadlineSeconds: 180
   jobTemplate:
     spec:
-      activeDeadlineSeconds: 540
+      activeDeadlineSeconds: 10800
       template:
         spec:
           hostAliases:
@@ -94,10 +94,10 @@ spec:
   schedule: "0 0 * * 0"
   successfulJobsHistoryLimit: 0
   failedJobsHistoryLimit: 0
-  startingDeadlineSeconds: 10800
+  startingDeadlineSeconds: 180
   jobTemplate:
     spec:
-      activeDeadlineSeconds: 540
+      activeDeadlineSeconds: 10800
       template:
         spec:
           hostAliases:
