@@ -6,7 +6,7 @@ from utils.mongo import mongo_logger
 
 if __name__ == '__main__':
     config = read_config(settings.conf_file)
-    sources_available = load_plugins()
+    sources_available = load_plugins(settings)
     consumer = read_from_kafka(config['kafka']['topic'], config['kafka']['group_store'], config['kafka']['connection'])
     while True:
         consumer.resume()

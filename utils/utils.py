@@ -1,14 +1,12 @@
 import importlib
 import json
 import pkgutil
-import sys
 from .mongo import mongo_logger
-import settings
 import logging
 logging.basicConfig(level=logging.INFO)
 
 
-def load_plugins():
+def load_plugins(settings):
     sources_available = {}
     for finder, name, is_pkg in pkgutil.iter_modules(['sources']):
         source_module = importlib.import_module(f"{finder.path}.{name}")
