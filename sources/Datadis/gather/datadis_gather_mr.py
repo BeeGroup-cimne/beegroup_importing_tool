@@ -265,7 +265,12 @@ class DatadisMRJob(MRJob, ABC):
                     "_id": supply['cups']
                 }
             # create the data chunks we will gather the information for timeseries
-            date_ini = datetime.strptime(supply['validDateFrom'], '%Y/%m/%d').date()
+            has_init_date = True
+            try:
+                date_ini = datetime.strptime(supply['validDateFrom'], '%Y/%m/%d').date()
+            except ValueError:
+                has_init_date = False
+                date_ini = datetime(2018, 1, 1).date()
             now = datetime.today().date() + timedelta(days=1)
             try:
                 date_end = datetime.strptime(supply['validDateTo'], '%Y/%m/%d').date()
@@ -294,6 +299,7 @@ class DatadisMRJob(MRJob, ABC):
                     if k not in device[t]:
                         device[t].update({
                             k: {
+                                "has_ini_date": has_init_date,
                                 "date_ini_block": date_ini_block,
                                 "date_end_block": date_end_block,
                                 "values": 0,
