@@ -46,4 +46,4 @@ def harmonize_data(data, **kwargs):
                 log_string("saving to neo4j")
                 save_rdf_with_source(g, config['source'], config['neo4j'])
                 log_string("linking with source")
-                link_devices_with_source(g, config['source'], config['neo4j'])
+                link_devices_with_source(g, datadis_source, config['neo4j'])
