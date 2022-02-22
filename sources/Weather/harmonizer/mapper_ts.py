@@ -25,7 +25,7 @@ def harmonize_data(data, **kwargs):
     namespace = kwargs['namespace']
     config = kwargs['config']
 
-    hbase_conn2 = config['hbase_harmonized_data']
+    hbase_conn2 = config['hbase_store_harmonized_data']
     neo4j_connection = config['neo4j']
 
     neo = GraphDatabase.driver(**neo4j_connection)
