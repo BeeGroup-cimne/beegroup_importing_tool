@@ -87,13 +87,16 @@ class WeatherMRJob(MRJob, ABC):
                 start_obtaining_date = station[t]['date_end']
             else:
                 start_obtaining_date = date_ini
-            data = download_chunk(cp, type_params, self.config['data_sources'][self.config['source']],
-                                  start_obtaining_date, now)
-            self.increment_counter('gathered', 'device', 1)
-            if len(data) > 0:
-                last_data = data.iloc[-1].ts.to_pydatetime().replace(tzinfo=None)
-                save_weather_data(data, mongo_logger, self.config)
-                station[t]['date_end'] = last_data
+            while start_obtaining_date <= now:
+                chunk_end = min(now, start_obtaining_date + type_params['freq_rec'])
+                data = download_chunk(cp, type_params, self.config['data_sources'][self.config['source']],
+                                      start_obtaining_date, chunk_end)
+                self.increment_counter('gathered', 'device', 1)
+                if len(data) > 0:
+                    last_data = data.iloc[-1].ts.to_pydatetime().replace(tzinfo=None)
+                    save_weather_data(data, mongo_logger, self.config)
+                    station[t]['date_end'] = last_data
+                start_obtaining_date += type_params['freq_rec'] + relativedelta(days=1)
                 # log_string(f"Request sent")
         # log_string(f"finished device")
         weather_stations.replace_one({"_id": station_id}, station, upsert=True)
