@@ -85,6 +85,4 @@ def harmonize_data(data, **kwargs):
                 period_table = f"meteo_{freq}_period_"
                 save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn2,
                               [("info", ['measurement_end']), ("v", list(keys_remap.values()))], row_fields=['measurement_ini', 'listKey'])
-                print(f"harmonized {station_table}_{station_id}: {len(data_group)}")
-                print(data_group.iloc[0].ts)
-                print(data_group.iloc[-1].ts)
+
