@@ -84,6 +84,6 @@ def harmonize_data(data, **kwargs):
                 save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn2,
                               [("info", ['measurement_end']), ("v", ['value'])],
                               row_fields=['measurement_ini', 'listKey'])
-                log_string(f"harmonized {device_table}_{device_id}: {len(data_group)}")
-                log_string(data_group.iloc[0].datetime)
-                log_string(data_group.iloc[-1].datetime)
+                # log_string(f"harmonized {device_table}_{device_id}: {len(data_group)}")
+                # log_string(data_group.iloc[0].datetime)
+                # log_string(data_group.iloc[-1].datetime)

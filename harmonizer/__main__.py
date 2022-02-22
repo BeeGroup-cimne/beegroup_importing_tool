@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
         for k, v in sources_available.items():
             if message['source'] == k:
-                log_string(f"{k}, {v}, {message['source']}")
+                # log_string(f"{k}, {v}, {message['source']}")
                 mapper = v.get_mapper(message)
                 kwargs_function = v.get_kwargs(message)
                 df = v.transform_df(df)
@@ -39,6 +39,6 @@ if __name__ == '__main__':
             # log_string("mapping data")
             try:
                 mapper(df.to_dict(orient="records"), **kwargs_function)
-                log_string(f"part {message_part} from {message['source']} harmonized successfully")
+                # log_string(f"part {message_part} from {message['source']} harmonized successfully")
             except Exception as e:
                 log_string(f"part {message_part} from {message['source']} harmonized error: {e}")

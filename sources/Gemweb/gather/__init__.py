@@ -48,28 +48,28 @@ def gather(arguments, config=None, settings=None):
                             user=connection['user'], datasource_user=connection['username'],
                             log_exec=datetime.utcnow())
         try:
-            utils.utils.log_string("log in to gemweb API")
+            # utils.utils.log_string("log in to gemweb API")
             # TODO: LOGIN TO GEMWEB
             gemweb = config['data_sources'][config['source']]['special_gemweb_data']
             # gemweb.gemweb.connection(connection['username'], connection['password'], timezone="UTC")
-            utils.utils.log_string("log in to gemweb API successful")
+            # utils.utils.log_string("log in to gemweb API successful")
         except Exception as e:
             utils.utils.log_string(f"log in to gemweb API error: {e}")
             continue
         data = {}
         for t in data_types:
-            utils.utils.log_string(f"obtaining gemweb data from entity {t}")
+            # utils.utils.log_string(f"obtaining gemweb data from entity {t}")
             try:
                 data[t] = get_data(gemweb, data_types[t])
-                utils.utils.log_string(f"gemweb data from entity {t} obtained successfully")
+                # utils.utils.log_string(f"gemweb data from entity {t} obtained successfully")
             except Exception as e:
                 utils.utils.log_string(f"gemweb data from entity {t} obtained error: {e}")
         if args.store == "kafka":
-            utils.utils.log_string(f"sending data to kafka")
+            # utils.utils.log_string(f"sending data to kafka")
             k_topic = config["kafka"]["topic"]
             for d_t in data:
                 try:
-                    utils.utils.log_string(f"sending {d_t} data to kafka")
+                    # utils.utils.log_string(f"sending {d_t} data to kafka")
                     kafka_message = {
                         "namespace": connection["namespace"],
                         "user": connection["user"],
@@ -81,12 +81,12 @@ def gather(arguments, config=None, settings=None):
                     }
                     utils.kafka.save_to_kafka(topic=k_topic, info_document=kafka_message,
                                               config=config['kafka']['connection'], batch=settings.kafka_message_size)
-                    utils.utils.log_string(f"data sent correctly")
+                    # utils.utils.log_string(f"data sent correctly")
                 except Exception as e:
                     utils.utils.log_string(f"error when sending data: {e}")
-            utils.utils.log_string(f"preparing data to harmonize")
+            # utils.utils.log_string(f"preparing data to harmonize")
             if any(['buildings' not in data, 'supplies' not in data]):
-                utils.utils.log_string(f"not enough data to harmonize {list(data.keys())}")
+                # utils.utils.log_string(f"not enough data to harmonize {list(data.keys())}")
                 continue
             try:
                 supplies_df = pd.DataFrame.from_records(data['supplies'])
@@ -94,12 +94,12 @@ def gather(arguments, config=None, settings=None):
                 buildings_df.set_index("id", inplace=True)
                 df = supplies_df.join(buildings_df, on='id_centres_consum', lsuffix="supply", rsuffix="building")
                 df.rename(columns={"id": "dev_gem_id"}, inplace=True)
-                utils.utils.log_string(f"data joined for harmonization correctly")
+                # utils.utils.log_string(f"data joined for harmonization correctly")
             except Exception as e:
                 utils.utils.log_string(f"error joining dataframes: {e}")
                 continue
             try:
-                utils.utils.log_string(f"sending data to kafka")
+                # utils.utils.log_string(f"sending data to kafka")
                 data = df.to_dict(orient="records")
                 kafka_message = {
                     "namespace": connection["namespace"],
@@ -112,7 +112,7 @@ def gather(arguments, config=None, settings=None):
                 }
                 utils.kafka.save_to_kafka(topic=k_topic, info_document=kafka_message,
                                           config=config['kafka']['connection'], batch=settings.kafka_message_size)
-                utils.utils.log_string(f"message sent correctly")
+                # utils.utils.log_string(f"message sent correctly")
             except Exception as e:
                 utils.utils.log_string(f"error when sending message: {e}")
 

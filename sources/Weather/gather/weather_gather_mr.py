@@ -56,7 +56,7 @@ class WeatherMRJob(MRJob, ABC):
         # map receives lat, lon and downloads DarkSky data,
         cp = {k: v for k, v in zip(["latitude", "longitude"], line.split("\t"))}
         mongo_logger.import_log(self.config['mongo_logger'], "gather")
-        log_string(f"Processing: {'-'.join([str(cp['latitude']), str(cp['longitude'])])}")
+        # log_string(f"Processing: {'-'.join([str(cp['latitude']), str(cp['longitude'])])}")
         weather_stations = \
             mongo_connection(self.config['mongo_db'])[self.config['data_sources'][self.config['source']]['log_stations']]
 
@@ -75,7 +75,7 @@ class WeatherMRJob(MRJob, ABC):
         date_ini = datetime(2022, 1, 1)  # TODO refactor the date
         now = datetime.now() + timedelta(days=1)
         for t, type_params in data_weather_sources.items():
-            log_string(f"Type {t}")
+            # log_string(f"Type {t}")
             if t not in station:
                 station[t] = {
                     "date_ini": date_ini,
@@ -93,8 +93,8 @@ class WeatherMRJob(MRJob, ABC):
                 last_data = data.iloc[-1].ts.to_pydatetime().replace(tzinfo=None)
                 save_weather_data(data, mongo_logger, self.config)
                 station[t]['date_end'] = last_data
-                log_string(f"Request sent")
-        log_string(f"finished device")
+                # log_string(f"Request sent")
+        # log_string(f"finished device")
         weather_stations.replace_one({"_id": station_id}, station, upsert=True)
         self.increment_counter('gathered', 'device', 1)
 

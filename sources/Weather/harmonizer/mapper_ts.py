@@ -39,8 +39,7 @@ def harmonize_data(data, **kwargs):
     for v in keys_remap.values():
         if v in df.columns:
             df[v] = df[v].apply(decode_hbase)
-    log_string(f"starting harmonization")
-    print(f"starting harmonization")
+    # log_string(f"starting harmonization")
     for station_id, data_group in df.groupby("station_id"):
         data_group.set_index("ts", inplace=True)
         data_group.sort_index(inplace=True)
@@ -52,7 +51,7 @@ def harmonize_data(data, **kwargs):
             MATCH (n:ns0__WeatherStation{{uri:"{n[station_id]}"}})
             RETURN n            
             """)
-            log_string(f"weather stations")
+            # log_string(f"weather stations")
 
             for ws_n in ws_neo:
                 list_id = f"{station_id}-DEVICE-LIST-RAW-{freq}"

@@ -24,13 +24,13 @@ if __name__ == '__main__':
         table = None
         for k, v in sources_available.items():
             if message['source'] == k:
-                log_string(f"{k}, {v}, {message['source']}")
+                # log_string(f"{k}, {v}, {message['source']}")
                 table = v.get_store_table(message)
                 break
         if table:
             try:
                 save_to_hbase(message['data'], table, config['hbase_store_raw_data'], [("info", "all")],
                               row_fields=message['row_keys'])
-                log_string(f"part {message_part} successfully stored to HBASE")
+                # log_string(f"part {message_part} successfully stored to HBASE")
             except Exception as e:
                 log_string(f"error storing part {message_part} to HBASE: {e}")

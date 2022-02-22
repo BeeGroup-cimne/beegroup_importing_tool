@@ -33,17 +33,17 @@ def harmonize_data(data, **kwargs):
         unlinked_supplies = df[df["NumEns"].isna()]
         for linked, df in [("linked", linked_supplies), ("unlinked", unlinked_supplies)]:
             for group, supply_by_group in df.groupby("nif"):
-                log_string(f"generating_rdf for {group}, {linked},{len(supply_by_group)}")
+                # log_string(f"generating_rdf for {group}, {linked},{len(supply_by_group)}")
                 if supply_by_group.empty:
                     continue
                 datadis_source = ses.run(
                     f"""Match (n: DatadisSource{{username:"{decode_hbase(group)}"}}) return n""").single()
                 datadis_source = datadis_source.get("n").id
-                log_string("generating rdf")
+                # log_string("generating rdf")
                 n = Namespace(namespace)
                 mapping = Mapping(config['source'], n)
                 g = generate_rdf(mapping.get_mappings(linked), supply_by_group)
-                log_string("saving to neo4j")
+                # log_string("saving to neo4j")
                 save_rdf_with_source(g, config['source'], config['neo4j'])
-                log_string("linking with source")
+                # log_string("linking with source")
                 link_devices_with_source(g, datadis_source, config['neo4j'])

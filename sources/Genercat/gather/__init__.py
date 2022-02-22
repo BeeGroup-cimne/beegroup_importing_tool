@@ -15,20 +15,20 @@ def gather(arguments, config=None, settings=None):
     mongo_logger = utils.mongo.mongo_logger
     mongo_logger.create(config['mongo_db'], config['data_sources'][config['source']]['log'], 'gather', user=args.user,
                         log_exec=datetime.utcnow())
-    utils.utils.log_string("start to parse a new file")
+    # utils.utils.log_string("start to parse a new file")
     try:
         data = get_data(args.file)
         file_id = hashlib.md5(bytes(args.file.split("/")[-1], encoding="utf-8")).hexdigest()
         for i, datat in enumerate(data):
             datat['id_'] = f"{file_id}~{i}"
-        utils.utils.log_string("file parsed with success")
+        # utils.utils.log_string("file parsed with success")
     except Exception as e:
         data = []
         utils.utils.log_string(f"error parsing the file: {e}")
         exit(1)
     if args.store == "kafka":
         try:
-            utils.utils.log_string(f"sending kafka message")
+            # utils.utils.log_string(f"sending kafka message")
             kafka_message = {
                 "namespace": args.namespace,
                 "user": args.user,
@@ -41,15 +41,15 @@ def gather(arguments, config=None, settings=None):
             k_topic = config["kafka"]["topic"]
             utils.kafka.save_to_kafka(topic=k_topic, info_document=kafka_message,
                                       config=config['kafka']['connection'], batch=settings.kafka_message_size)
-            utils.utils.log_string(f"message sent correctly")
+            # utils.utils.log_string(f"message sent correctly")
         except Exception as e:
             utils.utils.log_string(f"error when sending message: {e}")
     elif args.store == "hbase":
-        utils.utils.log_string(f"saving to hbase")
+        # utils.utils.log_string(f"saving to hbase")
         try:
             h_table_name = f"{config['data_sources'][config['source']]['hbase_table']}_eem_{args.user}"
             utils.hbase.save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], [("info", "all")], row_fields=["id_"])
-            utils.utils.log_string(f"successfully saved to hbase")
+            #utils.utils.log_string(f"successfully saved to hbase")
         except Exception as e:
             utils.utils.log_string(f"error saving to hbase: {e}")
     else:

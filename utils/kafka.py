@@ -3,8 +3,6 @@ import pickle
 from copy import deepcopy
 from kafka import KafkaProducer, KafkaConsumer
 
-from utils.utils import log_string
-
 
 def save_to_kafka(topic, info_document, config, batch=1000):
     info_document = deepcopy(info_document)
