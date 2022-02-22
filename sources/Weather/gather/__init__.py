@@ -41,7 +41,7 @@ def get_timeseries_data(config, settings):
 
     # Get all CP to generate the MR input file
     # log_string("getting weather stations")
-    stations = get_weather_stations(config['neo4j'])
+    stations = get_weather_stations(config['neo4j'])[:3]  # TODO: remove filter
     local_input = generate_input_tsv(stations.to_dict(orient="records"), ["latitude", "longitude"])
     input_mr = put_file_to_hdfs(source_file_path=local_input, destination_file_path='/tmp/weather_tmp/')
     remove_file(local_input)
