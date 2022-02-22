@@ -72,7 +72,7 @@ class WeatherMRJob(MRJob, ABC):
                 "_id": station_id
             }
         # create the data chunks we will gather the information for timeseries
-        date_ini = datetime(2022, 1, 1)  # TODO refactor the date
+        date_ini = datetime(2018, 1, 1)  # TODO refactor the date
         now = datetime.now() + timedelta(days=1)
         for t, type_params in data_weather_sources.items():
             # log_string(f"Type {t}")

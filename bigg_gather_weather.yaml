@@ -38,7 +38,7 @@ spec:
           containers:
           - name: bigg-weather-gather
             image: docker.tech.beegroup-cimne.com/jobs/importing_tool:latest
-            command: [ "python3", "-m", "gather", "-so", "Weather", "-st", "kafka"]
+            command: [ "python3", "-m", "gather", "-so", "Weather"]
             volumeMounts:
             - name: biggsecrets
               mountPath: /home/ubuntu/beegroup_importing_tool/config.json
