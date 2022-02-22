@@ -87,7 +87,7 @@ class WeatherMRJob(MRJob, ABC):
                 start_obtaining_date = station[t]['date_end']
             else:
                 start_obtaining_date = date_ini
-            while start_obtaining_date <= now:
+            while start_obtaining_date < now:
                 chunk_end = min(now, start_obtaining_date + type_params['freq_rec'])
                 data = download_chunk(cp, type_params, self.config['data_sources'][self.config['source']],
                                       start_obtaining_date, chunk_end)
