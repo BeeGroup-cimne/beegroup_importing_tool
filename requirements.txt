@@ -1,6 +1,6 @@
 aes==1.0.0
 beautifulsoup4==4.10.0
-beemeteo @ git+https://github.com/BeeGroup-cimne/beemeteo@8a1dacc5169ce8a898750560b5f3d2366ec5621a
+beemeteo @ git+https://github.com/BeeGroup-cimne/beemeteo@v0.2.1
 bs4==0.0.1
 certifi==2021.10.8
 charset-normalizer==2.0.11
