@@ -43,10 +43,10 @@ def harmonize_data(data, **kwargs):
             device_neo = session.run(f"""
             MATCH (ns0__Organization{{ns0__userId:'{user}'}})-[:ns0__hasSubOrganization*0..]->(o:ns0__Organization)-
             [:ns0__hasSource]->(s:DatadisSource)<-[:ns0__importedFromSource]-(d)
-            WHERE d.uri =~ ".*#{device_id}-DEVICE-Datadis" return d            
+            WHERE d.uri =~ ".*#{device_id}-DEVICE-{config['source']}" return d            
             """)
             for d_neo in device_neo:
-                list_id = f"{device_id}-DEVICE-Datadis-LIST-RAW-{freq}"
+                list_id = f"{device_id}-DEVICE-{config['source']}-LIST-RAW-{freq}"
                 list_uri = str(n[list_id])
                 new_d_id = hashlib.sha256(list_uri.encode("utf-8"))
                 new_d_id = new_d_id.hexdigest()

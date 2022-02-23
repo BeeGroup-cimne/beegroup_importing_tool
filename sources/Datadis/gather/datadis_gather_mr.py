@@ -216,6 +216,8 @@ class DatadisMRJob(MRJob, ABC):
             # Obtain supplies from the user logged
             # utils.utils.log_string(f"Obtaining datadis supplies")
             supplies = datadis.datadis_query(ENDPOINTS.GET_SUPPLIES)
+            if not supplies:
+                utils.utils.log_string("The user has 0 supplies")
             for supply in supplies:
                 supply.update({"nif": credentials['username']})
             save_datadis_data(supplies, credentials, "supplies", ["cups"], [("info", "all")], self.config)
