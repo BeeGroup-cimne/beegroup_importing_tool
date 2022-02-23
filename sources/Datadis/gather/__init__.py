@@ -17,7 +17,7 @@ def get_timeseries_data(store, policy, config, settings):
     # Get Users to generate the MR input file
     users = get_users(config['neo4j'])
     users = decrypt_passwords(users, settings)
-    local_input = utils.hdfs.generate_input_tsv(users, ["username", "password", "user", "namespace"])
+    local_input = utils.hdfs.generate_input_tsv(users[:3], ["username", "password", "user", "namespace"])
     input_mr = utils.hdfs.put_file_to_hdfs(source_file_path=local_input, destination_file_path='/tmp/datadis_tmp/')
     utils.hdfs.remove_file(local_input)
 
