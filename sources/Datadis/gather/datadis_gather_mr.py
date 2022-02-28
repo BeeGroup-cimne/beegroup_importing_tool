@@ -82,7 +82,7 @@ def get_1m_in_period(init_time, end_time):
 
 
 def parse_max_power_chunk(max_power):
-    if len(max_power) < 0:
+    if len(max_power) <= 0:
         return list()
     try:
         df_consumption = pd.DataFrame(max_power)
@@ -109,7 +109,7 @@ def parse_max_power_chunk(max_power):
 
 
 def parse_consumption_chunk(consumption):
-    if len(consumption) < 0:
+    if len(consumption) <= 0:
         return list()
     try:
         df_consumption = pd.DataFrame(consumption)

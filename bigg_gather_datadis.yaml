@@ -10,7 +10,7 @@ spec:
   startingDeadlineSeconds: 180
   jobTemplate:
     spec:
-      activeDeadlineSeconds: 10800
+      activeDeadlineSeconds: 43200
       template:
         spec:
           hostAliases:
@@ -97,7 +97,7 @@ spec:
   startingDeadlineSeconds: 180
   jobTemplate:
     spec:
-      activeDeadlineSeconds: 10800
+      activeDeadlineSeconds: 43200
       template:
         spec:
           hostAliases:

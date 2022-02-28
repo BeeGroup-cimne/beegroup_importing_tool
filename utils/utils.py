@@ -3,7 +3,7 @@ import json
 import pkgutil
 from .mongo import mongo_logger
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 
 
 def load_plugins(settings):
