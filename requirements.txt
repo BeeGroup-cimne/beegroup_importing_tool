@@ -5,7 +5,7 @@ bs4==0.0.1
 certifi==2021.10.8
 charset-normalizer==2.0.11
 crypto==1.4.1
-datadis @ git+https://github.com/BeeGroup-cimne/beedis@f00213d84144762425edfb6f94c1f3628ed070d2
+datadis @ git+https://github.com/BeeGroup-cimne/beedis@v1.0.4
 fuzzywuzzy==0.18.0
 happybase==1.2.0
 idna==3.3
