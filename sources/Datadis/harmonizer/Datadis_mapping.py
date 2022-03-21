@@ -109,6 +109,7 @@ class Mapping(object):
             },
             "params": {
                 "raw": {
+                    "source": "datadis",
                     "deviceType": "electricityConsumption"
                 },
                 "mapping": {

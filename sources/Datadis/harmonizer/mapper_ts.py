@@ -5,7 +5,6 @@ from rdflib import Namespace
 from datetime import timedelta
 from utils.hbase import save_to_hbase
 from utils.data_transformations import *
-from utils.utils import log_string
 
 
 time_to_timedelta = {
@@ -38,7 +37,6 @@ def harmonize_data(data, **kwargs):
 
         dt_ini = data_group.iloc[0].name
         dt_end = data_group.iloc[-1].name
-        reading_type = data_group.obtainMethod.apply(decode_hbase).unique().tolist()
         with neo.session() as session:
             device_neo = session.run(f"""
             MATCH (ns0__Organization{{ns0__userId:'{user}'}})-[:ns0__hasSubOrganization*0..]->(o:ns0__Organization)-
@@ -55,12 +53,11 @@ def harmonize_data(data, **kwargs):
                     MERGE (list: ns0__MeasurementList {{
                         uri: "{list_uri}",
                         ns0__measurementKey: "{new_d_id}",
-                        ns0__measurementUnit: "kWh",
                         ns0__measurementFrequency: "{freq}",
-                        ns0__measurementReadingType: "{",".join(reading_type)}",
-                        ns0__measuredProperty: "electricityConsumption"
                     }})<-[:ns0__hasMeasurementLists]-(device)
                     SET
+                        list.ns0__measurementUnit= "kWh",
+                        list.ns0__measuredProperty: "electricityConsumption",
                         list.ns0__measurementListStart = CASE 
                             WHEN list.ns0__measurementListStart < 
                              datetime("{dt_ini.tz_localize("UTC").to_pydatetime().isoformat()}") 
@@ -84,6 +81,3 @@ def harmonize_data(data, **kwargs):
                 save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn2,
                               [("info", ['measurement_end']), ("v", ['value'])],
                               row_fields=['measurement_ini', 'listKey'])
-                # log_string(f"harmonized {device_table}_{device_id}: {len(data_group)}")
-                # log_string(data_group.iloc[0].datetime)
-                # log_string(data_group.iloc[-1].datetime)

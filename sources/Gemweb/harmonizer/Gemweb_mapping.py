@@ -254,6 +254,9 @@ class Mapping(object):
                 "origin": "row"
             },
             "params": {
+                "raw": {
+                    "source": "gemweb"
+                },
                 "mapping": {
                     "subject": {
                         "key": "dev_gem_id",

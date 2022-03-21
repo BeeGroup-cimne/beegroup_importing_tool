@@ -1,6 +1,7 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
+  namespace: bigg
   name: bigg-weather-gather
 spec:
   suspend: false
