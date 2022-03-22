@@ -7,10 +7,3 @@ class Plugin(SourcePlugin):
 
     def gather(self, arguments):
         gather(arguments, settings=self.settings, config=self.config)
-
-    def get_kwargs(self, message):
-        return {
-            "namespace": message['namespace'],
-            "user": message['user'],
-            "config": self.config,
-        }
