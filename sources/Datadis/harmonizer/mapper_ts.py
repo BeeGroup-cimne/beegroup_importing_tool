@@ -6,7 +6,6 @@ from datetime import timedelta
 from utils.hbase import save_to_hbase
 from utils.data_transformations import *
 
-
 time_to_timedelta = {
     "1h": timedelta(hours=1),
     "15m": timedelta(minutes=15)

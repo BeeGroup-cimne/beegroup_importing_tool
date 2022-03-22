@@ -25,6 +25,7 @@ def save_nedgia_data(data, data_type, row_keys, column_map, config, settings, ar
             kafka_message = {
                 "namespace": args.namespace,
                 "user": args.user,
+                "timezone": args.timezone,
                 "collection_type": data_type,
                 "source": config['source'],
                 "row_keys": row_keys,
@@ -56,6 +57,7 @@ def gather(arguments, config=None, settings=None):
     ap.add_argument("--user", "-u", help="The user importing the data", required=True)
     ap.add_argument("--namespace", "-n", help="The subjects namespace uri", required=True)
     ap.add_argument("-f", "--file", required=True, help="Excel file path to parse")
+    ap.add_argument("--timezone", "-tz", help="The local timezone", required=True, default='Europe/Madrid')
     args = ap.parse_args(arguments)
 
     gather_data(config=config, settings=settings, args=args)

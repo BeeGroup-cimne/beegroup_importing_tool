@@ -20,4 +20,5 @@ class Plugin(SourcePlugin):
             "namespace": message['namespace'],
             "user": message['user'],
             "config": self.config,
+            "timezone": message['timezone']
         }
