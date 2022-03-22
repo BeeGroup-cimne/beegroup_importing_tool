@@ -12,10 +12,6 @@ def gather_data(config, settings, args):
             df = pd.read_excel(f"data/{file}",
                                skiprows=2)  # todo: change way to get input
 
-            # df['Fecha inicio Docu. cálculo'] = df['Fecha inicio Docu. cálculo'].dt.strftime(
-            #     '%Y/%m/%d 00:%M:%S')  # ISO 8601
-            # df['Fecha fin Docu. cálculo'] = df['Fecha fin Docu. cálculo'].dt.strftime('%Y/%m/%d 23:%M:%S')  # ISO 8601
-
             save_nedgia_data(data=df.to_dict(orient='records'), data_type="invoice",
                              row_keys=["CUPS", "Fecha inicio Docu. cálculo"],
                              column_map=[("info", "all")], config=config, settings=settings, args=args)
