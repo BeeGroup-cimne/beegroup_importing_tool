@@ -11,6 +11,7 @@ class Mapper(object):
         BuildingConstructionElement.set_namespace(namespace)
         EnergyEfficiencyMeasure.set_namespace(namespace)
 
+
     def get_mappings(self, group):
         building_element = {
             "name": "building_element",
@@ -21,7 +22,7 @@ class Mapper(object):
             "params": {
                 "mapping": {
                     "subject": {
-                        "key": 'building_CodeEns_GPG',
+                        "key": """ Edifici (Espai)  - Codi Ens (GPG)""",
                         "operations": [decode_hbase, get_code_ens, id_zfill, construction_element_subject]
                     }
                 }
@@ -49,10 +50,10 @@ class Mapper(object):
                     "subject": {
                         "key": [
                             {
-                                "key": 'building_CodeEns_GPG',
+                                "key": """ Edifici (Espai)  - Codi Ens (GPG)""",
                                 "operations": [decode_hbase, get_code_ens, id_zfill]},
                             {
-                                "key": "id_",
+                                "key": """id_""",
                                 "operations": [decode_hbase]
                             },
                         ],
@@ -61,37 +62,41 @@ class Mapper(object):
                     "energyEfficiencyMeasureType": {
                         "key": [
                             {
-                                "key": 'improvement_type_level1',
+                                "key": """Instal·lació millorada \n(NIVELL 1)""",
                                 "operations": [decode_hbase]},
                             {
-                                "key": 'improvement_type_level2',
+                                "key": """Tipus de millora \n(NIVELL 2)""",
                                 "operations": [decode_hbase]
                             },
                             {
-                                "key": 'improvement_type_level3',
+                                "key": """Tipus de millora \n(NIVELL 3)""",
                                 "operations": [decode_hbase]
                             },
                             {
-                                "key": 'improvement_type_level4',
+                                "key": """Tipus de millora \n(NIVELL 4)""",
                                 "operations": [decode_hbase]
                             },
                         ],
                         "operations": [partial(join_params, joiner=".")]
                     },
                     "energyEfficiencyMeasureDescription": {
-                        "key": 'description',
+                        "key": """Descripció""",
                         "operations": [decode_hbase]
                     },
                     "shareOfAffectedElement": {
-                        "key": 'improvement_percentage',
+                        "key": """% de la instal·lació millorada / Potencia FV instal·lada [kW] """,
                         "operations": [decode_hbase]
                     },
                     "energyEfficiencyMeasureOperationalDate": {
-                        "key": 'Data de finalitzaci\xc3\xb3 de l obra / millora',
+                        "key": """Data de finalització de l'obra / millora""",
+                        "operations": [decode_hbase]
+                    },
+                    "energyEfficiencyMeasureStartDate": {
+                        "key": """Data d'inici\nde l'obra / millora""",
                         "operations": [decode_hbase]
                     },
                     "energyEfficiencyMeasureInvestment": {
-                        "key": 'investment_without_tax',
+                        "key": """Inversió \n(€) \n(IVA no inclòs)""",
                         "operations": [decode_hbase]
                     }
 

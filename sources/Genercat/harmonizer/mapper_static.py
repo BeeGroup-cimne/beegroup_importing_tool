@@ -16,7 +16,7 @@ def harmonize_data(data, **kwargs):
     df = pd.DataFrame.from_records(data)
     if df.empty:
         return
-    df['ce'] = df['building_CodeEns_GPG'].apply(decode_hbase)
+    df['ce'] = df[' Edifici (Espai)  - Codi Ens (GPG)'].apply(decode_hbase)
     df['ce'] = df['ce'].apply(get_code_ens)
     df['ce'] = df['ce'].apply(id_zfill)
     # upload only mapped measures

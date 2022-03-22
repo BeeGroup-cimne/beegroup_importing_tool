@@ -134,7 +134,7 @@ class EnergyEfficiencyMeasure(BIGGObjects):
     __rdf_type__ = Bigg.EnergyEfficiencyMeasure
 
     def __init__(self, subject, energyEfficiencyMeasureType=None, energyEfficiencyMeasureDescription=None,
-                 shareOfAffectedElement=None, energyEfficiencyMeasureOperationalDate=None,
+                 shareOfAffectedElement=None, energyEfficiencyMeasureStartDate=None, energyEfficiencyMeasureOperationalDate=None,
                  energyEfficiencyMeasureInvestment=None, energyEfficiencyMeasureInvestmentCurrency=None,
                  energyEfficiencyMeasureCurrencyExchangeRate=None, energyEfficiencyMeasureSavingsToInvestmentRatio=None,
                  energySourcePriceEscalationRate=None):
@@ -143,6 +143,7 @@ class EnergyEfficiencyMeasure(BIGGObjects):
         self.energyEfficiencyMeasureDescription = energyEfficiencyMeasureDescription
         self.shareOfAffectedElement = shareOfAffectedElement
         self.energyEfficiencyMeasureOperationalDate = energyEfficiencyMeasureOperationalDate
+        self.energyEfficiencyMeasureStartDate = energyEfficiencyMeasureStartDate
         self.energyEfficiencyMeasureInvestment = energyEfficiencyMeasureInvestment
         self.energyEfficiencyMeasureInvestmentCurrency = energyEfficiencyMeasureInvestmentCurrency
         self.energyEfficiencyMeasureCurrencyExchangeRate = energyEfficiencyMeasureCurrencyExchangeRate

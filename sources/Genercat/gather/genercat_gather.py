@@ -2,11 +2,17 @@ import pandas as pd
 
 
 def get_data(file):
-    columns = ['building_CodeEns_GPG', 'improvement_type_level1',
-       'improvement_type_level2', 'improvement_type_level3',
-       'improvement_type_level4', 'description', 'improvement_percentage',
-       'date_start', 'Data de finalització de l obra / millora',
-       'investment_without_tax', 'energy_type', 'observations']
+    columns = ["""Departament""", """Entitat / Departament""", """Area""", """File""",
+       """ Edifici (Espai)  - Codi Ens (GPG)""",
+       """Instal·lació millorada \n(NIVELL 1)""", """Tipus de millora \n(NIVELL 2)""",
+       """Tipus de millora \n(NIVELL 3)""", """Tipus de millora \n(NIVELL 4)""",
+       """Descripció""",
+       """% de la instal·lació millorada / Potencia FV instal·lada [kW] """,
+       """Data d'inici\nde l'obra / millora""",
+       """Data de finalització de l'obra / millora""",
+       """Inversió \n(€) \n(IVA no inclòs)""", """Tipus energia""",
+       """Altres observacions""", """Servei Territorial""", """Municipi""", """Tipus centre""",
+       """Inversió \n(€) \n(IVA inclòs)"""]
     df = pd.read_excel(file, names=columns)
     return df.to_dict(orient="records")
 

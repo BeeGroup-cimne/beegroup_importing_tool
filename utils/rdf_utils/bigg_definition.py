@@ -127,6 +127,7 @@ class Bigg(DefinedNamespace):
     energyEfficiencyMeasureType: URIRef
     energyEfficiencyMeasureDescription: URIRef
     shareOfAffectedElement: URIRef
+    energyEfficiencyMeasureStartDate: URIRef
     energyEfficiencyMeasureOperationalDate: URIRef
     energyEfficiencyMeasureInvestment: URIRef
     energyEfficiencyMeasureInvestmentCurrency: URIRef
