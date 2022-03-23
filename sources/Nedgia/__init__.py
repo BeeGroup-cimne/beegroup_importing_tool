@@ -1,6 +1,7 @@
 from sources import SourcePlugin
 from sources.Nedgia.gather import gather
-from sources.Nedgia.harmonizer import harmonize_command_line, harmonize_data
+from sources.Nedgia.harmonizer import harmonize_command_line
+from sources.Nedgia.harmonizer.mapper import harmonize_data_device, harmonize_data_ts
 
 
 class Plugin(SourcePlugin):
@@ -13,7 +14,10 @@ class Plugin(SourcePlugin):
         harmonize_command_line(arguments, config=self.config, settings=self.settings)
 
     def get_mapper(self, message):
-        return harmonize_data
+        if message["collection_type"] == 'devices':
+            return harmonize_data_device
+        elif message["collection_type"] == 'invoices':
+            return harmonize_data_ts
 
     def get_kwargs(self, message):
         return {
@@ -22,3 +26,9 @@ class Plugin(SourcePlugin):
             "config": self.config,
             "timezone": message['timezone']
         }
+
+    def get_store_table(self, message):
+        if message['collection_type'] == "devices":
+            return None
+        else:
+            return f"{self.source_name}_{message['collection_type']}_{message['user']}"

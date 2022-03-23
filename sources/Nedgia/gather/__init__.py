@@ -11,16 +11,19 @@ def gather_data(config, settings, args):
         if file.endswith('.xlsx'):
             df = pd.read_excel(f"data/{file}",
                                skiprows=2)  # todo: change way to get input
-
-            save_nedgia_data(data=df.to_dict(orient='records'), data_type="invoice",
+            save_nedgia_data(data=pd.DataFrame(df['CUPS'].unique(), columns=['device']).to_dict(orient="records"),
+                             data_type="devices",
                              row_keys=["CUPS", "Fecha inicio Docu. cálculo"],
                              column_map=[("info", "all")], config=config, settings=settings, args=args)
+
+            # save_nedgia_data(data=df.to_dict(orient='records'), data_type="invoices",
+            #                  row_keys=["CUPS", "Fecha inicio Docu. cálculo"],
+            #                  column_map=[("info", "all")], config=config, settings=settings, args=args)
 
 
 def save_nedgia_data(data, data_type, row_keys, column_map, config, settings, args):
     if args.store == "kafka":
         try:
-
             k_topic = config["kafka"]["topic"]
             kafka_message = {
                 "namespace": args.namespace,
@@ -28,8 +31,6 @@ def save_nedgia_data(data, data_type, row_keys, column_map, config, settings, ar
                 "timezone": args.timezone,
                 "collection_type": data_type,
                 "source": config['source'],
-                "row_keys": row_keys,
-                # "logger": utils.mongo.mongo_logger.export_log(),
                 "data": data
             }
             utils.kafka.save_to_kafka(topic=k_topic, info_document=kafka_message,

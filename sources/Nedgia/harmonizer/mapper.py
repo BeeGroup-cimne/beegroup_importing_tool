@@ -3,7 +3,7 @@ from neo4j import GraphDatabase
 from rdflib import Namespace
 
 
-def harmonize_data(data, **kwargs):
+def harmonize_data_ts(data, **kwargs):
     # Variables
     namespace = kwargs['namespace']
     user = kwargs['user']
@@ -50,11 +50,29 @@ def harmonize_data(data, **kwargs):
         dt_ini = data_group.iloc[0].name
         dt_end = data_group.iloc[-1].name
 
-        with neo.session() as session:
-            device_neo = session.run(f"""
-            MATCH (ns0__Organization{{ns0__userId:'{user}'}})-[:ns0__hasSubOrganization*0..]->(o:ns0__Organization)-
-            [:ns0__hasSource]->(s:DatadisSource)<-[:ns0__importedFromSource]-(d)
-            WHERE d.uri =~ ".*#{device_id}-DEVICE-{config['source']}" return d
-            """)
+        # with neo.session() as session:
+        #     device_neo = session.run(f"""
+        #     MATCH (ns0__Organization{{ns0__userId:'{user}'}})-[:ns0__hasSubOrganization*0..]->(o:ns0__Organization)-
+        #     [:ns0__hasSource]->(s:DatadisSource)<-[:ns0__importedFromSource]-(d)
+        #     WHERE d.uri =~ ".*#{device_id}-DEVICE-{config['source']}" return d
+        #     """)
 
-            print(device_neo)
+        # for d_neo in device_neo:
+        #     list_id = f"{device_id}-DEVICE-{config['source']}-LIST-RAW-{freq}"
+        #     list_uri = str(n[list_id])
+        #     new_d_id = hashlib.sha256(list_uri.encode("utf-8"))
+        #     new_d_id = new_d_id.hexdigest()
+
+        # for d_neo in device_neo:
+        #     print(d_neo)
+
+
+def harmonize_data_device(data, **kwargs):
+    namespace = kwargs['namespace']
+    user = kwargs['user']
+    config = kwargs['config']
+
+    neo4j_connection = config['neo4j']
+    neo = GraphDatabase.driver(**neo4j_connection)
+    n = Namespace(namespace)
+    print(data)

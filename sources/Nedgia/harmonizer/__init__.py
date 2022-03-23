@@ -2,7 +2,6 @@ import argparse
 import re
 
 import utils
-from sources.Nedgia.harmonizer.mapper_ts import harmonize_data
 
 
 def harmonize_command_line(arguments, config=None, settings=None):
@@ -25,4 +24,4 @@ def harmonize_command_line(arguments, config=None, settings=None):
                 item[k1] = v
             item.update({"id_": id_})
             dic_list.append(item)
-        harmonize_data(dic_list, namespace=args.namespace, user=args.user, config=config, tz_local=args.timezone)
+        # harmonize_data(dic_list, namespace=args.namespace, user=args.user, config=config, tz_local=args.timezone)
