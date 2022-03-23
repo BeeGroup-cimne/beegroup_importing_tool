@@ -72,7 +72,31 @@ def harmonize_data_device(data, **kwargs):
     user = kwargs['user']
     config = kwargs['config']
 
-    neo4j_connection = config['neo4j']
-    neo = GraphDatabase.driver(**neo4j_connection)
+    neo = GraphDatabase.driver(**config['neo4j'])
     n = Namespace(namespace)
-    print(data)
+
+    with neo.session() as session:
+        nedgia_datasource = session.run(f"""
+              MATCH (o:ns0__Organization{{ns0__userId:'{user}'}})-[:ns0__hasSource]->(s:NedgiaSource) return id(s)""").single()
+
+        datasource = nedgia_datasource['id(s)']
+        for device in data:
+            uri = f"{namespace}{device['device']}-DEVICE-nedgia"
+            query_create_device = f"""MERGE (d:ns0__Device{{ns0__deviceName:"{device['device']}",ns0__deviceType:"gas
+            ",ns0__source:nedgia,uri:{uri}}}) RETURN d """
+
+            session.run(query_create_device)
+
+            query_has_device = f""" MATCH (n:ns0__UtilityPointOfDelivery{{ns0__pointOfDeliveryIDFromUser:"{device['device']}"}}) 
+            MATCH (d:ns0__Device{{ns0__deviceName:"{device['device']},ns0__source:nedgia"}})
+            MERGE (n)-[:ns0__hasDevice]-(d) RETURN d"""
+
+            session.run(query_has_device)
+
+            query_datasource = f"""MATCH (s) WHERE id(s) == {datasource} 
+            MATCH (d:ns0__Device{{ns0__deviceName:"{device['device']}"}})
+            MERGE (s)-[:ns0__importedFromSource]->(d)
+            RETURN d
+            """
+
+            session.run(query_datasource)
