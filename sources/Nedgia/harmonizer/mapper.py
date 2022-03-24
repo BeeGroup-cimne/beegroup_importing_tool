@@ -1,6 +1,11 @@
+import hashlib
+from datetime import datetime
+
 import pandas as pd
 from neo4j import GraphDatabase
 from rdflib import Namespace
+
+from utils.hbase import save_to_hbase
 
 
 def harmonize_data_ts(data, **kwargs):
@@ -50,21 +55,58 @@ def harmonize_data_ts(data, **kwargs):
         dt_ini = data_group.iloc[0].name
         dt_end = data_group.iloc[-1].name
 
-        # with neo.session() as session:
-        #     device_neo = session.run(f"""
-        #     MATCH (ns0__Organization{{ns0__userId:'{user}'}})-[:ns0__hasSubOrganization*0..]->(o:ns0__Organization)-
-        #     [:ns0__hasSource]->(s:DatadisSource)<-[:ns0__importedFromSource]-(d)
-        #     WHERE d.uri =~ ".*#{device_id}-DEVICE-{config['source']}" return d
-        #     """)
+        with neo.session() as session:
+            n = Namespace(namespace)
+            uri = n[f"{device_id}-DEVICE-nedgia"]
+            query_devices = f"""
+            MATCH (n:ns0__Device{{uri:"{uri}"}}) return n
+            """
+            devices_list = session.run(query_devices)
 
-        # for d_neo in device_neo:
-        #     list_id = f"{device_id}-DEVICE-{config['source']}-LIST-RAW-{freq}"
-        #     list_uri = str(n[list_id])
-        #     new_d_id = hashlib.sha256(list_uri.encode("utf-8"))
-        #     new_d_id = new_d_id.hexdigest()
+            for devices in devices_list:
+                list_id = f"{device_id}-DEVICE-{config['source']}-LIST-RAW-invoices"
+                list_uri = n[list_id]
+                new_d_id = hashlib.sha256(list_uri.encode("utf-8"))
+                new_d_id = new_d_id.hexdigest()
+                try:
+                    query_measures = f"""
+                        MATCH (device: ns0__Device {{uri:"{devices["n"].get("uri")}"}})
+                        MERGE (list: ns0__MeasurementList{{uri: "{list_uri}", ns0__measurementKey: "{new_d_id}",
+                        ns0__measurementFrequency: "invoices"}} )<-[:ns0__hasMeasurementLists]-(device)
+                        SET
+                            list.ns0__measurementUnit= "kWh",
+                            list.ns0__measuredProperty= "gasConsumption",
+                            list.ns0__measurementListStart = CASE 
+                                WHEN list.ns0__measurementListStart < 
+                                 datetime("{datetime.fromtimestamp(dt_ini).isoformat()}") 
+                                    THEN list.ns0__measurementListStart 
+                                    ELSE datetime("{datetime.fromtimestamp(dt_ini).isoformat()}") 
+                                END,
+                            list.ns0__measurementListEnd = CASE 
+                                WHEN list.ns0__measurementListEnd >
+                                 datetime("{datetime.fromtimestamp(dt_end).isoformat()}") 
+                                    THEN list.ns0__measurementListStart 
+                                    ELSE datetime("{datetime.fromtimestamp(dt_end).isoformat()}") 
+                                END  
+                        return list
+                    """
 
-        # for d_neo in device_neo:
-        #     print(d_neo)
+                    print(query_measures)
+
+                    session.run(query_measures)
+
+                    data_group['listKey'] = new_d_id
+                    device_table = f"gasConsumption_invoices_device_{user}"
+                    save_to_hbase(data_group.to_dict(orient="records"), device_table, hbase_conn2,
+                                  [("info", ['measurementEnd']), ("v", ['measurementValue'])],
+                                  row_fields=['listKey', 'measurementStart'])
+
+                    period_table = f"gasConsumption_invoices_period_{user}"
+                    save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn2,
+                                  [("info", ['measurementEnd']), ("v", ['measurementValue'])],
+                                  row_fields=['measurementStart', 'listKey'])
+                except Exception as ex:
+                    print(str(ex))
 
 
 def harmonize_data_device(data, **kwargs):

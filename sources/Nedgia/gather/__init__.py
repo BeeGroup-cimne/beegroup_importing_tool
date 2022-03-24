@@ -11,14 +11,15 @@ def gather_data(config, settings, args):
         if file.endswith('.xlsx'):
             df = pd.read_excel(f"data/{file}",
                                skiprows=2)  # todo: change way to get input
+
             save_nedgia_data(data=pd.DataFrame(df['CUPS'].unique(), columns=['device']).to_dict(orient="records"),
                              data_type="devices",
-                             row_keys=["CUPS", "Fecha inicio Docu. cálculo"],
+                             row_keys=["devices"],
                              column_map=[("info", "all")], config=config, settings=settings, args=args)
 
-            # save_nedgia_data(data=df.to_dict(orient='records'), data_type="invoices",
-            #                  row_keys=["CUPS", "Fecha inicio Docu. cálculo"],
-            #                  column_map=[("info", "all")], config=config, settings=settings, args=args)
+            save_nedgia_data(data=df.to_dict(orient='records'), data_type="invoices",
+                             row_keys=["CUPS", "Fecha inicio Docu. cálculo"],
+                             column_map=[("info", "all")], config=config, settings=settings, args=args)
 
 
 def save_nedgia_data(data, data_type, row_keys, column_map, config, settings, args):
