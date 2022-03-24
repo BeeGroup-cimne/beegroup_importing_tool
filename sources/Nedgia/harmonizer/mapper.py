@@ -52,8 +52,8 @@ def harmonize_data_ts(data, **kwargs):
 
         device_id = cups
 
-        dt_ini = data_group.iloc[0].name
-        dt_end = data_group.iloc[-1].name
+        dt_ini = data_group['measurementStart'].iloc[0]
+        dt_end = data_group['measurementEnd'].iloc[-1]
 
         with neo.session() as session:
             n = Namespace(namespace)
@@ -90,8 +90,6 @@ def harmonize_data_ts(data, **kwargs):
                                 END  
                         return list
                     """
-
-                    print(query_measures)
 
                     session.run(query_measures)
 
