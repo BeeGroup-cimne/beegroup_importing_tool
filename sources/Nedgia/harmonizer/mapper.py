@@ -44,7 +44,7 @@ def harmonize_data_ts(data, **kwargs):
     # Calculate kWh
     df['measurementValue'] = df['Consumo kWh ATR'].fillna(0) + df['Consumo kWh GLP'].fillna(0)
 
-    df = df[['CUPS', 'ts', 'measurementStart', 'measurementEnd', 'measurementValue']]
+    df = df[['CUPS', 'ts', 'measurementStart', 'measurementEnd', 'measurementValue', 'Tipo Lectura']]
 
     for cups, data_group in df.groupby("CUPS"):
         data_group.set_index("ts", inplace=True)
