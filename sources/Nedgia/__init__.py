@@ -29,6 +29,6 @@ class Plugin(SourcePlugin):
 
     def get_store_table(self, message):
         if message['collection_type'] == "devices":
-            return None
+            return None  # Useless info
         else:
             return f"{self.source_name}_{message['collection_type']}_{message['user']}"
