@@ -4,7 +4,7 @@ metadata:
   namespace: bigg
   name: bigg-datadis-gather-last
 spec:
-  suspend: true
+  suspend: false
   schedule: "0 0 * * 1,2,3,4,5,6"
   successfulJobsHistoryLimit: 0
   failedJobsHistoryLimit: 0
@@ -92,7 +92,7 @@ metadata:
   namespace: bigg
   name: bigg-datadis-gather-repair
 spec:
-  suspend: true
+  suspend: false
   schedule: "0 0 * * 0"
   successfulJobsHistoryLimit: 0
   failedJobsHistoryLimit: 0
