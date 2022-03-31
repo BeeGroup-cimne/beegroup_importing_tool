@@ -85,7 +85,7 @@ def harmonize_data_ts(data, **kwargs):
                             list.ns0__measurementListEnd = CASE 
                                 WHEN list.ns0__measurementListEnd >
                                  datetime("{datetime.fromtimestamp(dt_end).isoformat()}") 
-                                    THEN list.ns0__measurementListStart 
+                                    THEN list.ns0__measurementListEnd 
                                     ELSE datetime("{datetime.fromtimestamp(dt_end).isoformat()}") 
                                 END  
                         return list
