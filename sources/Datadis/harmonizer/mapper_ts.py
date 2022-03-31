@@ -66,7 +66,7 @@ def harmonize_data(data, **kwargs):
                         list.ns0__measurementListEnd = CASE 
                             WHEN list.ns0__measurementListEnd >
                              datetime("{dt_end.tz_localize("UTC").to_pydatetime().isoformat()}") 
-                                THEN list.ns0__measurementListStart 
+                                THEN list.ns0__measurementListEnd
                                 ELSE datetime("{dt_end.tz_localize("UTC").to_pydatetime().isoformat()}") 
                             END  
                     return list
