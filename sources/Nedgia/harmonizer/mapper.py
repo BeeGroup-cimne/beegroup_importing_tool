@@ -94,7 +94,7 @@ def harmonize_data_ts(data, **kwargs):
 
                     data_group['listKey'] = new_d_id
                     data_group['Tipo Lectura'] = data_group['Tipo Lectura'].apply(lambda x: x == 'REAL')
-                    data_group.rename({'Tipo Lectura': 'measurementIsReal'}, inplace=True)
+                    data_group.rename(columns={'Tipo Lectura': 'measurementIsReal'}, inplace=True)
 
                     save_to_hbase(data_group.to_dict(orient="records"),
                                   f"harmonized_ts_EnergyConsumptionGas_P1D_{user}",
