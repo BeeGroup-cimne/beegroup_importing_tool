@@ -20,7 +20,6 @@ def harmonize_data_ts(data, **kwargs):
     hbase_conn2 = config['hbase_store_harmonized_data']
     neo4j_connection = config['neo4j']
     neo = GraphDatabase.driver(**neo4j_connection)
-    n = Namespace(namespace)
 
     # Init dataframe
     df = pd.DataFrame.from_records(data)
@@ -94,15 +93,20 @@ def harmonize_data_ts(data, **kwargs):
                     session.run(query_measures)
 
                     data_group['listKey'] = new_d_id
-                    device_table = f"gasConsumption_invoices_device_{user}"
-                    save_to_hbase(data_group.to_dict(orient="records"), device_table, hbase_conn2,
-                                  [("info", ['measurementEnd']), ("v", ['measurementValue'])],
+                    data_group['Tipo Lectura'] = data_group['Tipo Lectura'].apply(lambda x: x == 'REAL')
+                    data_group.rename({'Tipo Lectura': 'measurementIsReal'}, inplace=True)
+
+                    save_to_hbase(data_group.to_dict(orient="records"),
+                                  f"harmonized_ts_EnergyConsumptionGas_P1D_{user}",
+                                  hbase_conn2,
+                                  [("info", ['measurementEnd', 'isReal']), ("v", ['measurementValue'])],
                                   row_fields=['listKey', 'measurementStart'])
 
-                    period_table = f"gasConsumption_invoices_period_{user}"
-                    save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn2,
-                                  [("info", ['measurementEnd']), ("v", ['measurementValue'])],
+                    save_to_hbase(data_group.to_dict(orient="records"),
+                                  f"harmonized_analyticsTs_EnergyConsumptionGas_P1D_{user}", hbase_conn2,
+                                  [("info", ['measurementEnd', 'isReal']), ("v", ['measurementValue'])],
                                   row_fields=['measurementStart', 'listKey'])
+
                 except Exception as ex:
                     print(str(ex))
 
