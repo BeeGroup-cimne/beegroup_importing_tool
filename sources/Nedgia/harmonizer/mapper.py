@@ -94,18 +94,21 @@ def harmonize_data_ts(data, **kwargs):
 
                     data_group['listKey'] = new_d_id
                     data_group['Tipo Lectura'] = data_group['Tipo Lectura'].apply(lambda x: x == 'REAL')
-                    data_group.rename(columns={'Tipo Lectura': 'measurementIsReal'}, inplace=True)
+                    data_group.rename(
+                        columns={'Tipo Lectura': 'isReal', 'measurementEnd': 'end', 'measurementStart': 'start',
+                                 'measurementValue': 'value'},
+                        inplace=True)
 
                     save_to_hbase(data_group.to_dict(orient="records"),
-                                  f"harmonized_ts_EnergyConsumptionGas_P1D_{user}",
+                                  f"harmonized_ts_invoices_invoices_{user}",
                                   hbase_conn2,
-                                  [("info", ['measurementEnd', 'isReal']), ("v", ['measurementValue'])],
-                                  row_fields=['listKey', 'measurementStart'])
+                                  [("info", ['end', 'isReal']), ("v", ['value'])],
+                                  row_fields=['listKey', 'start'])  # todo: change pointer
 
                     save_to_hbase(data_group.to_dict(orient="records"),
-                                  f"harmonized_analyticsTs_EnergyConsumptionGas_P1D_{user}", hbase_conn2,
-                                  [("info", ['measurementEnd', 'isReal']), ("v", ['measurementValue'])],
-                                  row_fields=['measurementStart', 'listKey'])
+                                  f"harmonized_analyticsTs_invoices_invoices_{user}", hbase_conn2,
+                                  [("info", ['end', 'isReal']), ("v", ['value'])],
+                                  row_fields=['start', 'listKey'])  # todo: change pointer
 
                 except Exception as ex:
                     print(str(ex))

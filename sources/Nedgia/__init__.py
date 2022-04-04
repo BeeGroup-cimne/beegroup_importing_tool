@@ -31,4 +31,4 @@ class Plugin(SourcePlugin):
         if message['collection_type'] == "devices":
             return None  # Useless info
         else:
-            return f"{self.source_name}_static_{message['collection_type']}__{message['user']}"
+            return f"{self.source_name}_ts_{message['collection_type']}_invoices_{message['user']}"  # TODO: Change
