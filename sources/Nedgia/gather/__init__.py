@@ -46,8 +46,8 @@ def save_nedgia_data(data, data_type, row_keys, column_map, config, settings, ar
     elif args.store == "hbase":
 
         try:
-            h_table_name = f"{config['data_sources'][config['source']]['hbase_table']}_" \
-                           f"{data_type}_{args.user}"
+            h_table_name = f"{config['data_sources'][config['source']]['hbase_table']}_ts_{data_type}_invoices_{args.user}"  # todo : change
+
             utils.hbase.save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
                                       row_fields=row_keys)
         except Exception as e:
