@@ -146,6 +146,18 @@ def gather_savings(wb):
                 measurements[it].update(
                     {f"{header_names[index]}_{rows_names[index2 - init]}": wb[f"{letter}{index2}"].value})
 
+    total_annual_savings = {}
+
+    init_row = 190
+
+    for index, letter in enumerate(ascii_uppercase[4:11]):
+        for index2 in range(init_row, init_row + len(rows_names)):
+            total_annual_savings.update(
+                {f"{header_names[index]}_{rows_names[index2 - init_row]}": wb[f"{letter}{index2}"].value})
+
+    total_energy_saved = wb['G204'].value
+    shared_energy_saved = wb['G206'].value
+
 
 def gather_data(config, settings, args):
     wb = openpyxl.load_workbook("data/prilojenie/Prilojenie_2_ERD_041-Reziume_ENG.xlsx", data_only=True)
