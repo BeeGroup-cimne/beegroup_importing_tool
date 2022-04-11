@@ -54,7 +54,7 @@ def gather_building_description(wb):
 
 
 def gather_consumption(wb):
-    header_names = ["t", "Nm3", "kWh", "kWh/t  kWh/Nm3", "BGN/ton BGN/Nm3", "BGN/kWh"]
+    header_names = "t	Nm3	kWh	kWh/t  kWh/Nm3	BGN/ton BGN/Nm3	BGN/kWh".split("\t")
     rows_names = ["Heavy fuel oil",
                   "Diesel oil",
                   "LPG",
@@ -97,7 +97,54 @@ def gather_consumption(wb):
 
 
 def gather_savings(wb):
-    pass
+    measurements = {}
+    header_names = "t/a	Nm3/a.	kWh/a.	BGN/a	BGN	year	CO2 t/a".split('\t')
+    rows_names = ["Heavy fuel oil",
+                  "Diesel oil",
+                  "LPG",
+                  "Diesel oil 2",
+                  "Natural gas",
+                  "Coal",
+                  "Pellets",
+                  "Wood",
+                  "Other (specify)",
+                  "Heat energy",
+                  "Electricity",
+                  "Total Measure"
+                  ]
+    init_row = 7
+    for it in range(5):
+        init = init_row + (len(rows_names) * it)
+        measurements[it + 1] = {}
+        for index, letter in enumerate(ascii_uppercase[4:11]):
+            for index2 in range(init, init + len(rows_names)):
+                measurements[it + 1].update(
+                    {f"{header_names[index]}_{rows_names[index2 - init]}": wb[f"{letter}{index2}"].value})
+
+    init = 71
+    measurements[6] = {}
+    for index, letter in enumerate(ascii_uppercase[4:11]):
+        for index2 in range(init, init + len(rows_names)):
+            measurements[6].update(
+                {f"{header_names[index]}_{rows_names[index2 - init]}": wb[f"{letter}{index2}"].value})
+
+    init_row = 86
+    for it in range(7, 11):
+        init = init_row + (len(rows_names) * it)
+        measurements[it] = {}
+        for index, letter in enumerate(ascii_uppercase[4:11]):
+            for index2 in range(init, init + len(rows_names)):
+                measurements[it].update(
+                    {f"{header_names[index]}_{rows_names[index2 - init]}": wb[f"{letter}{index2}"].value})
+
+    init_row = 137
+    for it in range(11, 15):
+        init = init_row + (len(rows_names) * it)
+        measurements[it] = {}
+        for index, letter in enumerate(ascii_uppercase[4:11]):
+            for index2 in range(init, init + len(rows_names)):
+                measurements[it].update(
+                    {f"{header_names[index]}_{rows_names[index2 - init]}": wb[f"{letter}{index2}"].value})
 
 
 def gather_data(config, settings, args):
