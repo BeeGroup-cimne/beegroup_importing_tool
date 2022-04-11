@@ -1,6 +1,7 @@
 import argparse
 import openpyxl
 import re
+from string import ascii_uppercase
 
 EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@]+")
 PHONE_NUM_REGEX = re.compile(
@@ -53,144 +54,46 @@ def gather_building_description(wb):
 
 
 def gather_consumption(wb):
-    # Energy carrier
-    heavy_fuel_oil_t = wb['C11'].value
-    diesel_oil_t = wb['C12'].value
-    lpg_t = wb['C13'].value
-    diesel_oil_2_t = wb['C14'].value
-    natural_gas_t = wb['C15'].value
-    coal_t = wb['C16'].value
-    pellets_t = wb['C17'].value
-    wood_t = wb['C18'].value
-    other_t = wb['C19'].value
-    heat_energy_t = wb['C20'].value
-    electricity_t = wb['C21'].value
-
-    heavy_fuel_oil_nm = wb['D11'].value
-    diesel_oil_nm = wb['D12'].value
-    lpg_nm = wb['D13'].value
-    diesel_oil_2_nm = wb['D14'].value
-    natural_gas_nm = wb['D15'].value
-    coal_nm = wb['D16'].value
-    pellets_nm = wb['D17'].value
-    wood_nm = wb['D18'].value
-    other_nm = wb['D19'].value
-    heat_energy_nm = wb['D20'].value
-    electricity_nm = wb['D21'].value
-
-    heavy_fuel_oil_kWh = wb['E11'].value
-    diesel_oil_kWh = wb['E12'].value
-    lpg_kWh = wb['E13'].value
-    diesel_oil_2_kWh = wb['E14'].value
-    natural_gas_kWh = wb['E15'].value
-    coal_kWh = wb['E16'].value
-    pellets_kWh = wb['E17'].value
-    wood_kWh = wb['E18'].value
-    other_kWh = wb['E19'].value
-    heat_energy_kWh = wb['E20'].value
-    electricity_kWh = wb['E21'].value
-
-    heavy_fuel_oil_kWh_t = wb['F11'].value
-    diesel_oil_kWh_t = wb['F12'].value
-    lpg_kWh_t = wb['F13'].value
-    diesel_oil_2_kWh_t = wb['F14'].value
-    natural_gas_kWh_t = wb['F15'].value
-    coal_kWh_t = wb['F16'].value
-    pellets_kWh_t = wb['F17'].value
-    wood_kWh_t = wb['F18'].value
-    other_kWh_t = wb['F19'].value
-    heat_energy_kWh_t = wb['F20'].value
-    electricity_kWh_t = wb['F21'].value
-
-    heavy_fuel_oil_BGN_ton = wb['G11'].value
-    diesel_oil_BGN_ton = wb['G12'].value
-    lpg_BGN_ton = wb['G13'].value
-    diesel_oil_2_BGN_ton = wb['G14'].value
-    natural_gas_BGN_ton = wb['G15'].value
-    coal_BGN_ton = wb['G16'].value
-    pellets_BGN_ton = wb['G17'].value
-    wood_BGN_ton = wb['G18'].value
-    other_BGN_ton = wb['G19'].value
-    heat_energy_BGN_ton = wb['G20'].value
-    electricity_BGN_ton = wb['G21'].value
-
-    heavy_fuel_oil_BGN_kWh = wb['H11'].value
-    diesel_oil_BGN_kWh = wb['H12'].value
-    lpg_BGN_kWh = wb['H13'].value
-    diesel_oil_2_BGN_kWh = wb['H14'].value
-    natural_gas_BGN_kWh = wb['H15'].value
-    coal_BGN_kWh = wb['H16'].value
-    pellets_BGN_kWh = wb['H17'].value
-    wood_BGN_kWh = wb['H18'].value
-    other_BGN_kWh = wb['H19'].value
-    heat_energy_BGN_kWh = wb['H20'].value
-    electricity_BGN_kWh = wb['H21'].value
+    header_names = ["t", "Nm3", "kWh", "kWh/t  kWh/Nm3", "BGN/ton BGN/Nm3", "BGN/kWh"]
+    rows_names = ["Heavy fuel oil",
+                  "Diesel oil",
+                  "LPG",
+                  "Diesel oil 2",
+                  "Natural gas",
+                  "Coal",
+                  "Pellets",
+                  "Wood",
+                  "Other (specify)",
+                  "Heat energy",
+                  "Electricity"
+                  ]
+    consumptions = {}
+    init_row = 11
+    for index, letter in enumerate(ascii_uppercase[2:8]):
+        for index2 in range(init_row, init_row + len(rows_names)):
+            consumptions.update(
+                {f"{header_names[index]}_{rows_names[index2 - init_row]}": wb[f"{letter}{index2}"].value})
 
     total_consumption = wb['E22'].value
 
-    # HEATING
-    heating_actual_specific = wb['C29'].value
-    heating_actual_total = wb['D29'].value
-    heating_corrected_specific = wb['E29'].value
-    heating_corrected_total = wb['F29'].value
-    heating_expected_specific = wb['G29'].value
-    heating_expected_total = wb['H29'].value
+    distribution = {}
+    header_names = ["Actual Specific", "Actual Total", "Corrected Specific", "Corrected Total", "Expected Specific",
+                    'Expected Total']
+    rows_names = ["Heating",
+                  "Ventilation",
+                  "DHW",
+                  "Fans and pumps",
+                  "Lighting",
+                  "Appliances",
+                  "Cooling",
+                  "Total",
+                  ]
 
-    # Ventilation
-    ventilation_actual_specific = wb['C30'].value
-    ventilation_actual_total = wb['D30'].value
-    ventilation_corrected_specific = wb['E30'].value
-    ventilation_corrected_total = wb['F30'].value
-    ventilation_expected_specific = wb['G30'].value
-    ventilation_expected_total = wb['H30'].value
-
-    # DHW
-    dhw_actual_specific = wb['C31'].value
-    dhw_actual_total = wb['D31'].value
-    dhw_corrected_specific = wb['E31'].value
-    dhw_corrected_total = wb['F31'].value
-    dhw_expected_specific = wb['G31'].value
-    dhw_expected_total = wb['H31'].value
-
-    # Fans
-    fans_actual_specific = wb['C32'].value
-    fans_actual_total = wb['D32'].value
-    fans_corrected_specific = wb['E32'].value
-    fans_corrected_total = wb['F32'].value
-    fans_expected_specific = wb['G32'].value
-    fans_expected_total = wb['H32'].value
-
-    # Lighting
-    lighting_actual_specific = wb['C33'].value
-    lighting_actual_total = wb['D33'].value
-    lighting_corrected_specific = wb['E33'].value
-    lighting_corrected_total = wb['F33'].value
-    lighting_expected_specific = wb['G33'].value
-    lighting_expected_total = wb['H33'].value
-
-    # Appliances
-    appliances_actual_specific = wb['C34'].value
-    appliances_actual_total = wb['D34'].value
-    appliances_corrected_specific = wb['E34'].value
-    appliances_corrected_total = wb['F34'].value
-    appliances_expected_specific = wb['G34'].value
-    appliances_expected_total = wb['H34'].value
-
-    # Cooling
-    cooling_actual_specific = wb['C35'].value
-    cooling_actual_total = wb['D35'].value
-    cooling_corrected_specific = wb['E35'].value
-    cooling_corrected_total = wb['F35'].value
-    cooling_expected_specific = wb['G35'].value
-    cooling_expected_total = wb['H35'].value
-
-    # Total
-    total_actual_specific = wb['C36'].value
-    total_actual_total = wb['D36'].value
-    total_corrected_specific = wb['E36'].value
-    total_corrected_total = wb['F36'].value
-    total_expected_specific = wb['G36'].value
-    total_expected_total = wb['H36'].value
+    init_row = 29
+    for index, letter in enumerate(ascii_uppercase[2:8]):
+        for index2 in range(init_row, init_row + len(rows_names)):
+            distribution.update(
+                {f"{header_names[index]}_{rows_names[index2 - init_row]}": wb[f"{letter}{index2}"].value})
 
 
 def gather_savings(wb):
@@ -198,7 +101,7 @@ def gather_savings(wb):
 
 
 def gather_data(config, settings, args):
-    wb = openpyxl.load_workbook("data/prilojenie/Prilojenie_2_ERD_041-Reziume_ENG.xlsx")
+    wb = openpyxl.load_workbook("data/prilojenie/Prilojenie_2_ERD_041-Reziume_ENG.xlsx", data_only=True)
     gather_contacts(wb['Contacts'])
     gather_building_description(wb['Building Description'])
     gather_consumption(wb['Consumption'])
