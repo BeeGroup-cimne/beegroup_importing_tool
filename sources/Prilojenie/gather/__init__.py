@@ -53,6 +53,7 @@ def gather_building_description(wb):
 
 
 def gather_consumption(wb):
+    # Energy carrier
     heavy_fuel_oil_t = wb['C11'].value
     diesel_oil_t = wb['C12'].value
     lpg_t = wb['C13'].value
@@ -125,7 +126,71 @@ def gather_consumption(wb):
     heat_energy_BGN_kWh = wb['H20'].value
     electricity_BGN_kWh = wb['H21'].value
 
-    total = wb['E22'].value
+    total_consumption = wb['E22'].value
+
+    # HEATING
+    heating_actual_specific = wb['C29'].value
+    heating_actual_total = wb['D29'].value
+    heating_corrected_specific = wb['E29'].value
+    heating_corrected_total = wb['F29'].value
+    heating_expected_specific = wb['G29'].value
+    heating_expected_total = wb['H29'].value
+
+    # Ventilation
+    ventilation_actual_specific = wb['C30'].value
+    ventilation_actual_total = wb['D30'].value
+    ventilation_corrected_specific = wb['E30'].value
+    ventilation_corrected_total = wb['F30'].value
+    ventilation_expected_specific = wb['G30'].value
+    ventilation_expected_total = wb['H30'].value
+
+    # DHW
+    dhw_actual_specific = wb['C31'].value
+    dhw_actual_total = wb['D31'].value
+    dhw_corrected_specific = wb['E31'].value
+    dhw_corrected_total = wb['F31'].value
+    dhw_expected_specific = wb['G31'].value
+    dhw_expected_total = wb['H31'].value
+
+    # Fans
+    fans_actual_specific = wb['C32'].value
+    fans_actual_total = wb['D32'].value
+    fans_corrected_specific = wb['E32'].value
+    fans_corrected_total = wb['F32'].value
+    fans_expected_specific = wb['G32'].value
+    fans_expected_total = wb['H32'].value
+
+    # Lighting
+    lighting_actual_specific = wb['C33'].value
+    lighting_actual_total = wb['D33'].value
+    lighting_corrected_specific = wb['E33'].value
+    lighting_corrected_total = wb['F33'].value
+    lighting_expected_specific = wb['G33'].value
+    lighting_expected_total = wb['H33'].value
+
+    # Appliances
+    appliances_actual_specific = wb['C34'].value
+    appliances_actual_total = wb['D34'].value
+    appliances_corrected_specific = wb['E34'].value
+    appliances_corrected_total = wb['F34'].value
+    appliances_expected_specific = wb['G34'].value
+    appliances_expected_total = wb['H34'].value
+
+    # Cooling
+    cooling_actual_specific = wb['C35'].value
+    cooling_actual_total = wb['D35'].value
+    cooling_corrected_specific = wb['E35'].value
+    cooling_corrected_total = wb['F35'].value
+    cooling_expected_specific = wb['G35'].value
+    cooling_expected_total = wb['H35'].value
+
+    # Total
+    total_actual_specific = wb['C36'].value
+    total_actual_total = wb['D36'].value
+    total_corrected_specific = wb['E36'].value
+    total_corrected_total = wb['F36'].value
+    total_expected_specific = wb['G36'].value
+    total_expected_total = wb['H36'].value
 
 
 def gather_savings(wb):
