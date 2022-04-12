@@ -102,14 +102,19 @@ def gather_consumption(wb):
                   "Heat energy",
                   "Electricity"
                   ]
+
     consumptions = {}
+
     init_row = 11
-    for index, letter in enumerate(ascii_uppercase[2:8]):
-        for index2 in range(init_row, init_row + len(rows_names)):
-            consumptions.update(
-                {f"{header_names[index]}_{rows_names[index2 - init_row]}": wb[f"{letter}{index2}"].value})
+
+    for index2 in range(init_row, init_row + len(rows_names)):
+        consumptions.update({rows_names[index2 - init_row]: {}})
+        for index, letter in enumerate(ascii_uppercase[2:8]):
+            consumptions[rows_names[index2 - init_row]].update({header_names[index]: wb[f"{letter}{index2}"].value})
 
     total_consumption = wb['E22'].value
+
+    consumptions.update({"total_consumption": total_consumption})
 
     distribution = {}
     header_names = ["Actual Specific", "Actual Total", "Corrected Specific", "Corrected Total", "Expected Specific",
@@ -125,11 +130,13 @@ def gather_consumption(wb):
                   ]
 
     init_row = 29
-    for index, letter in enumerate(ascii_uppercase[2:8]):
-        for index2 in range(init_row, init_row + len(rows_names)):
-            distribution.update(
-                {f"{header_names[index]}_{rows_names[index2 - init_row]}": wb[f"{letter}{index2}"].value})
 
+    for index2 in range(init_row, init_row + len(rows_names)):
+        distribution.update({rows_names[index2 - init_row]: {}})
+        for index, letter in enumerate(ascii_uppercase[2:8]):
+            distribution[rows_names[index2 - init_row]].update({header_names[index]: wb[f"{letter}{index2}"].value})
+
+    print(distribution)
     return {"liquid fuels (kWh/a)": ""}
 
 
