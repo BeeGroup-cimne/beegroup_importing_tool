@@ -19,19 +19,19 @@ def gather_contacts(wb):
     organization_type = wb['C19'].value  # Organization.organizationType
     organization_contact_info = wb['C20'].value
 
-    organization_address = None
-    organization_phone = None
-    organization_email = None
+    # organization_address = None
+    # organization_phone = None
+    # organization_email = None
 
-    if organization_contact_info:
-        if EMAIL_REGEX.match(organization_contact_info):
-            organization_email = organization_contact_info
-
-        elif PHONE_NUM_REGEX.match(organization_contact_info):
-            organization_phone = organization_contact_info
-
-        else:
-            organization_address = organization_contact_info
+    # if organization_contact_info:
+    #     if EMAIL_REGEX.match(organization_contact_info):
+    #         organization_email = organization_contact_info
+    #
+    #     elif PHONE_NUM_REGEX.match(organization_contact_info):
+    #         organization_phone = organization_contact_info
+    #
+    #     else:
+    #         organization_address = organization_contact_info
 
     cadastral_ref = wb['C21'].value  # CadastralReference
     municipality = wb['C23'].value  # Location.municipality
@@ -47,10 +47,45 @@ def gather_contacts(wb):
     number_of_floors_after = wb['D32'].value
     number_of_inhabitants = wb['C33'].value
 
+    return {"epc": {"id": epc,
+                    "valid_until": valid_until,
+                    "energy_class_before": energy_class_before_ee_measures,
+                    "energy_class_after": energy_class_after_ee_measures,
+                    "specific_energy_consumption_before (kWh/m2)": energy_consumption_before_ee_measures,
+                    "specific_energy_consumption_after (kWh/m2)": energy_consumption_after_ee_measures},
+
+            "building_type": building_type,
+            "gross_floor_area": gross_floor_area,
+            "organization": {
+                "type": organization_type,
+                "contact_info": organization_contact_info
+            },
+            "building": {
+                "commissioning_date": commissioning_date,
+                "location": {
+                    "municipality": municipality,
+                    "town": town
+                },
+                "area": {
+                    "floor_area": floor_area,
+                    "heating_area": heating_area,
+                    "heating_volume": heating_volume,
+                    "cooling_area": cooling_area,
+                    "cooling_volume": cooling_volume,
+                    "number_of_floors_before": number_of_floors_before,
+                    "number_of_floors_after": number_of_floors_after,
+                    "number_of_inhabitants": number_of_inhabitants
+                },
+                "cadastral_reference": cadastral_ref
+            }
+            }
+
 
 def gather_building_description(wb):
     climate_zone = wb['B3'].value
     type_of_construction = wb['B8'].value
+
+    return {"climate_zone": climate_zone, "type": type_of_construction}
 
 
 def gather_consumption(wb):
@@ -94,6 +129,8 @@ def gather_consumption(wb):
         for index2 in range(init_row, init_row + len(rows_names)):
             distribution.update(
                 {f"{header_names[index]}_{rows_names[index2 - init_row]}": wb[f"{letter}{index2}"].value})
+
+    return {"liquid fuels (kWh/a)": ""}
 
 
 def gather_savings(wb):
@@ -161,14 +198,15 @@ def gather_savings(wb):
 
 def gather_data(config, settings, args):
     wb = openpyxl.load_workbook("data/prilojenie/Prilojenie_2_ERD_041-Reziume_ENG.xlsx", data_only=True)
-    gather_contacts(wb['Contacts'])
-    gather_building_description(wb['Building Description'])
+    data = {}
+    data.update(gather_contacts(wb['Contacts']))
+    data['building'].update(gather_building_description(wb['Building Description']))
     gather_consumption(wb['Consumption'])
     gather_savings(wb['Savings 2'])
 
 
 def gather(arguments, config=None, settings=None):
-    ap = argparse.ArgumentParser(description='Gathering data from Nedgia')
+    ap = argparse.ArgumentParser(description='Gathering data from Prilojenie')
     ap.add_argument("-st", "--store", required=True, help="Where to store the data", choices=["kafka", "hbase"])
     ap.add_argument("--user", "-u", help="The user importing the data", required=True)
     ap.add_argument("--namespace", "-n", help="The subjects namespace uri", required=True)
