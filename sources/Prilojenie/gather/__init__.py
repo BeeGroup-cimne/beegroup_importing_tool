@@ -1,7 +1,10 @@
 import argparse
-import openpyxl
+import os
 import re
 from string import ascii_uppercase
+
+import openpyxl
+import pandas as pd
 
 EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@]+")
 PHONE_NUM_REGEX = re.compile(
@@ -9,7 +12,9 @@ PHONE_NUM_REGEX = re.compile(
 
 
 def gather_contacts(wb):
-    epc = wb['B2'].value  # EnergyPerformanceContract.contractID
+    var = wb['B2'].value.split('/')
+    epc = var[0].strip()  # EnergyPerformanceContract.contractID
+    epc_date = var[1].strip()
     valid_until = wb['B3'].value  # EnergyPerformanceContract.contractEndDate
     building_type = wb['C14'].value  # Building.buildingType
     energy_class_before_ee_measures = wb['C17'].value  # EnergyPerformanceCertificate.energyPerformanceClass
@@ -18,20 +23,6 @@ def gather_contacts(wb):
     energy_consumption_after_ee_measures = wb['D18'].value  # EnergyPerformanceCertificate.annualFinalEnergyConsumption
     organization_type = wb['C19'].value  # Organization.organizationType
     organization_contact_info = wb['C20'].value
-
-    # organization_address = None
-    # organization_phone = None
-    # organization_email = None
-
-    # if organization_contact_info:
-    #     if EMAIL_REGEX.match(organization_contact_info):
-    #         organization_email = organization_contact_info
-    #
-    #     elif PHONE_NUM_REGEX.match(organization_contact_info):
-    #         organization_phone = organization_contact_info
-    #
-    #     else:
-    #         organization_address = organization_contact_info
 
     cadastral_ref = wb['C21'].value  # CadastralReference
     municipality = wb['C23'].value  # Location.municipality
@@ -55,29 +46,29 @@ def gather_contacts(wb):
                     "specific_energy_consumption_after (kWh/m2)": energy_consumption_after_ee_measures},
 
             "building_type": building_type,
-            "gross_floor_area": gross_floor_area,
             "organization": {
                 "type": organization_type,
                 "contact_info": organization_contact_info
             },
-            "building": {
-                "commissioning_date": commissioning_date,
-                "location": {
-                    "municipality": municipality,
-                    "town": town
-                },
-                "area": {
-                    "floor_area": floor_area,
-                    "heating_area": heating_area,
-                    "heating_volume": heating_volume,
-                    "cooling_area": cooling_area,
-                    "cooling_volume": cooling_volume,
-                    "number_of_floors_before": number_of_floors_before,
-                    "number_of_floors_after": number_of_floors_after,
-                    "number_of_inhabitants": number_of_inhabitants
-                },
-                "cadastral_reference": cadastral_ref
-            }
+
+            "commissioning_date": commissioning_date,
+            "location": {
+                "municipality": municipality,
+                "town": town
+            },
+            "area": {
+                "gross_floor_area": gross_floor_area,
+                "floor_area": floor_area,
+                "heating_area": heating_area,
+                "heating_volume": heating_volume,
+                "cooling_area": cooling_area,
+                "cooling_volume": cooling_volume,
+                "number_of_floors_before": number_of_floors_before,
+                "number_of_floors_after": number_of_floors_after,
+                "number_of_inhabitants": number_of_inhabitants
+            },
+            "cadastral_reference": cadastral_ref
+
             }
 
 
@@ -86,6 +77,16 @@ def gather_building_description(wb):
     type_of_construction = wb['B8'].value
 
     return {"climate_zone": climate_zone, "type": type_of_construction}
+
+
+def excel_matrix(init_row, init_alphabet, end_alphabet, header_names, rows_names, wb):
+    res = []
+    for index2 in range(init_row, init_row + len(rows_names)):
+        aux = {"type": rows_names[index2 - init_row]}
+        for index, letter in enumerate(ascii_uppercase[init_alphabet:end_alphabet]):
+            aux.update({header_names[index]: wb[f"{letter}{index2}"].value})
+        res.append(aux)
+    return res
 
 
 def gather_consumption(wb):
@@ -102,21 +103,10 @@ def gather_consumption(wb):
                   "Heat energy",
                   "Electricity"
                   ]
-
-    consumptions = {}
-
-    init_row = 11
-
-    for index2 in range(init_row, init_row + len(rows_names)):
-        consumptions.update({rows_names[index2 - init_row]: {}})
-        for index, letter in enumerate(ascii_uppercase[2:8]):
-            consumptions[rows_names[index2 - init_row]].update({header_names[index]: wb[f"{letter}{index2}"].value})
+    consumptions = excel_matrix(11, 2, 8, header_names, rows_names, wb)
 
     total_consumption = wb['E22'].value
 
-    consumptions.update({"total_consumption": total_consumption})
-
-    distribution = {}
     header_names = ["Actual Specific", "Actual Total", "Corrected Specific", "Corrected Total", "Expected Specific",
                     'Expected Total']
     rows_names = ["Heating",
@@ -129,15 +119,9 @@ def gather_consumption(wb):
                   "Total",
                   ]
 
-    init_row = 29
+    distribution = excel_matrix(29, 2, 8, header_names, rows_names, wb)
 
-    for index2 in range(init_row, init_row + len(rows_names)):
-        distribution.update({rows_names[index2 - init_row]: {}})
-        for index, letter in enumerate(ascii_uppercase[2:8]):
-            distribution[rows_names[index2 - init_row]].update({header_names[index]: wb[f"{letter}{index2}"].value})
-
-    print(distribution)
-    return {"liquid fuels (kWh/a)": ""}
+    return {"distribution": distribution, "consumption": consumptions, "total_consumption": total_consumption}
 
 
 def gather_savings(wb):
@@ -156,60 +140,79 @@ def gather_savings(wb):
                   "Electricity",
                   "Total Measure"
                   ]
+
     init_row = 7
     for it in range(5):
         init = init_row + (len(rows_names) * it)
-        measurements[it + 1] = {}
-        for index, letter in enumerate(ascii_uppercase[4:11]):
-            for index2 in range(init, init + len(rows_names)):
-                measurements[it + 1].update(
-                    {f"{header_names[index]}_{rows_names[index2 - init]}": wb[f"{letter}{index2}"].value})
+        measurements[it + 1] = excel_matrix(init, 4, 11, header_names, rows_names, wb)
 
     init = 71
-    measurements[6] = {}
-    for index, letter in enumerate(ascii_uppercase[4:11]):
-        for index2 in range(init, init + len(rows_names)):
-            measurements[6].update(
-                {f"{header_names[index]}_{rows_names[index2 - init]}": wb[f"{letter}{index2}"].value})
+    measurements[6] = excel_matrix(init, 4, 11, header_names, rows_names, wb)
 
     init_row = 86
     for it in range(7, 11):
         init = init_row + (len(rows_names) * it)
-        measurements[it] = {}
-        for index, letter in enumerate(ascii_uppercase[4:11]):
-            for index2 in range(init, init + len(rows_names)):
-                measurements[it].update(
-                    {f"{header_names[index]}_{rows_names[index2 - init]}": wb[f"{letter}{index2}"].value})
+        measurements[it] = excel_matrix(init, 4, 11, header_names, rows_names, wb)
 
     init_row = 137
     for it in range(11, 15):
         init = init_row + (len(rows_names) * it)
-        measurements[it] = {}
-        for index, letter in enumerate(ascii_uppercase[4:11]):
-            for index2 in range(init, init + len(rows_names)):
-                measurements[it].update(
-                    {f"{header_names[index]}_{rows_names[index2 - init]}": wb[f"{letter}{index2}"].value})
+        measurements[it] = excel_matrix(init, 4, 11, header_names, rows_names, wb)
 
-    total_annual_savings = {}
-
-    init_row = 190
-
-    for index, letter in enumerate(ascii_uppercase[4:11]):
-        for index2 in range(init_row, init_row + len(rows_names)):
-            total_annual_savings.update(
-                {f"{header_names[index]}_{rows_names[index2 - init_row]}": wb[f"{letter}{index2}"].value})
-
+    total_annual_savings = excel_matrix(190, 4, 11, header_names, rows_names, wb)
     total_energy_saved = wb['G204'].value
     shared_energy_saved = wb['G206'].value
 
+    return {"energy_savings": {"total_energy_saved": total_energy_saved, "shared_energy_saved": shared_energy_saved,
+                               "total_annual_savings": total_annual_savings,
+                               "measurements": measurements}}
+
 
 def gather_data(config, settings, args):
-    wb = openpyxl.load_workbook("data/prilojenie/Prilojenie_2_ERD_041-Reziume_ENG.xlsx", data_only=True)
-    data = {}
-    data.update(gather_contacts(wb['Contacts']))
-    data['building'].update(gather_building_description(wb['Building Description']))
-    gather_consumption(wb['Consumption'])
-    gather_savings(wb['Savings 2'])
+    for file in os.listdir('data/prilojenie'):
+        if file.endswith('.xlsx'):
+            wb = openpyxl.load_workbook('data/prilojenie/' + file, data_only=True)
+            contracts = gather_contacts(wb['Contacts'])
+            building_description = gather_building_description(wb['Building Description'])
+
+            general_info = pd.json_normalize({**contracts, **building_description}, sep="_").to_dict(
+                orient="records")
+
+            consumption = gather_consumption(wb['Consumption'])
+            savings = gather_savings(wb['Savings 2'])
+
+
+def save_data(data, data_type, row_keys, column_map, config, settings, args):
+    pass
+    # if args.store == "kafka":
+    #     try:
+    #         k_topic = config["kafka"]["topic"]
+    #         kafka_message = {
+    #             "namespace": args.namespace,
+    #             "user": args.user,
+    #             "timezone": args.timezone,
+    #             "collection_type": data_type,
+    #             "source": config['source'],
+    #             "row_keys": row_keys,
+    #             "data": data
+    #         }
+    #         utils.kafka.save_to_kafka(topic=k_topic, info_document=kafka_message,
+    #                                   config=config['kafka']['connection'], batch=settings.kafka_message_size)
+    #
+    #     except Exception as e:
+    #         utils.utils.log_string(f"error when sending message: {e}")
+    #
+    # elif args.store == "hbase":
+    #
+    #     try:
+    #         h_table_name = f"{config['data_sources'][config['source']]['hbase_table']}_ts_{data_type}_invoices_{args.user}"  # todo : change
+    #
+    #         utils.hbase.save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
+    #                                   row_fields=row_keys)
+    #     except Exception as e:
+    #         utils.utils.log_string(f"Error saving datadis supplies to HBASE: {e}")
+    # else:
+    #     utils.utils.log_string(f"store {config['store']} is not supported")
 
 
 def gather(arguments, config=None, settings=None):
