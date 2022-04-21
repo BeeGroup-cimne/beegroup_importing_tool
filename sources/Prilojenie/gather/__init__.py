@@ -41,6 +41,7 @@ def gather_contacts(wb):
     number_of_inhabitants = wb['C33'].value
 
     return {"epc": {"id": epc,
+                    "data": epc_date,
                     "valid_until": valid_until,
                     "energy_class_before": energy_class_before_ee_measures,
                     "energy_class_after": energy_class_after_ee_measures,
