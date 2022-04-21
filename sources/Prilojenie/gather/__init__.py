@@ -6,6 +6,8 @@ from string import ascii_uppercase
 import openpyxl
 import pandas as pd
 
+import utils
+
 EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@]+")
 PHONE_NUM_REGEX = re.compile(
     r"\(?\+[0-9]{1,3}\)? ?-?[0-9]{1,3} ?-?[0-9]{3,5} ?-?[0-9]{4}( ?-?[0-9]{3})? ?(\w{1,10}\s?\d{1,6})?")
@@ -79,17 +81,17 @@ def gather_building_description(wb):
     return {"climate_zone": climate_zone, "type": type_of_construction}
 
 
-def excel_matrix(init_row, init_alphabet, end_alphabet, header_names, rows_names, wb):
+def excel_matrix(init_row, init_alphabet, end_alphabet, header_names, rows_names, wb, id):
     res = []
     for index2 in range(init_row, init_row + len(rows_names)):
-        aux = {"type": rows_names[index2 - init_row]}
+        aux = {"type": rows_names[index2 - init_row], "id": id}
         for index, letter in enumerate(ascii_uppercase[init_alphabet:end_alphabet]):
             aux.update({header_names[index]: wb[f"{letter}{index2}"].value})
         res.append(aux)
     return res
 
 
-def gather_consumption(wb):
+def gather_consumption(wb, id):
     header_names = "t	Nm3	kWh	kWh/t  kWh/Nm3	BGN/ton BGN/Nm3	BGN/kWh".split("\t")
     rows_names = ["Heavy fuel oil",
                   "Diesel oil",
@@ -103,9 +105,11 @@ def gather_consumption(wb):
                   "Heat energy",
                   "Electricity"
                   ]
-    consumptions = excel_matrix(11, 2, 8, header_names, rows_names, wb)
+    consumptions = excel_matrix(11, 2, 8, header_names, rows_names, wb, id)
 
     total_consumption = wb['E22'].value
+
+    consumptions.append({"id": id, "type": 'Total Consumption', "kWh": total_consumption})
 
     header_names = ["Actual Specific", "Actual Total", "Corrected Specific", "Corrected Total", "Expected Specific",
                     'Expected Total']
@@ -119,13 +123,13 @@ def gather_consumption(wb):
                   "Total",
                   ]
 
-    distribution = excel_matrix(29, 2, 8, header_names, rows_names, wb)
+    distribution = excel_matrix(29, 2, 8, header_names, rows_names, wb, id)
 
-    return {"distribution": distribution, "consumption": consumptions, "total_consumption": total_consumption}
+    return consumptions, distribution
 
 
-def gather_savings(wb):
-    measurements = {}
+def gather_savings(wb, id):
+    measurements = []
     header_names = "t/a	Nm3/a.	kWh/a.	BGN/a	BGN	year	CO2 t/a".split('\t')
     rows_names = ["Heavy fuel oil",
                   "Diesel oil",
@@ -144,28 +148,25 @@ def gather_savings(wb):
     init_row = 7
     for it in range(5):
         init = init_row + (len(rows_names) * it)
-        measurements[it + 1] = excel_matrix(init, 4, 11, header_names, rows_names, wb)
+        measurements += excel_matrix(init, 4, 11, header_names, rows_names, wb, f"{id}~{it + 1}")
 
     init = 71
-    measurements[6] = excel_matrix(init, 4, 11, header_names, rows_names, wb)
+    measurements += excel_matrix(init, 4, 11, header_names, rows_names, wb, f"{id}~{6}")
 
     init_row = 86
-    for it in range(7, 11):
+    for it in range(4):
         init = init_row + (len(rows_names) * it)
-        measurements[it] = excel_matrix(init, 4, 11, header_names, rows_names, wb)
+        measurements += excel_matrix(init, 4, 11, header_names, rows_names, wb, f"{id}~{it + 7}")
 
     init_row = 137
-    for it in range(11, 15):
+    for it in range(4):
         init = init_row + (len(rows_names) * it)
-        measurements[it] = excel_matrix(init, 4, 11, header_names, rows_names, wb)
+        measurements += excel_matrix(init, 4, 11, header_names, rows_names, wb, f"{id}~{it + 11}")
 
-    total_annual_savings = excel_matrix(190, 4, 11, header_names, rows_names, wb)
-    total_energy_saved = wb['G204'].value
-    shared_energy_saved = wb['G206'].value
+    total_annual_savings = excel_matrix(init, 4, 11, header_names, rows_names, wb, f"{id}~totalAnnualSavings")
 
-    return {"energy_savings": {"total_energy_saved": total_energy_saved, "shared_energy_saved": shared_energy_saved,
-                               "total_annual_savings": total_annual_savings,
-                               "measurements": measurements}}
+    energy_saved = {"total_energy_saved": wb['G204'].value, "shared_energy_saved": wb['G206'].value, "id": id}
+    return energy_saved, total_annual_savings, measurements
 
 
 def gather_data(config, settings, args):
@@ -175,44 +176,75 @@ def gather_data(config, settings, args):
             contracts = gather_contacts(wb['Contacts'])
             building_description = gather_building_description(wb['Building Description'])
 
+            # General Info
             general_info = pd.json_normalize({**contracts, **building_description}, sep="_").to_dict(
                 orient="records")
+            save_data(data=general_info, data_type="generalInfo",
+                      row_keys=["epc_id"],
+                      column_map=[("info", "all")], config=config, settings=settings, args=args)
 
-            consumption = gather_consumption(wb['Consumption'])
-            savings = gather_savings(wb['Savings 2'])
+            epc_id = contracts['epc']['id']
+
+            # Consumption
+            consumption, distribution = gather_consumption(wb['Consumption'], epc_id)
+
+            save_data(data=consumption, data_type="consumptionInfo",
+                      row_keys=["id", "type"],
+                      column_map=[("info", "all")], config=config, settings=settings, args=args)
+
+            # Distribution
+
+            save_data(data=distribution, data_type="distributionInfo",
+                      row_keys=["id", "type"],
+                      column_map=[("info", "all")], config=config, settings=settings, args=args)
+
+            # Energy Saving
+            energy_saved, total_annual_savings, measurements = gather_savings(wb['Savings 2'], epc_id)
+            save_data(data=energy_saved, data_type="energySaved",
+                      row_keys=["id"],
+                      column_map=[("info", "all")], config=config, settings=settings, args=args)
+
+            # Total Annual Savings
+            save_data(data=total_annual_savings, data_type="totalAnnualSavings",
+                      row_keys=["id", "type"],
+                      column_map=[("info", "all")], config=config, settings=settings, args=args)
+
+            # Measurements
+
+            save_data(data=measurements, data_type="measurements",
+                      row_keys=["id", "type"],
+                      column_map=[("info", "all")], config=config, settings=settings, args=args)
 
 
 def save_data(data, data_type, row_keys, column_map, config, settings, args):
-    pass
-    # if args.store == "kafka":
-    #     try:
-    #         k_topic = config["kafka"]["topic"]
-    #         kafka_message = {
-    #             "namespace": args.namespace,
-    #             "user": args.user,
-    #             "timezone": args.timezone,
-    #             "collection_type": data_type,
-    #             "source": config['source'],
-    #             "row_keys": row_keys,
-    #             "data": data
-    #         }
-    #         utils.kafka.save_to_kafka(topic=k_topic, info_document=kafka_message,
-    #                                   config=config['kafka']['connection'], batch=settings.kafka_message_size)
-    #
-    #     except Exception as e:
-    #         utils.utils.log_string(f"error when sending message: {e}")
-    #
-    # elif args.store == "hbase":
-    #
-    #     try:
-    #         h_table_name = f"{config['data_sources'][config['source']]['hbase_table']}_ts_{data_type}_invoices_{args.user}"  # todo : change
-    #
-    #         utils.hbase.save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
-    #                                   row_fields=row_keys)
-    #     except Exception as e:
-    #         utils.utils.log_string(f"Error saving datadis supplies to HBASE: {e}")
-    # else:
-    #     utils.utils.log_string(f"store {config['store']} is not supported")
+    if args.store == "kafka":
+        try:
+            k_topic = config["kafka"]["topic"]
+            kafka_message = {
+                "namespace": args.namespace,
+                "user": args.user,
+                "collection_type": data_type,
+                "source": config['source'],
+                "row_keys": row_keys,
+                "data": data
+            }
+            utils.kafka.save_to_kafka(topic=k_topic, info_document=kafka_message,
+                                      config=config['kafka']['connection'], batch=settings.kafka_message_size)
+
+        except Exception as e:
+            utils.utils.log_string(f"error when sending message: {e}")
+
+    elif args.store == "hbase":
+
+        try:
+            h_table_name = f"raw_{config['data_sources'][config['source']]['hbase_table']}_static_{data_type}__{args.user}"  # todo : change
+
+            utils.hbase.save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
+                                      row_fields=row_keys)
+        except Exception as e:
+            utils.utils.log_string(f"Error saving datadis supplies to HBASE: {e}")
+    else:
+        utils.utils.log_string(f"store {config['store']} is not supported")
 
 
 def gather(arguments, config=None, settings=None):
