@@ -1,6 +1,6 @@
 from sources import SourcePlugin
 from sources.Prilojenie.gather import gather
-from sources.Prilojenie.harmonizer.mapper import harmonize_general_info
+from sources.Prilojenie.harmonizer.mapper import *
 
 
 class Plugin(SourcePlugin):
@@ -21,20 +21,19 @@ class Plugin(SourcePlugin):
             return harmonize_general_info
 
         elif message["collection_type"] == 'consumptionInfo':
-            return harmonize_general_info
+            return harmonize_consumption_info
 
         elif message["collection_type"] == 'distributionInfo':
-            return harmonize_general_info
+            return harmonize_distribution_info
 
         elif message["collection_type"] == 'energySaved':
-            return harmonize_general_info
+            return harmonize_energy_saved
 
         elif message["collection_type"] == 'totalAnnualSavings':
-            return harmonize_general_info
+            return harmonize_total_annual_savings
 
         elif message["collection_type"] == 'measurements':
-            return harmonize_general_info
-
+            return harmonize_measurements
 
     def get_store_table(self, message):
         return f"raw_{self.source_name}_static_{message['collection_type']}__{message['user']}"
