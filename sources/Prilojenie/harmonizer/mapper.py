@@ -14,15 +14,17 @@ def harmonize_general_info(data, **kwargs):
     data = data[0]
 
     with neo.session() as session:
-        location_uri = n[f"LOCATION-{data['epc_id']}"]
+        location_uri = n[f"-LOCATION-{data['epc_id']}"]
+        town = data['location_town'].replace('\"', "")
         location_query = f"""
                 MERGE (d:ns0__LocationInfo{{
-                         ns0__addressCity:"{data['location_town']}",
+                         ns0__addressCity:"{town}",
                          ns0__addressProvince:"{data['location_municipality']}",
                          ns0__addressClimateZone:"{data['climate_zone']}",
-                         uri:"{location_uri}",
+                         uri:"{location_uri}"
                          }}) 
                          RETURN d"""
+        print(location_query)
 
         cadastral_uri = n[f"{data['cadastral_reference']}"]
         cadastral_query = f"""
