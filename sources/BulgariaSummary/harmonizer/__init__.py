@@ -27,7 +27,7 @@ def harmonize_data(data, **kwargs):
     neo4j_connection = config['neo4j']
     neo = GraphDatabase.driver(**neo4j_connection)
 
-    # Building
+    # BuildingName =  filename+id+municipality+type
     # EnergyEfficiencyMeasurement
     # Location
     # EnergySavings
