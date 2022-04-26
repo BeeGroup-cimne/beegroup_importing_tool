@@ -113,7 +113,7 @@ class Mapper(object):
                 "mapping": {
                     "subject": {
                         "key": "Num_Ens_Inventari",
-                        "operations": [decode_hbase, id_zfill,  building_subject]
+                        "operations": [decode_hbase, id_zfill, building_subject]
                     },
                     "buildingIDFromOrganization": {
                         "key": "Num_Ens_Inventari",
@@ -162,7 +162,7 @@ class Mapper(object):
                 "mapping": {
                     "subject": {
                         "key": "Num_Ens_Inventari",
-                        "operations": [decode_hbase, id_zfill,  location_info_subject]
+                        "operations": [decode_hbase, id_zfill, location_info_subject]
                     },
                     "addressProvince": {
                         "key": "Provincia",
@@ -232,7 +232,7 @@ class Mapper(object):
                 "mapping": {
                     "subject": {
                         "key": "Num_Ens_Inventari",
-                        "operations": [decode_hbase, id_zfill,  building_space_subject]
+                        "operations": [decode_hbase, id_zfill, building_space_subject]
                     },
                     "buildingSpaceUseType": {
                         "key": "Tipus_us",
@@ -274,7 +274,7 @@ class Mapper(object):
                 "mapping": {
                     "subject": {
                         "key": "Num_Ens_Inventari",
-                        "operations": [decode_hbase,  id_zfill, partial(gross_area_subject, a_source=self.source)]
+                        "operations": [decode_hbase, id_zfill, partial(gross_area_subject, a_source=self.source)]
                     },
                     "areaValue": {
                         "key": "Sup_const_total",
