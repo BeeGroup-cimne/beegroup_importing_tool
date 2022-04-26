@@ -43,7 +43,7 @@ class Organization(BIGGObjects):
 class Building(BIGGObjects):
     __rdf_type__ = Bigg.Building
 
-    def __init__(self, subject, buildingIDFromOrganization=None,  buildingName=None, buildingConstructionYear=None,
+    def __init__(self, subject, buildingIDFromOrganization=None, buildingName=None, buildingConstructionYear=None,
                  buildingConstructionElementType=None, buildingUseType=None, buildingOwnership=None,
                  buildingOpeningHour=None, buildingClosingHour=None):
         super().__init__(subject)
@@ -134,7 +134,8 @@ class EnergyEfficiencyMeasure(BIGGObjects):
     __rdf_type__ = Bigg.EnergyEfficiencyMeasure
 
     def __init__(self, subject, energyEfficiencyMeasureType=None, energyEfficiencyMeasureDescription=None,
-                 shareOfAffectedElement=None, energyEfficiencyMeasureStartDate=None, energyEfficiencyMeasureOperationalDate=None,
+                 shareOfAffectedElement=None, energyEfficiencyMeasureStartDate=None,
+                 energyEfficiencyMeasureOperationalDate=None,
                  energyEfficiencyMeasureInvestment=None, energyEfficiencyMeasureInvestmentCurrency=None,
                  energyEfficiencyMeasureCurrencyExchangeRate=None, energyEfficiencyMeasureSavingsToInvestmentRatio=None,
                  energySourcePriceEscalationRate=None):
@@ -153,6 +154,7 @@ class EnergyEfficiencyMeasure(BIGGObjects):
 
 class Device(BIGGObjects):
     __rdf_type__ = Bigg.Device
+
     def __init__(self, subject, deviceName=None, deviceType=None,
                  deviceManufacturer=None, deviceModel=None,
                  deviceNumberOfOutputs=None, deviceElectricSupply=None,
@@ -173,6 +175,7 @@ class Device(BIGGObjects):
 
 class MeasurementList(BIGGObjects):
     __rdf_type__ = Bigg.MeasurementList
+
     def __init__(self, subject, measurementUnit=None, measuredProperty=None,
                  measurementDescription=None, measurementReadingType=None,
                  measurementTypeForEnergy=None, measurementSourceForEnergy=None,
@@ -190,8 +193,8 @@ class MeasurementList(BIGGObjects):
 
 class UtilityPointOfDelivery(BIGGObjects):
     __rdf_type__ = Bigg.UtilityPointOfDelivery
+
     def __init__(self, subject, pointOfDeliveryIDFromUser=None, utilityType=None):
         super().__init__(subject)
         self.pointOfDeliveryIDFromUser = pointOfDeliveryIDFromUser
         self.utilityType = utilityType
-

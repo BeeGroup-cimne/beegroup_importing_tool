@@ -10,7 +10,7 @@ class Bigg(DefinedNamespace):
     Date: 2021-09-05 20:37+10
 
     """
-    _NS = Namespace("https://bigg-project.eu/ontology#")
+    _NS = Namespace("http://bigg-project.eu/ontology#")
     _warn = False
 
     Organization: URIRef
@@ -70,7 +70,6 @@ class Bigg(DefinedNamespace):
     isAssociatedWithElements: URIRef
     containsElement: URIRef
     hasUtilityPointOfDelivery: URIRef
-
 
     Area: URIRef
     areaType: URIRef

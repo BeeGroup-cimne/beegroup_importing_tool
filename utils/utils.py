@@ -9,8 +9,8 @@ logging.basicConfig(level=logging.ERROR)
 def load_plugins(settings):
     sources_available = {}
     for finder, name, is_pkg in pkgutil.iter_modules(['sources']):
-        source_module = importlib.import_module(f"{finder.path}.{name}")
-        # source_module = importlib.import_module(f"sources.{name}")
+        # source_module = importlib.import_module(f"{finder.path}.{name}")
+        source_module = importlib.import_module(f"sources.{name}")
         source = source_module.Plugin(settings=settings)
         sources_available[source.source_name] = source
     return sources_available
