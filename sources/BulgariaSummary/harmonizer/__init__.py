@@ -30,6 +30,9 @@ def harmonize_data(data, **kwargs):
 
     df = set_taxonomy(pd.DataFrame().from_records(data))
 
-    g = generate_rdf(mapper.get_mappings("all"), df)
+    df['subject'] = df['filename'] + '~' + df['id'].astype(str)
+    df['building_name'] = df['subject'] + '~' + df['municipality'] + '~' + df['type_of_building']
 
-    save_rdf_with_source(g, config['source'], config['neo4j'])
+    g = generate_rdf(mapper.get_mappings("all"), df)
+    print(g.serialize(format="ttl"))
+    # save_rdf_with_source(g, config['source'], config['neo4j'])
