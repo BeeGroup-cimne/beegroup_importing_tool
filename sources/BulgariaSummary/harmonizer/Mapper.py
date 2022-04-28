@@ -118,6 +118,14 @@ class Mapper(object):
             "type": {
                 "origin": "row"
             },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "type_of_building",
+                        "operations": []
+                    }
+                }
+            }
         }
 
         energy_performance_certificate_before = {
@@ -189,6 +197,10 @@ class Mapper(object):
                 "gross_floor_area": {
                     "type": Bigg.hasArea,
                     "link": "subject"
+                },
+                "building_space_use_type": {
+                    "type": Bigg.hasBuildingSpaceUseType,
+                    "link": "subject"
                 }
             }
         }
@@ -242,6 +254,7 @@ class Mapper(object):
 
         grouped_modules = {
             "all": [organization, building_organization, buildings, location_info, building_space, gross_floor_area,
+                    building_space_use_type
                     ]
         }
 
