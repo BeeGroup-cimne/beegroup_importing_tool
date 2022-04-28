@@ -25,7 +25,7 @@ def save_weather_data(data, logger, config):
     kafka_message = {
         "namespace": "https://weather.beegroup-cimne.com#",
         "collection_type": "darksky",
-        "freq": "1h",
+        "freq": "PT1H",
         "source": config['source'],
         "logger": logger.export_log(),
         "data": data.to_dict(orient="records")

@@ -2,38 +2,111 @@ from urllib.parse import urlparse
 
 import rdflib
 from neo4j import GraphDatabase
-from rdflib import Graph, RDF
+from rdflib import Graph, RDF, URIRef
 
-from utils.rdf_utils.bigg_definition import Bigg
+from utils.rdf_utils.ontology.namespaces_definition import Bigg
 from utils.utils import log_string
 
-multi_value_classes = [Bigg.LocationInfo, Bigg.CadastralInfo, Bigg.Building, Bigg.BuildingSpace]
+def get_area_type_from_uri(uri):
+    return uri.split("#")[1].split("-")[1]
+
+multi_value_classes = {
+    Bigg.LocationInfo: {Bigg.hasAddressCountry: [], Bigg.hasAddressProvince: [], Bigg.hasAddressCity: [],
+                        Bigg.hasAddressClimateZone: []},
+    Bigg.CadastralInfo: {Bigg.hasLandType: []},
+    Bigg.Building: {Bigg.hasBuildingConstructionType: [], Bigg.hasBuildingOwnership: []},
+    Bigg.BuildingSpace: {Bigg.hasBuildingSpaceUseType: [], Bigg.hasIndoorQualityPerception: [],
+                         Bigg.hasArea: [get_area_type_from_uri]}
+}
+
+
+def __neo4j_with_source(ses, source, data_links={}):
+    for subject, links in data_links.items():
+        n_query = f"""
+            Match (n{{uri: "{subject}"}})
+        """
+        """
+OPTIONAL MATCH (n)-[l:bigg__hasAddressProvince]->(s) WHERE l.source is null DELETE l
+WITH n, s
+    MERGE (n)-[l:bigg__hasAddressProvince{source: "gemweb"}]->(s)
+Return n"""
+        for link_attr in links:
+            l, o, s_diff = link_attr
+            n_query += f"""
+                WITH n
+                MATCH (s{{uri: "{o}"}})
+                WITH n, s
+                    OPTIONAL MATCH (n)-[l:{l}]->(s) WHERE l.source is null DELETE l
+                WITH n, s
+                MERGE (n)-[l:{l}{{source: "{source}"}}]->(s)
+                WITH n, l, s
+                SET 
+                l.selected = CASE 
+                    WHEN EXISTS(l.selected) THEN l.selected
+                    ELSE s.ttt__{s_diff}__selected[0]
+                    END
+                REMOVE s.ttt__{s_diff}__selected 
+            """
+        ses.run(n_query)
 
 
 def __neo4j_import__(ses, v):
     f = f"""CALL n10s.rdf.import.inline('{v}','Turtle')"""
     result = ses.run(f)
-    return result.single()
+    resp = result.single()
+    return resp
 
 
 def save_rdf_with_source(graph, source, connection):
     neo = GraphDatabase.driver(**connection)
     # only multi_value_classes will have "multiple_values"
     multi_value_subjects = {}
-    for class_ in multi_value_classes:
+    for class_ in multi_value_classes.keys():
         multi_value_subjects[class_] = list(set(graph.subjects(RDF.type, class_)))
     g2 = Graph()
+    data_links = {}
     for class_, list_ in multi_value_subjects.items():
         if not list_:
             continue
         # get and parse the elements existing in DB
         parsed_type = urlparse(class_)
+        onto_uri = parsed_type._replace(fragment="").geturl() + "#"
         with neo.session() as session:
-            neo_data = session.run(f"Match (n: ns0__{parsed_type.fragment}) return n")
+            ns_neo = session.run(f"""
+            MATCH (n:`_NsPrefDef`) 
+            WITH keys(n) as k, n 
+            RETURN [s in k where n[s]='{onto_uri}'][0]
+            """).single()
+            neo_data = session.run(f"Match (n: {ns_neo.value()}__{parsed_type.fragment}) return n")
+            neo_rel = session.run(f"Match (n: {ns_neo.value()}__{parsed_type.fragment})-[r{{selected: true}}]->(cn) "
+                                  f"RETURN n, r, cn")
             if neo_data:
                 neo_elements = {neo_element['n'].get("uri"): neo_element for neo_element in neo_data}
             else:
                 neo_elements = {}
+            if neo_rel:
+                neo_relations = {}
+                for s in neo_rel:
+                    attribute = s['r'].type.split('__')[1]
+                    list_values = {urlparse(attr).fragment: attr for attr in multi_value_classes[class_].keys()}
+                    if attribute in list_values.keys():
+                        attr_operations = multi_value_classes[class_][list_values[attribute]]
+                        if attr_operations:
+                            object_difference = s['cn'].get('uri')
+                            for oper in attr_operations:
+                                object_difference = oper(object_difference)
+                            try:
+                                neo_relations[f"{s['n'].get('uri')}@{s['r'].type}"].update(
+                                    {object_difference: s}
+                                )
+                            except KeyError:
+                                neo_relations[f"{s['n'].get('uri')}@{s['r'].type}"] = \
+                                    {object_difference: s}
+                        else:
+                                neo_relations[f"{s['n'].get('uri')}@{s['r'].type}"] = s
+            else:
+                neo_relations = {}
+        index_triple = 0
         for subject in list_:
             try:
                 neo_element = neo_elements[str(subject)]
@@ -42,14 +115,47 @@ def save_rdf_with_source(graph, source, connection):
             except KeyError:
                 neo_element = None
             for s, p, o in graph.triples((subject, None, None)):
+                parsed_uri = urlparse(p)
+                field_ns = parsed_uri._replace(fragment="").geturl() + "#"
+                with neo.session() as session:
+                    ns_neo = session.run(f"""
+                                        MATCH (n:`_NsPrefDef`) 
+                                        WITH keys(n) as k, n 
+                                        RETURN [s in k where n[s]='{field_ns}'][0]
+                                        """).single()
                 if isinstance(o, rdflib.Literal):
-                    parsed_uri = urlparse(p)
-                    if not neo_element or not neo_element['n'].get(f'ns0__{parsed_uri.fragment}'):
+                    if not neo_element or not neo_element['n'].get(f'{ns_neo.value()}__{parsed_uri.fragment}'):
                         g2.add((s, p, o))
                         g2.add((s, p + '__selected', rdflib.Literal(source)))
                     g2.add((s, p + f"__{source}", o))
+                elif p in [x for x in multi_value_classes[class_]]:
+                    try:
+                        neo_relation = neo_relations[f"{s}@{ns_neo.value()}__{parsed_uri.fragment}"]
+                        if isinstance(neo_relation, dict):
+                            attr_operations = multi_value_classes[class_][p]
+                            o1 = o
+                            for oper in attr_operations:
+                                o1 = oper(o1)
+                            neo_relation = neo_relation[o1]
+                    except IndexError:
+                        neo_relation = None
+                    except KeyError:
+                        neo_relation = None
+                    subject_diff = urlparse(s).fragment
+                    if not neo_relation:
+                        g2.add((o, URIRef(f"http://ttt.cat#{index_triple}__selected"), rdflib.Literal(True)))
+                    elif neo_relation['r'].get("source") == source:
+                        pass
+                    else:
+                        g2.add((o, URIRef(f"http://ttt.cat#{index_triple}__selected"), rdflib.Literal(False)))
+                    g2.add((s, p, o))
+                    try:
+                        data_links[s].append((f'{ns_neo.value()}__{parsed_uri.fragment}', o, index_triple))
+                    except KeyError:
+                        data_links[s] = [(f'{ns_neo.value()}__{parsed_uri.fragment}', o, index_triple)]
                 else:
                     g2.add((s, p, o))
+                index_triple += 1
             graph.remove((subject, None, None))
 
     g2 += graph
@@ -59,6 +165,7 @@ def save_rdf_with_source(graph, source, connection):
 
     with neo.session() as session:
         tty = __neo4j_import__(session, v)
+        __neo4j_with_source(session, source, data_links)
         print(tty)
 
 
@@ -80,4 +187,9 @@ def link_devices_with_source(g, source_id, neo4j_connection):
                     MATCH (source) WHERE id(source)={source_id}
                     MATCH (device) WHERE device.uri="{str(subject[0])}"
                     Merge (source)<-[:ns0__importedFromSource]-(device)
+                    WITH source, device
+                    UNWIND labels(source) AS s 
+                    WITH s , device
+                    WHERE s =~ ".*Source"
+                    SET device.source = s
                     RETURN device""")

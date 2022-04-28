@@ -1,14 +1,18 @@
 import pandas as pd
 import rdflib
-from fuzzywuzzy import process
+from thefuzz import process
 from neo4j import GraphDatabase
 from rdflib import Namespace, Graph
 from slugify import slugify
 
-from utils.rdf_utils.bigg_definition import Bigg
+import settings
+from utils.rdf_utils.ontology.namespaces_definition import Bigg
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.rdf_utils.save_rdf import save_rdf_with_source
 from .GPG_mapping import Mapper
+
+# get namespaces
+bigg = settings.namespace_mappings['bigg']
 
 
 def _harmonize_organization_names(g, user_id, namespace, mapper, neo4j_conn):
@@ -16,17 +20,16 @@ def _harmonize_organization_names(g, user_id, namespace, mapper, neo4j_conn):
     neo = GraphDatabase.driver(**neo4j_conn)
     with neo.session() as s:
         organization_name = s.run(f"""
-        MATCH (m:ns0__Organization {{ns0__userId: "{user_id}"}}) 
-        return m.ns0__organizationName
-        """).single().value()
+        MATCH (m:{bigg}__Organization {{userID: "{user_id}"}}) 
+        return m.{bigg}__organizationName
+        """).single().value()[0]
         organization_names = s.run(f"""
          MATCH 
-         (m:ns0__Organization {{ns0__userId: "{user_id}"}})-[*]->
-         (n:ns0__Organization{{ns0__organizationDivisionType: "Department"}})
+         (m:{bigg}__Organization {{userID: "{user_id}"}})-[:{bigg}__hasSubOrganization *]->
+         (n:{bigg}__Organization{{{bigg}__organizationDivisionType: ["Department"]}})
          RETURN n.uri
          """)
         dep_uri = [x.value() for x in organization_names]
-
     # Get all organizations in rdf graph using sparql
     query_department = f"""
         PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -72,8 +75,12 @@ def harmonize_data(data, **kwargs):
     mapper = Mapper(config['source'], n)
     df = pd.DataFrame.from_records(data)
     if organizations:
+        print("A")
         g = generate_rdf(mapper.get_mappings("all"), df)
+        print("B")
         g = _harmonize_organization_names(g, user, n, mapper, config['neo4j'])
     else:
+        print("C")
         g = generate_rdf(mapper.get_mappings("buildings"), df)
+    print("D")
     save_rdf_with_source(g, config['source'], config['neo4j'])

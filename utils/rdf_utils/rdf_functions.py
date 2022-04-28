@@ -102,6 +102,8 @@ def __mapping_params__(params, row):
                     else:
                         continue
                 for func in v['operations']:
+                    if not value:
+                        continue
                     f_value = func(f_value)
                 mapping_dict[k] = f_value
             else:
@@ -116,6 +118,8 @@ def __mapping_params__(params, row):
                         if pd.isna(value):
                             continue
                     for func in v['operations']:
+                        if not value:
+                            continue
                         value = func(value)
                     mapping_dict[k] = value
                 else:

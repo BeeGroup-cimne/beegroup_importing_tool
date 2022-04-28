@@ -1,6 +1,7 @@
 import argparse
 import re
 import utils
+from utils.rdf_utils.save_rdf import save_rdf_with_source
 from .mapper_static import harmonize_data
 
 
@@ -12,8 +13,9 @@ def harmonize_command_line(arguments, config=None, settings=None):
     args = ap.parse_args(arguments)
 
     hbase_conn = config['hbase_store_raw_data']
-    hbase_table = f"GPG_buildings_{args.user}"
-    for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table):
+    hbase_table = f"raw_GPG_static_buildings__{args.user}"
+    i = 0
+    for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table, batch_size=100):
         dic_list = []
         print("parsing hbase")
         for n_ens, x in data:
@@ -24,5 +26,7 @@ def harmonize_command_line(arguments, config=None, settings=None):
             item.update({"Num_Ens_Inventari": n_ens})
             dic_list.append(item)
         print("parsed. Mapping...")
+        i += len(dic_list)
+        print(i)
         harmonize_data(dic_list, namespace=args.namespace, user=args.user,
                        organizations=args.organizations, config=config)

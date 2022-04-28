@@ -1,6 +1,6 @@
 from slugify import slugify
 
-from utils.rdf_utils.big_classes import Organization
+from utils.rdf_utils.ontology.bigg_classes import Organization
 
 ORGANIZATION_MAIN = None
 source = None

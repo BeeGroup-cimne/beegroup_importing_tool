@@ -5,10 +5,12 @@ from rdflib import Namespace
 from datetime import timedelta
 from utils.hbase import save_to_hbase
 from utils.data_transformations import *
+from utils.neo4j import get_devices_from_datasource, create_sensor
+from utils.rdf_utils.ontology.namespaces_definition import Bigg, units, bigg_enums
 
 time_to_timedelta = {
-    "1h": timedelta(hours=1),
-    "15m": timedelta(minutes=15)
+    "PT1H": timedelta(hours=1),
+    "PT15M": timedelta(minutes=15)
 }
 
 
@@ -25,9 +27,10 @@ def harmonize_data(data, **kwargs):
     n = Namespace(namespace)
     df = pd.DataFrame.from_records(data)
     df["ts"] = pd.to_datetime(df['timestamp'].apply(decode_hbase).apply(int), unit="s")
-    df['measurement_ini'] = df['timestamp'].apply(decode_hbase)
-    df['measurement_end'] = (df.ts + time_to_timedelta[freq]).astype(int) / 10**9
+    df['start'] = df['timestamp'].apply(decode_hbase)
+    df['end'] = (df.ts + time_to_timedelta[freq]).astype(int) / 10**9
     df['value'] = df['consumptionKWh'].apply(decode_hbase)
+    df['isReal'] = df['obtainMethod'].apply(lambda x: True if x == "Real" else False)
     for cups, data_group in df.groupby("cups"):
         data_group.set_index("ts", inplace=True)
         data_group.sort_index(inplace=True)
@@ -37,46 +40,26 @@ def harmonize_data(data, **kwargs):
         dt_ini = data_group.iloc[0].name
         dt_end = data_group.iloc[-1].name
         with neo.session() as session:
-            device_neo = session.run(f"""
-            MATCH (ns0__Organization{{ns0__userId:'{user}'}})-[:ns0__hasSubOrganization*0..]->(o:ns0__Organization)-
-            [:ns0__hasSource]->(s:DatadisSource)<-[:ns0__importedFromSource]-(d)
-            WHERE d.uri =~ ".*#{device_id}-DEVICE-{config['source']}" return d            
-            """)
+            device_neo = get_devices_from_datasource(session, user, device_id, "DatadisSource")
             for d_neo in device_neo:
-                list_id = f"{device_id}-DEVICE-{config['source']}-LIST-RAW-{freq}"
-                list_uri = str(n[list_id])
-                new_d_id = hashlib.sha256(list_uri.encode("utf-8"))
-                new_d_id = new_d_id.hexdigest()
-                session.run(f"""
-                    MATCH (device: ns0__Device {{uri:"{d_neo["d"].get("uri")}"}})
-                    MERGE (list: ns0__MeasurementList {{
-                        uri: "{list_uri}",
-                        ns0__measurementKey: "{new_d_id}",
-                        ns0__measurementFrequency: "{freq}",
-                    }})<-[:ns0__hasMeasurementLists]-(device)
-                    SET
-                        list.ns0__measurementUnit= "kWh",
-                        list.ns0__measuredProperty: "electricityConsumption",
-                        list.ns0__measurementListStart = CASE 
-                            WHEN list.ns0__measurementListStart < 
-                             datetime("{dt_ini.tz_localize("UTC").to_pydatetime().isoformat()}") 
-                                THEN list.ns0__measurementListStart 
-                                ELSE datetime("{dt_ini.tz_localize("UTC").to_pydatetime().isoformat()}") 
-                            END,
-                        list.ns0__measurementListEnd = CASE 
-                            WHEN list.ns0__measurementListEnd >
-                             datetime("{dt_end.tz_localize("UTC").to_pydatetime().isoformat()}") 
-                                THEN list.ns0__measurementListEnd
-                                ELSE datetime("{dt_end.tz_localize("UTC").to_pydatetime().isoformat()}") 
-                            END  
-                    return list
-                """)
-                data_group['listKey'] = new_d_id
-                device_table = f"electricityConsumption_{freq}_device_{user}"
+                device_uri = d_neo["d"].get("uri")
+                sensor_id = sensor_subject("datadis", device_id, "EnergyConsumptionGridElectricity", "RAW", freq)
+                sensor_uri = str(n[sensor_id])
+                measurement_id = hashlib.sha256(sensor_uri.encode("utf-8"))
+                measurement_id = measurement_id.hexdigest()
+                measurement_uri = str(n[measurement_id])
+
+                create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
+                              bigg_enums.EnergyConsumptionGridElectricity, bigg_enums.TrustedModel,
+                              measurement_uri,
+                              False, False, freq, "SUM", dt_ini, dt_end)
+
+                data_group['listKey'] = measurement_id
+                device_table = f"harmonized_online_EnergyConsumptionGridElectricity_100_SUM_{freq}_{user}"
                 save_to_hbase(data_group.to_dict(orient="records"), device_table, hbase_conn2,
-                              [("info", ['measurement_end']), ("v", ['value'])],
-                              row_fields=['listKey', 'measurement_ini'])
-                period_table = f"electricityConsumption_{freq}_period_{user}"
+                              [("info", ['end', 'isReal']), ("v", ['value'])],
+                              row_fields=['listKey', 'start'])
+                period_table = f"harmonized_batch_EnergyConsumptionGridElectricity_100_SUM_{freq}_{user}"
                 save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn2,
-                              [("info", ['measurement_end']), ("v", ['value'])],
-                              row_fields=['measurement_ini', 'listKey'])
+                              [("info", ['end', 'isReal']), ("v", ['value'])],
+                              row_fields=['start', 'listKey'])

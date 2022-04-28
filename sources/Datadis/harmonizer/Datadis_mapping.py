@@ -1,5 +1,5 @@
-from utils.rdf_utils.bigg_definition import Bigg
-from utils.rdf_utils.big_classes import LocationInfo, BuildingSpace, Device, UtilityPointOfDelivery
+from utils.rdf_utils.ontology.namespaces_definition import Bigg, bigg_enums
+from utils.rdf_utils.ontology.bigg_classes import LocationInfo, BuildingSpace, Device, UtilityPointOfDelivery
 from slugify import slugify
 from utils.data_transformations import *
 
@@ -26,13 +26,19 @@ class Mapping(object):
                         "key": "NumEns",
                         "operations": [id_zfill, location_info_subject]
                     },
-                    "addressProvince": {
+                    "hasAddressProvince": {
                         "key": 'province',
-                        "operations": [decode_hbase, ]
+                        "operations": [decode_hbase,
+                                       partial(fuzzy_dictionary_match,
+                                               dictionary="utils/rdf_utils/ontology/dictionaries/provinces.ttl",
+                                               predicates=['ns1:alternateName', 'ns1:officialName'])]
                     },
-                    "addressCity": {
+                    "hasAddressCity": {
                         "key": 'municipality',
-                        "operations": [decode_hbase, ]
+                        "operations": [decode_hbase,
+                                       partial(fuzzy_dictionary_match,
+                                               dictionary="utils/rdf_utils/ontology/dictionaries/municipality.ttl",
+                                               predicates=['ns1:alternateName', 'ns1:officialName'])]
                     },
                     "addressPostalCode": {
                         "key":  'postalCode',
@@ -62,7 +68,7 @@ class Mapping(object):
             },
             "links": {
                 "device": {
-                    "type": Bigg.isObservedBy,
+                    "type": Bigg.isObservedByDevice,
                     "link": "cups"
                 },
                 "utility_point": {
@@ -80,14 +86,14 @@ class Mapping(object):
             },
             "params": {
                 "raw": {
-                    "utilityType": "electricity"
+                    "hasUtilityType": to_object_property("Electricity", namespace=bigg_enums)
                 },
                 "mapping": {
                     "subject": {
                         "key": 'cups',
                         "operations": [decode_hbase, delivery_subject]
                     },
-                    "pointOfDeliveryIDFromUser": {
+                    "pointOfDeliveryIDFromOrganization": {
                         "key": 'cups',
                         "operations": [decode_hbase, ]
                     },
@@ -109,13 +115,12 @@ class Mapping(object):
             },
             "params": {
                 "raw": {
-                    "source": "datadis",
-                    "deviceType": "electricityConsumption"
+                    "hasDeviceType": to_object_property("Meter.EnergyMeter", namespace=bigg_enums)
                 },
                 "mapping": {
                     "subject": {
                         "key": "cups",
-                        "operations": [decode_hbase, partial(device_subject, self.source)]
+                        "operations": [decode_hbase, partial(device_subject, source=self.source)]
                     },
                     "deviceName":  {
                         "key": 'cups',

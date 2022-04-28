@@ -26,7 +26,7 @@ class SourcePlugin(object):
         raise NotImplemented
 
     def get_store_table(self, message):
-        return f"{self.source_name}_{message['collection_type']}_{message['user']}"
+        raise NotImplemented
 
     def transform_df(self, df):
         return df

@@ -47,7 +47,7 @@ def gather(arguments, config=None, settings=None):
     elif args.store == "hbase":
         # utils.utils.log_string(f"saving to hbase")
         try:
-            h_table_name = f"{config['data_sources'][config['source']]['hbase_table']}_eem_{args.user}"
+            h_table_name = f"raw_{config['source']}_static_eem__{args.user}"
             utils.hbase.save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], [("info", "all")], row_fields=["id_"])
             #utils.utils.log_string(f"successfully saved to hbase")
         except Exception as e:

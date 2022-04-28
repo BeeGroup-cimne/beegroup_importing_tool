@@ -1,8 +1,10 @@
 from .transform_functions import get_code_ens
-from utils.rdf_utils.bigg_definition import Bigg
-from utils.rdf_utils.big_classes import BuildingConstructionElement, EnergyEfficiencyMeasure
+from utils.rdf_utils.ontology.namespaces_definition import Bigg, units, bigg_enums
+from utils.rdf_utils.ontology.bigg_classes import BuildingConstructionElement, EnergyEfficiencyMeasure
 from utils.data_transformations import *
 
+eem_type_taxonomy = partial(taxonomy_mapping, taxonomy_file="sources/Genercat/harmonizer/EEMTypeTaxonomy.xls",
+                            default="Other")
 
 class Mapper(object):
 
@@ -10,7 +12,6 @@ class Mapper(object):
         self.source = source
         BuildingConstructionElement.set_namespace(namespace)
         EnergyEfficiencyMeasure.set_namespace(namespace)
-
 
     def get_mappings(self, group):
         building_element = {
@@ -29,7 +30,7 @@ class Mapper(object):
             },
             "links": {
                 "measures": {
-                    "type": Bigg.isAffectedByMeasures,
+                    "type": Bigg.isAffectedByMeasure,
                     "link": "id_"
                 }
             }
@@ -43,7 +44,7 @@ class Mapper(object):
             },
             "params": {
                 "raw": {
-                    "energyEfficiencyMeasureInvestmentCurrency": "€",
+                    "hasEnergyEfficiencyMeasureInvestmentCurrency": units["Euro"],
                     "energyEfficiencyMeasureCurrencyExchangeRate": "1",
                 },
                 "mapping": {
@@ -57,9 +58,9 @@ class Mapper(object):
                                 "operations": [decode_hbase]
                             },
                         ],
-                        "operations": [partial(join_params, joiner="~"), eem_subject]
+                        "operations": [partial(join_params, joiner="-"), eem_subject]
                     },
-                    "energyEfficiencyMeasureType": {
+                    "hasEnergyEfficiencyMeasureType": {
                         "key": [
                             {
                                 "key": """Instal·lació millorada \n(NIVELL 1)""",
@@ -77,7 +78,8 @@ class Mapper(object):
                                 "operations": [decode_hbase]
                             },
                         ],
-                        "operations": [partial(join_params, joiner=".")]
+                        "operations": [partial(join_params, joiner="."), eem_type_taxonomy, partial(to_object_property,
+                                                                                                    namespace=bigg_enums)]
                     },
                     "energyEfficiencyMeasureDescription": {
                         "key": """Descripció""",
@@ -89,11 +91,7 @@ class Mapper(object):
                     },
                     "energyEfficiencyMeasureOperationalDate": {
                         "key": """Data de finalització de l'obra / millora""",
-                        "operations": [decode_hbase]
-                    },
-                    "energyEfficiencyMeasureStartDate": {
-                        "key": """Data d'inici\nde l'obra / millora""",
-                        "operations": [decode_hbase]
+                        "operations": [decode_hbase, pd.Timestamp, pd.Timestamp.isoformat]
                     },
                     "energyEfficiencyMeasureInvestment": {
                         "key": """Inversió \n(€) \n(IVA no inclòs)""",

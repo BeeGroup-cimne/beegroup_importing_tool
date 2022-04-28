@@ -75,4 +75,4 @@ def get_hbase_data_batch(hbase_conf, hbase_table, row_start=None, row_stop=None,
             else:
                 current_limit = min(batch_size, limit - current_register)
         row_start = last_record[:-1] + chr(last_record[-1] + 1).encode("utf-8")
-    yield []
+

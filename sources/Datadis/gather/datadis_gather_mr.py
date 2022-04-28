@@ -52,8 +52,9 @@ def save_datadis_data(data, credentials, data_type, row_keys, column_map, config
     elif config['store'] == "hbase":
         # utils.utils.log_string(f"Saving to HBASE")
         try:
-            h_table_name = f"{config['data_sources'][config['source']]['hbase_table']}_" \
-                           f"{data_type}_{credentials['user']}"
+            type_d = "static" if data_type == "supplies" else "ts"
+            data_type = "supplies_" if data_type == "supplies" else data_type
+            h_table_name = f"raw_{config['source']}_{type_d}_{data_type}_{credentials['user']}"
             utils.hbase.save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
                                       row_fields=row_keys)
             # utils.utils.log_string(f"Supplies saved successfully")
@@ -124,7 +125,8 @@ def parse_consumption_chunk(consumption):
 
 
 data_types_dict = {
-    "data_1h": {
+    "EnergyConsumptionGridElectricity_PT1H": {
+        "mongo_collection": "data_1h",
         "type_data": "timeseries",
         "freq_rec": relativedelta(months=1),
         "measurement_type": "0",
@@ -133,7 +135,8 @@ data_types_dict = {
         "elements_in_period": get_1h_in_period,
         "parser": parse_consumption_chunk,
     },
-    "data_15m": {
+    "EnergyConsumptionGridElectricity_PT15M": {
+        "mongo_collection": "data_15m",
         "type_data": "timeseries",
         "freq_rec": relativedelta(days=8),
         "measurement_type": "1",
@@ -142,7 +145,8 @@ data_types_dict = {
         "elements_in_period": get_15min_in_period,
         "parser": parse_consumption_chunk,
     },
-    "max_power": {
+    "Power_P1M": {
+        "mongo_collection": "max_power",
         "type_data": "timeseries",
         "freq_rec": relativedelta(months=6),
         "endpoint": ENDPOINTS.GET_MAX_POWER,
@@ -286,8 +290,8 @@ class DatadisMRJob(MRJob, ABC):
                 finished = False
 
             for t, type_params in [(x, y) for x, y in data_types_dict.items() if y["type_data"] == "timeseries"]:
-                if t not in device:
-                    device[t] = {}
+                if type_params["mongo_collection"] not in device:
+                    device[type_params["mongo_collection"]] = {}
                 loop_date_ini = date_ini
                 while loop_date_ini < date_end:
                     current_ini = loop_date_ini
@@ -298,8 +302,8 @@ class DatadisMRJob(MRJob, ABC):
                     k = "~".join([current_ini.strftime("%Y-%m-%d"), current_end.strftime("%Y-%m-%d")])
                     date_ini_block = datetime.combine(current_ini, datetime.min.time())
                     date_end_block = datetime.combine(current_end, datetime.min.time())
-                    if k not in device[t]:
-                        device[t].update({
+                    if k not in device[type_params["mongo_collection"]]:
+                        device[type_params["mongo_collection"]].update({
                             k: {
                                 "has_ini_date": has_init_date,
                                 "date_ini_block": date_ini_block,
@@ -320,7 +324,7 @@ class DatadisMRJob(MRJob, ABC):
                     if self.config['policy'] == "last":
                         try:
                             # get last chunk
-                            status = list(device[data_type].values())[-1]
+                            status = list(device[type_params["mongo_collection"]].values())[-1]
                         except IndexError as e:
                             continue
                         # check if chunk is in current time
@@ -342,7 +346,7 @@ class DatadisMRJob(MRJob, ABC):
                         self.increment_counter('gathered', 'device', 1)
                     if self.config['policy'] == "repair":
                         # get all incomplete chunks
-                        status_list = [x for x in device[data_type].values()
+                        status_list = [x for x in device[type_params["mongo_collection"]].values()
                                        if x['values'] < x['total'] and x['retries'] > 0]
                         for status in status_list:
                             data = download_chunk(supply, type_params, credentials, status)
