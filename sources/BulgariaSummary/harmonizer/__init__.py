@@ -1,9 +1,10 @@
+from datetime import timedelta
+
 import pandas as pd
 from rdflib import Namespace
 
 from sources.BulgariaSummary.harmonizer.Mapper import Mapper
 from utils.rdf_utils.rdf_functions import generate_rdf
-from utils.rdf_utils.save_rdf import save_rdf_with_source
 
 
 def harmonize_command_line():
@@ -32,6 +33,7 @@ def harmonize_data(data, **kwargs):
 
     df['subject'] = df['filename'] + '~' + df['id'].astype(str)
     df['building_name'] = df['subject'] + '~' + df['municipality'] + '~' + df['type_of_building']
+    df['epc_date_before'] = df['epc_date'] - timedelta(days=365)
 
     g = generate_rdf(mapper.get_mappings("all"), df)
     print(g.serialize(format="ttl"))

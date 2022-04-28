@@ -1,5 +1,3 @@
-import ast
-import os
 import re
 from functools import partial
 
@@ -22,7 +20,7 @@ def fuzzy_dictionary_match(text, dictionary, predicates):
 def taxonomy_mapping(source_key, taxonomy_file, default):
     # Transformation function
     taxonomy_dict = \
-        pd.read_excel(taxonomy_file,  index_col="SOURCE").to_dict()["TAXONOMY"]
+        pd.read_excel(taxonomy_file, index_col="SOURCE").to_dict()["TAXONOMY"]
     try:
         return taxonomy_dict[source_key]
     except KeyError:
@@ -113,6 +111,5 @@ def validate_ref_cadastral(value):
     return ";".join(valid_ref)
 
 
-
-
-
+def epc_subject(key):
+    return f"EPC-{key}"
