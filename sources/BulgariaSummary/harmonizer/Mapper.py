@@ -3,9 +3,9 @@ from functools import partial
 from slugify import slugify
 
 from utils.data_transformations import building_subject, location_info_subject, building_department_subject, \
-    building_space_subject, gross_area_subject
+    building_space_subject, gross_area_subject, epc_subject
 from utils.rdf_utils.ontology.bigg_classes import Organization, Building, LocationInfo, BuildingSpace, Area, \
-    EnergyPerformanceCertificate
+    EnergyPerformanceCertificate, BuildingSpaceUseType
 from utils.rdf_utils.ontology.namespaces_definition import Bigg
 
 
@@ -82,10 +82,6 @@ class Mapper(object):
                         "key": "subject",
                         "operations": [building_subject]
                     },
-                    "buildingUseType": {
-                        "key": "type_of_building",
-                        "operations": []
-                    },
                     "buildingName": {
                         "key": "building_name",
                         "operations": []
@@ -114,6 +110,14 @@ class Mapper(object):
                     "link": "subject"
                 }
             }
+        }
+
+        building_space_use_type = {
+            "name": "building_space_use_type",
+            "class": BuildingSpaceUseType,
+            "type": {
+                "origin": "row"
+            },
         }
 
         energy_performance_certificate_before = {
@@ -183,7 +187,7 @@ class Mapper(object):
             },
             "links": {
                 "gross_floor_area": {
-                    "type": Bigg.hasAreas,
+                    "type": Bigg.hasArea,
                     "link": "subject"
                 }
             }
