@@ -20,7 +20,6 @@ def harmonize_data_ts(data, **kwargs):
     hbase_conn2 = config['hbase_store_harmonized_data']
     neo4j_connection = config['neo4j']
     neo = GraphDatabase.driver(**neo4j_connection)
-    n = Namespace(namespace)
 
     # Init dataframe
     df = pd.DataFrame.from_records(data)
@@ -94,15 +93,23 @@ def harmonize_data_ts(data, **kwargs):
                     session.run(query_measures)
 
                     data_group['listKey'] = new_d_id
-                    device_table = f"gasConsumption_invoices_device_{user}"
-                    save_to_hbase(data_group.to_dict(orient="records"), device_table, hbase_conn2,
-                                  [("info", ['measurementEnd']), ("v", ['measurementValue'])],
-                                  row_fields=['listKey', 'measurementStart'])
+                    data_group['Tipo Lectura'] = data_group['Tipo Lectura'].apply(lambda x: x == 'REAL')
+                    data_group.rename(
+                        columns={'Tipo Lectura': 'isReal', 'measurementEnd': 'end', 'measurementStart': 'start',
+                                 'measurementValue': 'value'},
+                        inplace=True)
 
-                    period_table = f"gasConsumption_invoices_period_{user}"
-                    save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn2,
-                                  [("info", ['measurementEnd']), ("v", ['measurementValue'])],
-                                  row_fields=['measurementStart', 'listKey'])
+                    save_to_hbase(data_group.to_dict(orient="records"),
+                                  f"harmonized_ts_invoices_invoices_{user}",
+                                  hbase_conn2,
+                                  [("info", ['end', 'isReal']), ("v", ['value'])],
+                                  row_fields=['listKey', 'start'])  # todo: change pointer
+
+                    save_to_hbase(data_group.to_dict(orient="records"),
+                                  f"harmonized_analyticsTs_invoices_invoices_{user}", hbase_conn2,
+                                  [("info", ['end', 'isReal']), ("v", ['value'])],
+                                  row_fields=['start', 'listKey'])  # todo: change pointer
+
                 except Exception as ex:
                     print(str(ex))
 
