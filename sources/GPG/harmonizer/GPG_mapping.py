@@ -1,13 +1,14 @@
 from utils.data_transformations import *
-from utils.rdf_utils.bigg_definition import Bigg
-from utils.rdf_utils.big_classes import Organization, Building, LocationInfo, CadastralInfo, BuildingSpace, Area, \
-    BuildingConstructionElement
+from utils.rdf_utils.ontology.namespaces_definition import Bigg, bigg_enums, units, countries
+from utils.rdf_utils.ontology.bigg_classes import Organization, Building, LocationInfo, CadastralInfo, BuildingSpace, \
+    Area, BuildingConstructionElement
 from slugify import slugify as slugify
 from .transform_functions import *
 
+building_type_taxonomy = partial(taxonomy_mapping, taxonomy_file="sources/GPG/harmonizer/BuildingUseTypeTaxonomy.xls",
+                                 default="Other")
 
 class Mapper(object):
-
     def __init__(self, source, namespace):
         self.source = source
         Organization.set_namespace(namespace)
@@ -122,10 +123,6 @@ class Mapper(object):
                     "buildingName": {
                         "key": "Espai",
                         "operations": [decode_hbase, ]
-                    },
-                    "buildingUseType": {
-                        "key": "Tipus_us",
-                        "operations": [decode_hbase, building_type_taxonomy]
                     }
                 }
             },
@@ -143,7 +140,7 @@ class Mapper(object):
                     "link": "Num_Ens_Inventari"
                 },
                 "cadastral_info": {
-                    "type": Bigg.hasCadastralInfos,
+                    "type": Bigg.hasCadastralInfo,
                     "link": "Num_Ens_Inventari"
                 }
             }
@@ -157,20 +154,27 @@ class Mapper(object):
             },
             "params": {
                 "raw": {
-                    "addressCountry": "Catalonia"
+                    "hasAddressCountry":
+                        to_object_property("2510769/", namespace=countries)
                 },
                 "mapping": {
                     "subject": {
                         "key": "Num_Ens_Inventari",
                         "operations": [decode_hbase, id_zfill,  location_info_subject]
                     },
-                    "addressProvince": {
+                    "hasAddressProvince": {
                         "key": "Provincia",
-                        "operations": [decode_hbase, ]
+                        "operations": [decode_hbase,
+                                       partial(fuzzy_dictionary_match,
+                                               dictionary="utils/rdf_utils/ontology/dictionaries/province.ttl",
+                                               predicates=['ns1:name'])]
                     },
-                    "addressCity": {
+                    "hasAddressCity": {
                         "key": "Municipi",
-                        "operations": [decode_hbase, ]
+                        "operations": [decode_hbase,
+                                       partial(fuzzy_dictionary_match,
+                                               dictionary="utils/rdf_utils/ontology/dictionaries/municipality.ttl",
+                                               predicates=['ns1:name'])]
                     },
                     "addressPostalCode": {
                         "key": "Codi_postal",
@@ -197,7 +201,7 @@ class Mapper(object):
                 "sep": ";",
                 "column": "Ref_Cadastral",
                 "column_mapping": {
-                    "subject": [str.strip],
+                    "subject": [str.strip, cadastral_info_subject],
                     "landCadastralReference": [str.strip]
                 }
             },
@@ -210,11 +214,11 @@ class Mapper(object):
                     "landArea": {
                         "key": "Sup_terreny",
                         "operations": [decode_hbase, ]
-                    },
-                    "landType": {
-                        "key": "Classificacio_sol",
-                        "operations": [decode_hbase, ]
-                    }
+                    }  # ,
+                    # "landType": {
+                    #     "key": "Classificacio_sol",
+                    #     "operations": [decode_hbase, ]
+                    # }
                 }
             }
         }
@@ -234,27 +238,28 @@ class Mapper(object):
                         "key": "Num_Ens_Inventari",
                         "operations": [decode_hbase, id_zfill,  building_space_subject]
                     },
-                    "buildingSpaceUseType": {
+                    "hasBuildingSpaceUseType": {
                         "key": "Tipus_us",
-                        "operations": [decode_hbase, building_type_taxonomy]
+                        "operations": [decode_hbase, ast.literal_eval, reverse_list, list.pop, building_type_taxonomy,
+                                       partial(to_object_property, namespace=bigg_enums)]
                     }
                 }
             },
             "links": {
                 "gross_floor_area": {
-                    "type": Bigg.hasAreas,
+                    "type": Bigg.hasArea,
                     "link": "Num_Ens_Inventari"
                 },
                 "gross_floor_area_above_ground": {
-                    "type": Bigg.hasAreas,
+                    "type": Bigg.hasArea,
                     "link": "Num_Ens_Inventari"
                 },
                 "gross_floor_area_under_ground": {
-                    "type": Bigg.hasAreas,
+                    "type": Bigg.hasArea,
                     "link": "Num_Ens_Inventari"
                 },
                 "building_element": {
-                    "type": Bigg.isAssociatedWithElements,
+                    "type": Bigg.isAssociatedWithElement,
                     "link": "Num_Ens_Inventari"
                 }
             }
@@ -268,8 +273,8 @@ class Mapper(object):
             },
             "params": {
                 "raw": {
-                    "areaType": "GrossFloorArea",
-                    "areaUnitOfMeasurement": "m2",
+                    "hasAreaType": to_object_property("GrossFloorArea", namespace=bigg_enums),
+                    "hasAreaUnitOfMeasurement": to_object_property("M2", namespace=units),
                 },
                 "mapping": {
                     "subject": {
@@ -292,8 +297,8 @@ class Mapper(object):
             },
             "params": {
                 "raw": {
-                    "areaType": "GrossFloorAreaAboveGround",
-                    "areaUnitOfMeasurement": "m2",
+                    "hasAreaType": to_object_property("GrossFloorAreaAboveGround", namespace=bigg_enums),
+                    "hasAreaUnitOfMeasurement": to_object_property("M2", namespace=units)
                 },
                 "mapping": {
                     "subject": {
@@ -316,8 +321,8 @@ class Mapper(object):
             },
             "params": {
                 "raw": {
-                    "areaType": "GrossFloorAreaUnderGround",
-                    "areaUnitOfMeasurement": "m2",
+                    "hasAreaType": to_object_property("GrossFloorAreaUnderGround", namespace=bigg_enums),
+                    "hasAreaUnitOfMeasurement": to_object_property("M2", namespace=units),
                 },
                 "mapping": {
                     "subject": {
@@ -339,7 +344,8 @@ class Mapper(object):
             },
             "params": {
                 "raw": {
-                    "buildingConstructionElementType": "Building",
+                    "hasBuildingConstructionElementType": to_object_property("OtherBuildingConstructionElement",
+                                                                             namespace=bigg_enums),
                 },
                 "mapping": {
                     "subject": {

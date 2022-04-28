@@ -1,9 +1,15 @@
 from .transform_functions import ref_cadastral
-from utils.rdf_utils.bigg_definition import Bigg
-from utils.rdf_utils.big_classes import Organization, Building, LocationInfo, CadastralInfo, BuildingSpace, Area, Device, \
-    BuildingConstructionElement, MeasurementList, UtilityPointOfDelivery
+from utils.rdf_utils.ontology.namespaces_definition import Bigg, bigg_enums, units
+from utils.rdf_utils.ontology.bigg_classes import Organization, Building, LocationInfo, CadastralInfo, BuildingSpace, \
+     Area, Device, BuildingConstructionElement, UtilityPointOfDelivery
 from slugify import slugify as slugify
 from utils.data_transformations import *
+
+building_type_taxonomy = partial(taxonomy_mapping, taxonomy_file="sources/Gemweb/harmonizer/BuildingUseTypeTaxonomy.xls",
+                                 default="Other")
+
+utility_type_taxonomy = partial(taxonomy_mapping, taxonomy_file="sources/Gemweb/harmonizer/EnergyTypeTaxonomy.xls",
+                                default="")
 
 
 class Mapping(object):
@@ -18,7 +24,6 @@ class Mapping(object):
         Area.set_namespace(namespace)
         BuildingConstructionElement.set_namespace(namespace)
         Device.set_namespace(namespace)
-        MeasurementList.set_namespace(namespace)
         UtilityPointOfDelivery.set_namespace(namespace)
 
     def get_mappings(self, group):
@@ -43,14 +48,14 @@ class Mapping(object):
                         "key": "nom",
                         "operations": [decode_hbase, ]
                     },
-                    "buildingUseType": {
-                        "key": "subtipus",
-                        "operations": [decode_hbase]#, building_type_taxonomy]
-                    },
-                    "buildingOwnership": {
-                        "key": "responsable",
-                        "operations": [decode_hbase]
-                    },
+                    # "buildingUseType": {
+                    #     "key": "subtipus",
+                    #     "operations": [decode_hbase]#, building_type_taxonomy]
+                    # },
+                    # "buildingOwnership": {
+                    #     "key": "responsable",
+                    #     "operations": [decode_hbase]
+                    # },
                 }
             },
             "links": {
@@ -63,7 +68,7 @@ class Mapping(object):
                     "link": "dev_gem_id"
                 },
                 "cadastral_info": {
-                    "type": Bigg.hasCadastralInfos,
+                    "type": Bigg.hasCadastralInfo,
                     "link": "dev_gem_id"
                 }
             }
@@ -81,17 +86,26 @@ class Mapping(object):
                         "key": "codi",
                         "operations": [decode_hbase, id_zfill, location_info_subject]
                     },
-                    "addressCountry": {
+                    "hasAddressCountry": {
                         "key": "pais",
-                        "operations": [decode_hbase]
+                        "operations": [decode_hbase,
+                                       partial(fuzzy_dictionary_match,
+                                               dictionary="utils/rdf_utils/ontology/dictionaries/countries.ttl",
+                                               predicates=['ns1:countryCode'])]
                     },
-                    "addressProvince": {
+                    "hasAddressProvince": {
                         "key": "provincia",
-                        "operations": [decode_hbase, ]
+                        "operations": [decode_hbase,
+                                       partial(fuzzy_dictionary_match,
+                                               dictionary="utils/rdf_utils/ontology/dictionaries/province.ttl",
+                                               predicates=['ns1:name'])]
                     },
-                    "addressCity": {
+                    "hasAddressCity": {
                         "key": "poblacio",
-                        "operations": [decode_hbase, ]
+                        "operations": [decode_hbase,
+                                       partial(fuzzy_dictionary_match,
+                                               dictionary="utils/rdf_utils/ontology/dictionaries/municipality.ttl",
+                                               predicates=['ns1:name'])]
                     },
                     "addressPostalCode": {
                         "key": "codi_postal",
@@ -122,7 +136,7 @@ class Mapping(object):
                 "sep": ";",
                 "column": "observacionsbuilding",
                 "column_mapping": {
-                    "subject": [str.strip],
+                    "subject": [str.strip, cadastral_info_subject],
                     "landCadastralReference": [str.strip]
                 }
             },
@@ -149,23 +163,23 @@ class Mapping(object):
                         "key": "codi",
                         "operations": [decode_hbase, id_zfill, slugify, building_space_subject, ]
                     },
-                    "buildingSpaceUseType": {
+                    "hasBuildingSpaceUseType": {
                         "key": "subtipus",
-                        "operations": [decode_hbase]  # , building_type_taxonomy]
+                        "operations": [decode_hbase, building_type_taxonomy, partial(to_object_property, namespace=bigg_enums)]
                     }
                 }
             },
             "links": {
                 "gross_floor_area": {
-                    "type": Bigg.hasAreas,
+                    "type": Bigg.hasArea,
                     "link": "dev_gem_id"
                 },
                 "building_element": {
-                    "type": Bigg.isAssociatedWithElements,
+                    "type": Bigg.isAssociatedWithElement,
                     "link": "dev_gem_id"
                 },
                 "device": {
-                    "type": Bigg.isObservedBy,
+                    "type": Bigg.isObservedByDevice,
                     "link": "dev_gem_id"
                 },
                 "utility_point": {
@@ -183,8 +197,8 @@ class Mapping(object):
             },
             "params": {
                 "raw": {
-                    "areaType": "GrossFloorArea",
-                    "areaUnitOfMeasurement": "m2",
+                    "hasAreaType": to_object_property("GrossFloorArea", namespace=bigg_enums),
+                    "hasAreaUnitOfMeasurement": to_object_property("M2", namespace=units),
                 },
                 "mapping": {
                     "subject": {
@@ -207,7 +221,8 @@ class Mapping(object):
             },
             "params": {
                 "raw": {
-                    "buildingConstructionElementType": "Building",
+                    "hasBuildingConstructionElementType": to_object_property("OtherBuildingConstructionElement",
+                                                                             namespace=bigg_enums),
                 },
                 "mapping": {
                     "subject": {
@@ -230,13 +245,13 @@ class Mapping(object):
                         "key": "cups",
                         "operations": [decode_hbase, delivery_subject]
                     },
-                    "pointOfDeliveryIDFromUser": {
+                    "pointOfDeliveryIDFromOrganization": {
                         "key": "cups",
                         "operations": [decode_hbase, ]
                     },
-                    "utilityType": {
+                    "hasUtilityType": {
                         "key": "tipus_submin",
-                        "operations": [decode_hbase, ]
+                        "operations": [decode_hbase, utility_type_taxonomy, partial(to_object_property, namespace=bigg_enums)]
                     }
                 }
             },
@@ -255,19 +270,16 @@ class Mapping(object):
             },
             "params": {
                 "raw": {
-                    "source": "gemweb"
+                    #"source": "gemweb", segurament no cal posar source, ja que no es de RDF. Afegir despres fora.
+                    "hasDeviceType": to_object_property("Meter.EnergyMeter", namespace=bigg_enums)
                 },
                 "mapping": {
                     "subject": {
                         "key": "dev_gem_id",
-                        "operations": [decode_hbase, partial(device_subject, self.source)]
+                        "operations": [decode_hbase, partial(device_subject, source=self.source)]
                     },
                     "deviceName":  {
                         "key": "cups",
-                        "operations": [decode_hbase, ]
-                    },
-                    "deviceType":  {
-                        "key": "tipus_submin",
                         "operations": [decode_hbase, ]
                     }
                 }

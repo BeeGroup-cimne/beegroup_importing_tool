@@ -2,6 +2,7 @@ import argparse
 import os
 
 import rdflib
+from neo4j import GraphDatabase
 from rdflib import Namespace, Graph
 from slugify import slugify
 
@@ -9,7 +10,7 @@ import settings
 import pandas as pd
 
 from set_up.Organizations.organization_mapping import set_params, get_mappings
-from utils.rdf_utils.bigg_definition import Bigg
+from utils.rdf_utils.ontology.namespaces_definition import Bigg
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.rdf_utils.save_rdf import save_rdf_with_source
 from utils.utils import read_config
@@ -34,6 +35,8 @@ if __name__ == "__main__":
         args = parser.parse_args()
     # read config file
     config = read_config(settings.conf_file)
+    # get namespaces
+    bigg = settings.namespace_mappings['bigg']
 
     org_levels_df = []
     level = 0
@@ -59,8 +62,6 @@ if __name__ == "__main__":
     for index, dfs in enumerate(org_levels_df):
         if index == 0:
             parent_df = None
-            for _, org in dfs.iterrows():
-                total_g.add((n[slugify(org['name'])], Bigg["userId"], rdflib.Literal(args.user)))
         else:
             parent_df = org_levels_df[index - 1]
         total_g += g_levels[index]
@@ -71,3 +72,12 @@ if __name__ == "__main__":
 
     print("saving to node4j")
     save_rdf_with_source(total_g, source, config['neo4j'])
+    # add userID to main organization
+    neo4j = GraphDatabase.driver(**config['neo4j'])
+    with neo4j.session() as session:
+        dfs = org_levels_df[0]
+        for _, org in dfs.iterrows():
+            session.run(f"""
+            MATCH (n:{bigg}__Organization{{uri:"{n[slugify(org['name'])]}"}}) 
+            SET n.userID="{args.user}" 
+            RETURN n""")

@@ -15,7 +15,6 @@ class Plugin(SourcePlugin):
 
     def get_mapper(self, message):
         if message["collection_type"] == "buildings":
-            print(message["collection_type"])
             return harmonize_data
         else:
             return None
@@ -27,3 +26,7 @@ class Plugin(SourcePlugin):
             "organizations": True,
             "config": self.config
         }
+
+    def get_store_table(self, message):
+        if message["collection_type"] == "buildings":
+            return f"raw_{self.source_name}_static_buildings__{message['user']}"

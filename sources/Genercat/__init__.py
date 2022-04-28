@@ -25,3 +25,7 @@ class Plugin(SourcePlugin):
             "user": message['user'],
             "config": self.config,
         }
+
+    def get_store_table(self, message):
+        if message["collection_type"] == "eem":
+            return f"raw_{self.source_name}_static_{message['collection_type']}__{message['user']}"

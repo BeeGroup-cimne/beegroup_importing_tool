@@ -45,7 +45,7 @@ def gather(arguments, config=None, settings=None):
     elif args.store == "hbase":
         # utils.utils.log_string(f"saving to hbase")
         try:
-            h_table_name = f"{config['data_sources'][config['source']]['hbase_table']}_buildings_{args.user}"
+            h_table_name = f"raw_GPG_static_buildings__{args.user}"
             utils.hbase.save_to_hbase(gpg_list, h_table_name, config['hbase_store_raw_data'], [("info", "all")],
                                       row_fields=["Num_Ens_Inventari"])
             # utils.utils.log_string(f"successfully saved to hbase")

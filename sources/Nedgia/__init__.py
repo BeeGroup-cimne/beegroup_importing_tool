@@ -32,3 +32,6 @@ class Plugin(SourcePlugin):
             return None  # Useless info
         else:
             return f"{self.source_name}_{message['collection_type']}_{message['user']}"
+
+    def get_store_table(self, message):
+        return f"{self.source_name}_{message['collection_type']}_{message['user']}"

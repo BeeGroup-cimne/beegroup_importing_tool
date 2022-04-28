@@ -6,14 +6,16 @@ import settings
 import argparse
 from utils.utils import read_config
 
+# get namespaces
+bigg = settings.namespace_mappings['bigg']
 
 def link_ws(driver, ws_subject, l_subject):
     with driver.session() as session:
         session.run(
             f"""
-                MATCH(ws:ns0__WeatherStation{{uri:"{ws_subject}"}})
-                MATCH(l:ns0__BuildingSpace{{uri:"{l_subject}"}})
-                Merge (l)-[:ns0__isObservedBy]->(ws)
+                MATCH(ws:{bigg}__WeatherStation{{uri:"{ws_subject}"}})
+                MATCH(l:{bigg}__BuildingSpace{{uri:"{l_subject}"}})
+                Merge (l)-[:{bigg}__isObservedBy]->(ws)
                 RETURN l
             """
         )
@@ -25,9 +27,9 @@ def create_ws(driver, stations):
             subject = f"{args.namespace}{float(s.latitude):.3f}~{float(s.longitude):.3f}"
             session.run(
                 f"""
-                       MERGE (ws:ns0__WeatherStation:ns0__Device:ns1__SpatialThing{{uri:"{subject}"}})
+                       MERGE (ws:{bigg}__WeatherStation:{bigg}__Device:ns1__SpatialThing{{uri:"{subject}"}})
                        SET ws.ns1__lat="{float(s.latitude):.3f}", ws.ns1__long="{float(s.longitude):.3f}",
-                           ws.ns0__weatherStationType="darksky"
+                           ws.{bigg}__weatherStationType="darksky"
                        RETURN ws
                    """
             )
@@ -37,7 +39,7 @@ def get_ws_locations(driver):
     with driver.session() as session:
         location = session.run(
             f"""
-                   Match(n:ns0__WeatherStation) return n.uri as subject, n.ns1__lat as latitude, n.ns1__long as longitude
+                   Match(n:{bigg}__WeatherStation) return n.uri as subject, n.ns1__lat as latitude, n.ns1__long as longitude
                """
         ).data()
         return location
@@ -47,16 +49,16 @@ def get_building_locations (driver, stations):
     with driver.session() as session:
         location = session.run(
             f"""
-                   Match (bs:ns0__BuildingSpace)<-[]-(n:ns0__Building)-[:ns0__hasLocationInfo]->(l:ns0__LocationInfo)
-                   WHERE l.ns0__addressLatitude IS NOT NULL and l.ns0__addressLongitude IS NOT NULL
-                   RETURN bs.uri AS subject, toFloat(l.ns0__addressLatitude) AS latitude, toFloat(l.ns0__addressLongitude) AS longitude
+                   Match (bs:{bigg}__BuildingSpace)<-[]-(n:{bigg}__Building)-[:{bigg}__hasLocationInfo]->(l:{bigg}__LocationInfo)
+                   WHERE l.{bigg}__addressLatitude IS NOT NULL and l.{bigg}__addressLongitude IS NOT NULL
+                   RETURN bs.uri AS subject, toFloat(l.{bigg}__addressLatitude) AS latitude, toFloat(l.{bigg}__addressLongitude) AS longitude
                """
         ).data()
         postal_code = session.run(
             f"""
-                   Match (bs:ns0__BuildingSpace)<-[]-(n:ns0__Building)-[:ns0__hasLocationInfo]-(l:ns0__LocationInfo) 
-                   WHERE l.ns0__addressPostalCode IS NOT NULL and (l.ns0__addressLatitude IS NULL or l.ns0__addressLongitude IS NULL)
-                   RETURN bs.uri as subject, l.ns0__addressPostalCode as postal_code
+                   Match (bs:{bigg}__BuildingSpace)<-[]-(n:{bigg}__Building)-[:{bigg}__hasLocationInfo]-(l:{bigg}__LocationInfo) 
+                   WHERE l.{bigg}__addressPostalCode IS NOT NULL and (l.{bigg}__addressLatitude IS NULL or l.{bigg}__addressLongitude IS NULL)
+                   RETURN bs.uri as subject, l.{bigg}__addressPostalCode as postal_code
                """
         ).data()
         for cp in postal_code:
@@ -98,6 +100,7 @@ if __name__ == "__main__":
     parser.add_argument("-f", "--file", help="The file containing weather stations with location", required=True)
     parser.add_argument("-namespace", "-n", help="The namespace for the weather stations", required=True)
     parser.add_argument("--create", "-c", help="create the weather stations", action='store_true')
+    parser.add_argument("--update", "-u", help="update the links of buildings with weather stations", action='store_true')
     if os.getenv("PYCHARM_HOSTED"):
         args_t = ["-f", "data/Weather/cpcat.json", "-n", "https://weather.beegroup-cimne.com#", "-c"]
         args = parser.parse_args(args_t)
@@ -114,18 +117,19 @@ if __name__ == "__main__":
     stations.columns = ["longitude", "latitude"]
     if args.create:
         create_ws(driver, stations)
-    location = pd.DataFrame(get_building_locations(driver, stations))
-    ws = pd.DataFrame(get_ws_locations(driver))
+    if args.update:
+        location = pd.DataFrame(get_building_locations(driver, stations))
+        ws = pd.DataFrame(get_ws_locations(driver))
 
-    from math import sin, cos, sqrt, atan2, radians
+        from math import sin, cos, sqrt, atan2, radians
 
-    ws['latitude'] = ws['latitude'].apply(lambda x: radians(float(x)))
-    ws['longitude'] = ws['longitude'].apply(lambda x: radians(float(x)))
+        ws['latitude'] = ws['latitude'].apply(lambda x: radians(float(x)))
+        ws['longitude'] = ws['longitude'].apply(lambda x: radians(float(x)))
 
-    location['latitude'] = location['latitude'].apply(lambda x: radians(float(x)))
-    location['longitude'] = location['longitude'].apply(lambda x: radians(float(x)))
+        location['latitude'] = location['latitude'].apply(lambda x: radians(float(x)))
+        location['longitude'] = location['longitude'].apply(lambda x: radians(float(x)))
 
-    for _, l in location.iterrows():
-        ws['dist'] = ws.apply(get_distance, lat=l['latitude'], lon=l['longitude'], axis=1)
-        ws_sel = ws[ws.dist == ws.dist.min()].subject
-        link_ws(driver, ws_sel.values[0], l['subject'])
+        for _, l in location.iterrows():
+            ws['dist'] = ws.apply(get_distance, lat=l['latitude'], lon=l['longitude'], axis=1)
+            ws_sel = ws[ws.dist == ws.dist.min()].subject
+            link_ws(driver, ws_sel.values[0], l['subject'])

@@ -2,10 +2,13 @@ from urllib.parse import urlparse
 import pandas as pd
 from neo4j import GraphDatabase
 from rdflib import Namespace
+import settings
 from .Gemweb_mapping import Mapping
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.data_transformations import decode_hbase
 from utils.rdf_utils.save_rdf import save_rdf_with_source, link_devices_with_source
+
+bigg = settings.namespace_mappings['bigg']
 
 
 def harmonize_data(data, **kwargs):
@@ -18,13 +21,14 @@ def harmonize_data(data, **kwargs):
     mapping = Mapping(config['source'], n)
     with neo.session() as ses:
         source_id = ses.run(
-            f"""Match (o: ns0__Organization{{ns0__userId: "{user}"}})-[:ns0__hasSource]->(s:GemwebSource) 
+            f"""Match (o: {bigg}__Organization{{userID: "{user}"}})-[:{bigg}__hasSource]->(s:GemwebSource) 
                 return id(s)""")
         source_id = source_id.single().get("id(s)")
 
     with neo.session() as ses:
         buildings_neo = ses.run(
-            f"""Match (n:ns0__Building)<-[*]-(o:ns0__Organization)-[:ns0__hasSource]->(s:GemwebSource) 
+            f"""Match (n:{bigg}__Building)<-[:{bigg}__hasSubOrganization|{bigg}__managesBuilding *]-
+            (o:{bigg}__Organization)-[:{bigg}__hasSource]->(s:GemwebSource) 
                 Where id(s)={source_id} 
                 return n.uri""")
         ids_ens = list(set([urlparse(x.get("n.uri")).fragment.split("-")[1] for x in buildings_neo]))

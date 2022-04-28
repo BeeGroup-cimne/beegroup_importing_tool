@@ -21,7 +21,8 @@ if __name__ == "__main__":
     main_org_params.add_argument("--datasource", "-d", help="The datasource to create credentials", required=True)
 
     config = read_config(settings.conf_file)
-
+    # get namespaces
+    bigg = settings.namespace_mappings['bigg']
     if os.getenv("PYCHARM_HOSTED"):
         args_t = ["-f", "data/DataSources/gemweb.xls", "-name", "Generalitat de Catalunya", "-n", "https://icaen.cat#", "-u", "icaen", "-d", "GemwebSource"]
         args = parser.parse_args(args_t)
@@ -35,8 +36,8 @@ if __name__ == "__main__":
         for _, org in df.iterrows():
             res = s.run(
                 f"""
-                    MATCH (o1:ns0__Organization {{ns0__userId:"{args.user}"}})-[:ns0__hasSubOrganization*0..]->(o:ns0__Organization {{uri:"{args.namespace}{slugify(org['Organization'])}"}})
-                    Merge (x:{args.datasource} {{username:"{org.Username}"}})<-[:ns0__hasSource]-(o)
+                    MATCH (o1:{bigg}__Organization {{userID:"{args.user}"}})-[:{bigg}__hasSubOrganization*0..]->(o:{bigg}__Organization {{uri:"{args.namespace}{slugify(org['Organization'])}"}})
+                    Merge (x:{args.datasource} {{username:"{org.Username}"}})<-[:{bigg}__hasSource]-(o)
                     SET x.password="{org.Password_enc}"
                     RETURN x
                 """)
