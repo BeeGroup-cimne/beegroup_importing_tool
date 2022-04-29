@@ -22,6 +22,10 @@ def set_taxonomy(df):
     return df
 
 
+def set_country(df):
+    pass
+
+
 def harmonize_data(data, **kwargs):
     namespace = kwargs['namespace']
     user = kwargs['user']
@@ -34,7 +38,8 @@ def harmonize_data(data, **kwargs):
     df['subject'] = df['filename'] + '~' + df['id'].astype(str)
     df['building_name'] = df['subject'] + '~' + df['municipality'] + '~' + df['type_of_building']
     df['epc_date_before'] = df['epc_date'] - timedelta(days=365)
-
+    df['epc_subject_before'] = df['subject'] + '~' + df['epc_energy_class_before']
+    df['epc_subject_after'] = df['subject'] + '~' + df['epc_energy_class_after']
     g = generate_rdf(mapper.get_mappings("all"), df)
     print(g.serialize(format="ttl"))
     # save_rdf_with_source(g, config['source'], config['neo4j'])
