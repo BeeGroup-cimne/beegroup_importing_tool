@@ -113,3 +113,7 @@ def validate_ref_cadastral(value):
 
 def epc_subject(key):
     return f"EPC-{key}"
+
+
+def building_space_use_type_subject(key):
+    return f"BUILDING-SPACE-USE-TYPE-{key}"

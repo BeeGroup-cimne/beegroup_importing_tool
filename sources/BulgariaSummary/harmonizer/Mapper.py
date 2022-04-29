@@ -3,7 +3,7 @@ from functools import partial
 from slugify import slugify
 
 from utils.data_transformations import building_subject, location_info_subject, building_department_subject, \
-    building_space_subject, gross_area_subject, epc_subject
+    building_space_subject, gross_area_subject, epc_subject, building_space_use_type_subject
 from utils.rdf_utils.ontology.bigg_classes import Organization, Building, LocationInfo, BuildingSpace, Area, \
     EnergyPerformanceCertificate, BuildingSpaceUseType
 from utils.rdf_utils.ontology.namespaces_definition import Bigg
@@ -16,6 +16,7 @@ class Mapper(object):
         Building.set_namespace(namespace)
         LocationInfo.set_namespace(namespace)
         BuildingSpace.set_namespace(namespace)
+        BuildingSpaceUseType.set_namespace(namespace)
         Area.set_namespace(namespace)
         EnergyPerformanceCertificate.set_namespace(namespace)
 
@@ -89,7 +90,7 @@ class Mapper(object):
                     "buildingIDFromOrganization": {
                         "key": "subject",
                         "operations": []
-                    },
+                    }
                 }
             },
             "links": {
@@ -101,78 +102,14 @@ class Mapper(object):
                     "type": Bigg.hasLocationInfo,
                     "link": "subject"
                 },
-                "energy_performance_certificate_before": {
-                    "type": Bigg.hasEPC,
-                    "link": "subject"
-                },
-                "energy_performance_certificate_after": {
-                    "type": Bigg.hasEPC,
-                    "link": "subject"
-                }
-            }
-        }
-
-        building_space_use_type = {
-            "name": "building_space_use_type",
-            "class": BuildingSpaceUseType,
-            "type": {
-                "origin": "row"
-            },
-            "params": {
-                "mapping": {
-                    "subject": {
-                        "key": "type_of_building",
-                        "operations": []
-                    }
-                }
-            }
-        }
-
-        energy_performance_certificate_before = {
-            "name": "energy_performance_certificate_before",
-            "class": EnergyPerformanceCertificate,
-            "type": {
-                "origin": "row"
-            },
-            "params": {
-                "mapping": {
-                    "subject": {
-                        "key": "subject",
-                        "operations": [epc_subject]
-                    },
-                    "energyPerformanceCertificateDateOfAssessment": {
-                        "key": "epc_date_before",
-                        "operations": []
-                    },
-                    "energyPerformanceClass": {
-                        "key": "epc_energy_class_before",
-                        "operations": []
-                    }
-                }
-            }
-        }
-
-        energy_performance_certificate_after = {
-            "name": "energy_performance_certificate_after",
-            "class": EnergyPerformanceCertificate,
-            "type": {
-                "origin": "row"
-            },
-            "params": {
-                "mapping": {
-                    "subject": {
-                        "key": "subject",
-                        "operations": [epc_subject]
-                    },
-                    "energyPerformanceCertificateDateOfAssessment": {
-                        "key": "epc_date",
-                        "operations": []
-                    },
-                    "energyPerformanceClass": {
-                        "key": "epc_energy_class_after",
-                        "operations": []
-                    }
-                }
+                # "energy_performance_certificate_before": {
+                #     "type": Bigg.hasEPC,
+                #     "link": "subject"
+                # },
+                # "energy_performance_certificate_after": {
+                #     "type": Bigg.hasEPC,
+                #     "link": "subject"
+                # }
             }
         }
 
@@ -204,6 +141,70 @@ class Mapper(object):
                 }
             }
         }
+
+        building_space_use_type = {
+            "name": "building_space_use_type",
+            "class": BuildingSpaceUseType,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "type_of_building",
+                        "operations": [building_space_use_type_subject]
+                    }
+                }
+            }
+        }
+
+        energy_performance_certificate_before = {
+            "name": "energy_performance_certificate_before",
+            "class": EnergyPerformanceCertificate,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "subject",
+                        "operations": [epc_subject]
+                    },
+                    "energyPerformanceCertificateDateOfAssessment": {
+                        "key": "epc_date_before",
+                        "operations": []
+                    },
+                    "energyPerformanceClass": {
+                        "key": "epc_energy_class_before",
+                        "operations": []
+                    }
+                }
+            }
+        }
+        #
+        # energy_performance_certificate_after = {
+        #     "name": "energy_performance_certificate_after",
+        #     "class": EnergyPerformanceCertificate,
+        #     "type": {
+        #         "origin": "row"
+        #     },
+        #     "params": {
+        #         "mapping": {
+        #             "subject": {
+        #                 "key": "subject",
+        #                 "operations": [epc_subject]
+        #             },
+        #             "energyPerformanceCertificateDateOfAssessment": {
+        #                 "key": "epc_date",
+        #                 "operations": []
+        #             },
+        #             "energyPerformanceClass": {
+        #                 "key": "epc_energy_class_after",
+        #                 "operations": []
+        #             }
+        #         }
+        #     }
+        # }
 
         location_info = {
             "name": "location_info",
@@ -253,8 +254,8 @@ class Mapper(object):
         }
 
         grouped_modules = {
-            "all": [organization, building_organization, buildings, location_info, building_space, gross_floor_area,
-                    building_space_use_type
+            "all": [organization, building_organization, buildings, building_space,
+                    building_space_use_type, gross_floor_area, location_info
                     ]
         }
 
