@@ -23,8 +23,8 @@ class Mapper(object):
             "params": {
                 "mapping": {
                     "subject": {
-                        "key": """ Edifici (Espai)  - Codi Ens (GPG)""",
-                        "operations": [decode_hbase, get_code_ens, id_zfill, construction_element_subject]
+                        "key": "element_subject",
+                        "operations": []
                     }
                 }
             },
@@ -49,53 +49,28 @@ class Mapper(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": [
-                            {
-                                "key": """ Edifici (Espai)  - Codi Ens (GPG)""",
-                                "operations": [decode_hbase, get_code_ens, id_zfill]},
-                            {
-                                "key": """id_""",
-                                "operations": [decode_hbase]
-                            },
-                        ],
-                        "operations": [partial(join_params, joiner="-"), eem_subject]
+                        "key": 'measure_subject',
+                        "operations": []
                     },
                     "hasEnergyEfficiencyMeasureType": {
-                        "key": [
-                            {
-                                "key": """Instal·lació millorada \n(NIVELL 1)""",
-                                "operations": [decode_hbase]},
-                            {
-                                "key": """Tipus de millora \n(NIVELL 2)""",
-                                "operations": [decode_hbase]
-                            },
-                            {
-                                "key": """Tipus de millora \n(NIVELL 3)""",
-                                "operations": [decode_hbase]
-                            },
-                            {
-                                "key": """Tipus de millora \n(NIVELL 4)""",
-                                "operations": [decode_hbase]
-                            },
-                        ],
-                        "operations": [partial(join_params, joiner="."), eem_type_taxonomy, partial(to_object_property,
-                                                                                                    namespace=bigg_enums)]
+                        "key": 'measurement_type',
+                        "operations": []
                     },
                     "energyEfficiencyMeasureDescription": {
                         "key": """Descripció""",
-                        "operations": [decode_hbase]
+                        "operations": []
                     },
                     "shareOfAffectedElement": {
                         "key": """% de la instal·lació millorada / Potencia FV instal·lada [kW] """,
-                        "operations": [decode_hbase]
+                        "operations": []
                     },
                     "energyEfficiencyMeasureOperationalDate": {
-                        "key": """Data de finalització de l'obra / millora""",
-                        "operations": [decode_hbase, pd.Timestamp, pd.Timestamp.isoformat]
+                        "key": "operation_date",
+                        "operations": []
                     },
                     "energyEfficiencyMeasureInvestment": {
                         "key": """Inversió \n(€) \n(IVA no inclòs)""",
-                        "operations": [decode_hbase]
+                        "operations": []
                     }
 
                 }

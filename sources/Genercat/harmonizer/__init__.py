@@ -11,8 +11,9 @@ def harmonize_command_line(arguments, config=None, settings=None):
     args = ap.parse_args(arguments)
 
     hbase_conn = config['hbase_store_raw_data']
-    hbase_table = f"genercat_eem_{args.user}"
-    for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table):
+    hbase_table = f"raw_Genercat_static_eem__{args.user}"
+    i = 0
+    for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table, batch_size=100):
         dic_list = []
         print("parsing hbase")
         for id_, x in data:
@@ -22,5 +23,6 @@ def harmonize_command_line(arguments, config=None, settings=None):
                 item[k1] = v
             item.update({"id_": id_})
             dic_list.append(item)
-        harmonize_data(dic_list, namespace=args.namespace, user=args.user,
-                       organizations=args.organizations, config=config)
+        i += len(dic_list)
+        print(i)
+        harmonize_data(dic_list, namespace=args.namespace, user=args.user, config=config)

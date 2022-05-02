@@ -37,7 +37,7 @@ if __name__ == "__main__":
             res = s.run(
                 f"""
                     MATCH (o1:{bigg}__Organization {{userID:"{args.user}"}})-[:{bigg}__hasSubOrganization*0..]->(o:{bigg}__Organization {{uri:"{args.namespace}{slugify(org['Organization'])}"}})
-                    Merge (x:{args.datasource} {{username:"{org.Username}"}})<-[:{bigg}__hasSource]-(o)
+                    Merge (x:{args.datasource} {{username:"{org.Username}"}})<-[:hasSource]-(o)
                     SET x.password="{org.Password_enc}"
                     RETURN x
                 """)

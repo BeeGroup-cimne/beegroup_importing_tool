@@ -186,7 +186,7 @@ def link_devices_with_source(g, source_id, neo4j_connection):
                 f"""
                     MATCH (source) WHERE id(source)={source_id}
                     MATCH (device) WHERE device.uri="{str(subject[0])}"
-                    Merge (source)<-[:ns0__importedFromSource]-(device)
+                    Merge (source)<-[:importedFromSource]-(device)
                     WITH source, device
                     UNWIND labels(source) AS s 
                     WITH s , device
