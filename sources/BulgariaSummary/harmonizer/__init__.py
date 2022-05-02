@@ -1,9 +1,12 @@
 from datetime import timedelta
 
 import pandas as pd
+import rdflib
 from rdflib import Namespace
+from thefuzz import process
 
 from sources.BulgariaSummary.harmonizer.Mapper import Mapper
+from utils.data_transformations import fuzzy_dictionary_match
 from utils.rdf_utils.rdf_functions import generate_rdf
 
 
@@ -22,8 +25,26 @@ def set_taxonomy(df):
     return df
 
 
-def set_country(df):
-    pass
+def set_country(df, label='municipality', predicates=None,
+                dictionary_ttl_file="utils/rdf_utils/ontology/dictionaries/municipality.ttl"):
+    if predicates is None:
+        predicates = ['ns1:name']
+
+    unique_municipalities = list(df[label].unique())
+
+    dicty = rdflib.Graph()
+    dicty.load(dictionary_ttl_file, format="ttl")
+    query = f"""SELECT ?s ?obj WHERE{{ {" UNION ".join([f"{{ ?s {p} ?obj }}" for p in predicates])} }}"""
+    obj = dicty.query(query)
+    map_dict = {o[1]: o[0] for o in obj}
+
+    mapping_dict = {}
+    for i in unique_municipalities:
+        match, score = process.extractOne(i, list(map_dict.keys()), score_cutoff=90)
+        mapping_dict.update({i: map_dict[match]})
+
+    df['municipality'] = df['municipality'].map(mapping_dict)
+    return df
 
 
 def harmonize_data(data, **kwargs):
@@ -35,11 +56,12 @@ def harmonize_data(data, **kwargs):
 
     df = set_taxonomy(pd.DataFrame().from_records(data))
 
-    df['subject'] = df['filename'] + '~' + df['id'].astype(str)
-    df['building_name'] = df['subject'] + '~' + df['municipality'] + '~' + df['type_of_building']
+    df['subject'] = df['filename'] + '-' + df['id'].astype(str)
+    df['building_name'] = df['subject'] + '-' + df['municipality'] + '-' + df['type_of_building']
     df['epc_date_before'] = df['epc_date'] - timedelta(days=365)
-    df['epc_subject_before'] = df['subject'] + '~' + df['epc_energy_class_before']
-    df['epc_subject_after'] = df['subject'] + '~' + df['epc_energy_class_after']
+    df['epc_subject_before'] = df['subject'] + '-' + df['epc_energy_class_before']
+    df['epc_subject_after'] = df['subject'] + '-' + df['epc_energy_class_after']
+    df.dropna(subset=['epc_subject_before', 'epc_subject_before'], inplace=True)
     g = generate_rdf(mapper.get_mappings("all"), df)
     print(g.serialize(format="ttl"))
     # save_rdf_with_source(g, config['source'], config['neo4j'])

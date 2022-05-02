@@ -12,9 +12,8 @@ def fuzzy_dictionary_match(text, dictionary, predicates):
     query = f"""SELECT ?s ?obj WHERE{{ {" UNION ".join([f"{{ ?s {p} ?obj }}" for p in predicates])} }}"""
     obj = dicty.query(query)
     map_dict = {o[1]: o[0] for o in obj}
-    match, score = process.extractOne(text, list(map_dict.keys()))
-    if score > 90:
-        return map_dict[match]
+    match, score = process.extractOne(text, list(map_dict.keys()), score_cutoff=90)
+    return map_dict[match]
 
 
 def taxonomy_mapping(source_key, taxonomy_file, default):

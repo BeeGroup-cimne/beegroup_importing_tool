@@ -3,8 +3,7 @@ from functools import partial
 from slugify import slugify
 
 from utils.data_transformations import building_subject, location_info_subject, building_department_subject, \
-    building_space_subject, gross_area_subject, epc_subject, building_space_use_type_subject, to_object_property, \
-    fuzzy_dictionary_match
+    building_space_subject, gross_area_subject, epc_subject, building_space_use_type_subject, to_object_property
 from utils.rdf_utils.ontology.bigg_classes import Organization, Building, LocationInfo, BuildingSpace, Area, \
     EnergyPerformanceCertificate, BuildingSpaceUseType, AreaType, AreaUnitOfMeasurement
 from utils.rdf_utils.ontology.namespaces_definition import Bigg, units, bigg_enums, countries
@@ -111,7 +110,7 @@ class Mapper(object):
                 },
                 "energy_performance_certificate_after": {
                     "type": Bigg.hasEPC,
-                    "link": "subject"
+                    "link": "epc_subject_after"
                 }
             }
         }
@@ -227,10 +226,7 @@ class Mapper(object):
                     },
                     "hasAddressCity": {
                         "key": "municipality",
-                        "operations": [
-                            partial(fuzzy_dictionary_match,
-                                    dictionary="utils/rdf_utils/ontology/dictionaries/municipality.ttl",
-                                    predicates=['ns1:name'])]
+                        "operations": []
                     }
                 }
             }
