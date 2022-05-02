@@ -5,7 +5,8 @@ from slugify import slugify
 from utils.data_transformations import building_subject, location_info_subject, building_department_subject, \
     building_space_subject, gross_area_subject, epc_subject, building_space_use_type_subject, to_object_property
 from utils.rdf_utils.ontology.bigg_classes import Organization, Building, LocationInfo, BuildingSpace, Area, \
-    EnergyPerformanceCertificate, BuildingSpaceUseType, AreaType, AreaUnitOfMeasurement
+    EnergyPerformanceCertificate, BuildingSpaceUseType, AreaType, AreaUnitOfMeasurement, EnergySaving, \
+    EnergyEfficiencyMeasure
 from utils.rdf_utils.ontology.namespaces_definition import Bigg, units, bigg_enums, countries
 
 
@@ -21,6 +22,8 @@ class Mapper(object):
         EnergyPerformanceCertificate.set_namespace(namespace)
         AreaType.set_namespace(namespace)
         AreaUnitOfMeasurement.set_namespace(namespace)
+        EnergySaving.set_namespace(namespace)
+        EnergyEfficiencyMeasure.set_namespace(namespace)
 
     def get_mappings(self, group):
         organization = {
@@ -179,6 +182,10 @@ class Mapper(object):
                     "energyPerformanceClass": {
                         "key": "epc_energy_class_before",
                         "operations": []
+                    },
+                    "annualFinalEnergyConsumption": {
+                        "key": "annual_energy_consumption_before_total_consumption",
+                        "operations": []
                     }
                 }
             }
@@ -262,5 +269,8 @@ class Mapper(object):
                     energy_performance_certificate_after
                     ]
         }
+
+        energy_measurement = {}
+        energy_savings = {}
 
         return grouped_modules[group]
