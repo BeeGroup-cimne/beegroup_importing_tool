@@ -16,21 +16,16 @@ def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estim
                   is_cumulative, is_on_change, freq, agg_func, dt_ini, dt_end):
     session.run(f"""
         MATCH (device: {bigg}__Device {{uri:"{device_uri}"}})
+        MATCH (msu: {bigg}__MeasurementUnit {{uri:"{unit_uri}"}})
+        MATCH (mp: {bigg}__MeasuredProperty {{uri:"{property_uri}"}})
+        MATCH (se: {bigg}__SensorEstimationMethod {{uri:"{estimation_method_uri}"}})   
         MERGE (s: {bigg}__Sensor {{
             uri: "{sensor_uri}"
         }})<-[:{bigg}__hasSensor]-(device)
-        Merge(s)-[:{bigg}__hasMeasurementUnit]->(msu: {bigg}__MeasurementUnit{{
-            uri: "{unit_uri}"
-        }})
-        Merge(s)-[:{bigg}__hasMeasuredProperty]->(mp: {bigg}__MeasuredProperty{{
-            uri: "{property_uri}"
-        }})
-        Merge(s)-[:{bigg}__hasSensorEstimationMethod]->(se: {bigg}__SensorEstimationMethod{{
-            uri: "{estimation_method_uri}"
-        }})        
-        Merge(s)-[:{bigg}__hasMeasurement]->(ms: {bigg}__Measurement{{
-            uri: "{measurement_uri}"
-        }})
+        Merge(s)-[:{bigg}__hasMeasurementUnit]->(msu)
+        Merge(s)-[:{bigg}__hasMeasuredProperty]->(mp)
+        Merge(s)-[:{bigg}__hasSensorEstimationMethod]->(se)        
+        Merge(s)-[:{bigg}__hasMeasurement]->(ms: {bigg}__Measurement{{uri: "{measurement_uri}"}})
         SET
             s.{bigg}__sensorIsCumulative= "{is_cumulative}",
             s.{bigg}__sensorIsOnChange= "{is_on_change}",

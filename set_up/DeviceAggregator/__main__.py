@@ -4,38 +4,43 @@ from neo4j import GraphDatabase
 import settings
 from utils import utils
 
-total_electricity_device_agg = """
-Match (bs:ns0__BuildingSpace)-[:ns0__isObservedBy]->(d:ns0__Device{ns0__source:"datadis"})-[:ns0__hasMeasurementLists]->(ml:ns0__MeasurementList)
-where ml.ns0__measurementFrequency="1h"
-with bs as bs, apoc.text.join(collect("<mi>"+ml.ns0__measurementKey+"</mi>"), "<mo>"+"+"+"</mo>") as key1, split(bs.uri, "-")[0]+"-AGGREGATOR-ELECTRICITY-TOTAL-"+split(bs.uri, "-")[1] as uri
-Merge (da:ns0__DeviceAggregator{uri:uri, ns0__measuredProperty: "electricityConsumption",
-    ns0__required: "true", ns0__deviceAggregatorName: "totalElectricityConsumption",
-    ns0__deviceAggregatorFrequency: "1h",
-    ns0__formula: key1}
-    )
-Merge (bs)-[:ns0__hasDeviceAggregator]->(da)
-With bs as bs, da as da
-Match (bs:ns0__BuildingSpace)-[:ns0__isObservedBy]->(d:ns0__Device{ns0__source:"datadis"})
-Merge (da)-[:ns0__includesDevice]->(d)
+bigg = settings.namespace_mappings['bigg']
+
+total_electricity_device_agg = f"""
+MATCH (bs:{bigg}__BuildingSpace)-[:{bigg}__isObservedByDevice]->(d:{bigg}__Device{{source:"DatadisSource"}})-
+[:{bigg}__hasSensor]->(s:{bigg}__Sensor)-[:{bigg}__hasMeasurement]->(ts:{bigg}__Measurement)
+WHERE s.{bigg}__sensorFrequency="PT1H" 
+WITH bs as bs, d as d, apoc.text.join(collect("<mi>"+split(ts.uri,"#")[1]+"</mi>"), "<mo>"+"+"+"</mo>") as key1, split(bs.uri, "-")[0]+"-AGGREGATOR-ELECTRICITY-TOTAL-"+split(bs.uri, "-")[1] as uri
+Match(prop {{uri:"http://bigg-project.eu/ontology#EnergyConsumptionGridElectricity"}})
+Merge (da:{bigg}__DeviceAggregator{{uri:uri}})-[:{bigg}__hasMeasuredProperty]->(prop)
+SET da.required = true, 
+    da.{bigg}__deviceAggregatorName = "totalElectricityConsumption"
+    da.{bigg}__deviceAggregatorFrequency = "PT1H"
+    da.{bigg}__deviceAggregatorFormula: key1
+Merge (bs)-[:{bigg}__hasDeviceAggregator]->(da)
+With da as da, d as d
+Merge (da)-[:{bigg}__includesDevice]->(d)
 Return da
 
 """
 
-outdoor_weather_device_agg = """
-Match (bs:ns0__BuildingSpace)-[:ns0__isObservedBy]->(d:ns0__Device:ns0__WeatherStation)-[:ns0__hasMeasurementLists]->(ml:ns0__MeasurementList)
-where ml.ns0__measurementFrequency="1h"
-with bs as bs, apoc.text.join(collect("<mi>"+ml.ns0__measurementKey+"</mi>"), "<mo>"+"+"+"</mo>") as key1, split(bs.uri, "-")[0]+"-AGGREGATOR-METEO-TOTAL-"+split(bs.uri, "-")[1] as uri
-Merge (da:ns0__DeviceAggregator{uri:uri, ns0__measuredProperty: "meteo",
-    ns0__required: "true", ns0__deviceAggregatorName: "externalWeather",
-    ns0__deviceAggregatorFrequency: "1h",
-    ns0__formula: key1}
-    )
-Merge (bs)-[:ns0__hasDeviceAggregator]->(da)
-With bs as bs, da as da
-Match (bs:ns0__BuildingSpace)-[:ns0__isObservedBy]->(d:ns0__Device:ns0__WeatherStation)
-Merge (da)-[:ns0__includesDevice]->(d)
+outdoor_weather_device_agg = f"""
+Match (bs:{bigg}__BuildingSpace)-[:{bigg}____isObservedByDevice]->(d:{bigg}__Device:{bigg}__WeatherStation)-
+[:{bigg}__hasSensor]->(s:{bigg}__Sensor)-[:{bigg}__hasMeasurement]->(ts:{bigg}__Measurement)
+WHERE s.{bigg}__sensorFrequency="PT1H" 
+WITH bs as bs, d as d, apoc.text.join(collect("<mi>"+split(ts.uri,"#")[1]+"</mi>"), "<mo>"+"+"+"</mo>") as key1, split(bs.uri, "-")[0]+"-AGGREGATOR-METEO-TOTAL-"+split(bs.uri, "-")[1] as uri
+Match(prop {{uri:"http://bigg-project.eu/ontology#EnergyConsumptionGridElectricity"}})
+Merge (da:{bigg}__DeviceAggregator{{uri:uri}})-[:{bigg}__hasMeasuredProperty]->(prop)
+SET da.required = true,
+    da.{bigg}__deviceAggregatorName: "externalWeather",
+    da.{bigg}__deviceAggregatorFrequency: "PT1H",
+    da.{bigg}__deviceAggregatorFormula: key1
+Merge (bs)-[:{bigg}__hasDeviceAggregator]->(da)
+With bs as bs, d as d
+Merge (da)-[:{bigg}__includesDevice]->(d)
 Return da
 """
+
 d_agg = {
     "totalElectricityConsumption": total_electricity_device_agg,
     "externalWeather": outdoor_weather_device_agg
