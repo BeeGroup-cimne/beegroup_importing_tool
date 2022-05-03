@@ -1,8 +1,13 @@
+import settings
+
+bigg = settings.namespace_mappings['bigg']
+
+
 def get_devices_from_datasource(session, user, device_id, source):
     device_neo = session.run(f"""
-                MATCH (ns0__Organization{{ns0__userId:'{user}'}})-[:ns0__hasSubOrganization*0..]->(o:ns0__Organization)-
-                [:ns0__hasSource]->(s:DatadisSource)<-[:ns0__importedFromSource]-(d)
-                WHERE d.source = "DatadisSource" AND d.ns0__deviceName = "{device_id}" return d            
+                MATCH ({bigg}__Organization{{userID:'{user}'}})-[:{bigg}__hasSubOrganization*0..]->(o:{bigg}__Organization)-
+                [:hasSource]->(s:{source})<-[:importedFromSource]-(d)
+                WHERE d.source = "{source}" AND d.{bigg}__deviceName = ["{device_id}"] return d            
                 """)
     return device_neo
 
@@ -10,37 +15,37 @@ def get_devices_from_datasource(session, user, device_id, source):
 def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estimation_method_uri, measurement_uri,
                   is_cumulative, is_on_change, freq, agg_func, dt_ini, dt_end):
     session.run(f"""
-        MATCH (device: ns0__Device {{uri:"{device_uri}"}})
-        MERGE (s: ns0__Sensor {{
+        MATCH (device: {bigg}__Device {{uri:"{device_uri}"}})
+        MERGE (s: {bigg}__Sensor {{
             uri: "{sensor_uri}"
-        }})<-[:ns0__hasSensor]-(device)
-        Merge(s)-[:ns0__hasMeasurementUnit]->(ms: ns0__MeasurementUnit{{
+        }})<-[:{bigg}__hasSensor]-(device)
+        Merge(s)-[:{bigg}__hasMeasurementUnit]->(msu: {bigg}__MeasurementUnit{{
             uri: "{unit_uri}"
         }})
-        Merge(s)-[:ns0__hasMeasuredProperty]->(ms: ns0__MeasuredProperty{{
+        Merge(s)-[:{bigg}__hasMeasuredProperty]->(mp: {bigg}__MeasuredProperty{{
             uri: "{property_uri}"
         }})
-        Merge(s)-[:hasSensorEstimationMethod]->(ms: ns0__SensorEstimationMethod{{
+        Merge(s)-[:{bigg}__hasSensorEstimationMethod]->(se: {bigg}__SensorEstimationMethod{{
             uri: "{estimation_method_uri}"
         }})        
-        Merge(s)-[:hasMeasurement]->(ms: ns0__Measurement{{
+        Merge(s)-[:{bigg}__hasMeasurement]->(ms: {bigg}__Measurement{{
             uri: "{measurement_uri}"
         }})
         SET
-            s.ns0__sensorIsCumulative= "{is_cumulative}",
-            s.ns0__sensorIsOnChange= "{is_on_change}",
-            s.ns0__sensorFrequency= "{freq}",
-            s.ns0__sensorTimeAggregationFunction= "{agg_func}",
-            s.ns0__sensorStart = CASE 
-                WHEN s.ns0__sensorStart < 
+            s.{bigg}__sensorIsCumulative= "{is_cumulative}",
+            s.{bigg}__sensorIsOnChange= "{is_on_change}",
+            s.{bigg}__sensorFrequency= "{freq}",
+            s.{bigg}__sensorTimeAggregationFunction= "{agg_func}",
+            s.{bigg}__sensorStart = CASE 
+                WHEN s.{bigg}__sensorStart < 
                  datetime("{dt_ini.tz_localize("UTC").to_pydatetime().isoformat()}") 
-                    THEN s.ns0__sensorStart 
+                    THEN s.{bigg}__sensorStart 
                     ELSE datetime("{dt_ini.tz_localize("UTC").to_pydatetime().isoformat()}") 
                 END,
-            s.ns0__sensorEnd = CASE 
-                WHEN s.ns0__sensorEnd >
+            s.{bigg}__sensorEnd = CASE 
+                WHEN s.{bigg}__sensorEnd >
                  datetime("{dt_end.tz_localize("UTC").to_pydatetime().isoformat()}") 
-                    THEN s.ns0__sensorEnd
+                    THEN s.{bigg}__sensorEnd
                     ELSE datetime("{dt_end.tz_localize("UTC").to_pydatetime().isoformat()}") 
                 END  
         return s

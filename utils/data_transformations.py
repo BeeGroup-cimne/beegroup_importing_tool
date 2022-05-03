@@ -6,9 +6,18 @@ import rdflib
 from thefuzz import process
 
 
-def fuzzy_dictionary_match(text, dictionary, predicates):
+def fuzzy_dictionary_match(text, dictionary, predicates, prequery=None):
     dicty = rdflib.Graph()
-    dicty.load(dictionary, format="ttl")
+    for d in dictionary:
+        dicty.load(d, format="ttl")
+    if prequery:
+        res = dicty.query(prequery)
+        ns = dicty.namespace_manager.namespaces()
+        dicty = rdflib.Graph()
+        for pre, nsp in ns:
+            dicty.namespace_manager.bind(pre, nsp)
+        for triple in res:
+            dicty.add(triple)
     query = f"""SELECT ?s ?obj WHERE{{ {" UNION ".join([f"{{ ?s {p} ?obj }}" for p in predicates])} }}"""
     obj = dicty.query(query)
     map_dict = {o[1]: o[0] for o in obj}
@@ -44,8 +53,10 @@ def join_params(args, joiner='~'):
 
 
 def zfill_param(key, num):
-    return key.zfill(num)
-
+    try:
+        return key.zfill(num)
+    except:
+        return None
 
 id_zfill = partial(zfill_param, num=5)
 

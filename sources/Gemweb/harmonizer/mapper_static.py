@@ -21,14 +21,14 @@ def harmonize_data(data, **kwargs):
     mapping = Mapping(config['source'], n)
     with neo.session() as ses:
         source_id = ses.run(
-            f"""Match (o: {bigg}__Organization{{userID: "{user}"}})-[:{bigg}__hasSource]->(s:GemwebSource) 
+            f"""Match (o: {bigg}__Organization{{userID: "{user}"}})-[:hasSource]->(s:GemwebSource) 
                 return id(s)""")
         source_id = source_id.single().get("id(s)")
 
     with neo.session() as ses:
         buildings_neo = ses.run(
             f"""Match (n:{bigg}__Building)<-[:{bigg}__hasSubOrganization|{bigg}__managesBuilding *]-
-            (o:{bigg}__Organization)-[:{bigg}__hasSource]->(s:GemwebSource) 
+            (o:{bigg}__Organization)-[:hasSource]->(s:GemwebSource) 
                 Where id(s)={source_id} 
                 return n.uri""")
         ids_ens = list(set([urlparse(x.get("n.uri")).fragment.split("-")[1] for x in buildings_neo]))

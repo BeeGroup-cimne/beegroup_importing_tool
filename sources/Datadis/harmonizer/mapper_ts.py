@@ -1,12 +1,12 @@
 import hashlib
-import pandas as pd
+import settings
 from neo4j import GraphDatabase
 from rdflib import Namespace
 from datetime import timedelta
 from utils.hbase import save_to_hbase
 from utils.data_transformations import *
 from utils.neo4j import get_devices_from_datasource, create_sensor
-from utils.rdf_utils.ontology.namespaces_definition import Bigg, units, bigg_enums
+from utils.rdf_utils.ontology.namespaces_definition import units, bigg_enums
 
 time_to_timedelta = {
     "PT1H": timedelta(hours=1),
@@ -26,16 +26,17 @@ def harmonize_data(data, **kwargs):
     neo = GraphDatabase.driver(**neo4j_connection)
     n = Namespace(namespace)
     df = pd.DataFrame.from_records(data)
-    df["ts"] = pd.to_datetime(df['timestamp'].apply(decode_hbase).apply(int), unit="s")
+    df = df.applymap(decode_hbase)
+    df["ts"] = pd.to_datetime(df['timestamp'].apply(int), unit="s")
+    df["bucket"] = (df['timestamp'] // 10000000) % settings.buckets
     df['start'] = df['timestamp'].apply(decode_hbase)
     df['end'] = (df.ts + time_to_timedelta[freq]).astype(int) / 10**9
-    df['value'] = df['consumptionKWh'].apply(decode_hbase)
+    df['value'] = df['consumptionKWh']
     df['isReal'] = df['obtainMethod'].apply(lambda x: True if x == "Real" else False)
-    for cups, data_group in df.groupby("cups"):
+    for device_id, data_group in df.groupby("cups"):
         data_group.set_index("ts", inplace=True)
         data_group.sort_index(inplace=True)
         # find device with ID imported from source
-        device_id = decode_hbase(cups)
 
         dt_ini = data_group.iloc[0].name
         dt_end = data_group.iloc[-1].name
@@ -58,8 +59,8 @@ def harmonize_data(data, **kwargs):
                 device_table = f"harmonized_online_EnergyConsumptionGridElectricity_100_SUM_{freq}_{user}"
                 save_to_hbase(data_group.to_dict(orient="records"), device_table, hbase_conn2,
                               [("info", ['end', 'isReal']), ("v", ['value'])],
-                              row_fields=['listKey', 'start'])
+                              row_fields=['bucket', 'listKey', 'start'])
                 period_table = f"harmonized_batch_EnergyConsumptionGridElectricity_100_SUM_{freq}_{user}"
                 save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn2,
                               [("info", ['end', 'isReal']), ("v", ['value'])],
-                              row_fields=['start', 'listKey'])
+                              row_fields=['bucket', 'start', 'listKey'])

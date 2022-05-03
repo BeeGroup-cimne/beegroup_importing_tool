@@ -23,30 +23,24 @@ class Mapping(object):
             "params": {
                 "mapping": {
                     "subject": {
-                        "key": "NumEns",
-                        "operations": [id_zfill, location_info_subject]
+                        "key": "location_subject",
+                        "operations": []
                     },
                     "hasAddressProvince": {
-                        "key": 'province',
-                        "operations": [decode_hbase,
-                                       partial(fuzzy_dictionary_match,
-                                               dictionary="utils/rdf_utils/ontology/dictionaries/provinces.ttl",
-                                               predicates=['ns1:alternateName', 'ns1:officialName'])]
+                        "key": 'hasAddressProvince',
+                        "operations": []
                     },
                     "hasAddressCity": {
-                        "key": 'municipality',
-                        "operations": [decode_hbase,
-                                       partial(fuzzy_dictionary_match,
-                                               dictionary="utils/rdf_utils/ontology/dictionaries/municipality.ttl",
-                                               predicates=['ns1:alternateName', 'ns1:officialName'])]
+                        "key": 'hasAddressCity',
+                        "operations": []
                     },
                     "addressPostalCode": {
                         "key":  'postalCode',
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     },
                     "addressStreetName": {
                         "key": 'address',
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     }
                 }
             }
@@ -61,8 +55,8 @@ class Mapping(object):
             "params": {
                 "mapping": {
                     "subject": {
-                        "key": "NumEns",
-                        "operations": [id_zfill, slugify, building_space_subject, ]
+                        "key": "building_space_subject",
+                        "operations": []
                     }
                 }
             },
@@ -90,12 +84,12 @@ class Mapping(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": 'cups',
-                        "operations": [decode_hbase, delivery_subject]
+                        "key": 'utility_point_subject',
+                        "operations": []
                     },
                     "pointOfDeliveryIDFromOrganization": {
                         "key": 'cups',
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     },
                 }
             },
@@ -119,12 +113,12 @@ class Mapping(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": "cups",
-                        "operations": [decode_hbase, partial(device_subject, source=self.source)]
+                        "key": "device_subject",
+                        "operations": []
                     },
                     "deviceName":  {
                         "key": 'cups',
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     }
                 }
             }

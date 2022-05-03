@@ -37,6 +37,13 @@ def create_graph(all_regions, type_adm):
     return regions
 
 
+def save_rdf(g, f, format="ttl"):
+    g1 = rdflib.Graph()
+    g1.load(f, format=format)
+    g1 += g
+    g1.serialize(f, format=format)
+
+
 def get_adm_rdf(rdf_geonames_file):
     all_regions = rdflib.Graph()
     #load geonames with https
@@ -52,9 +59,9 @@ def get_adm_rdf(rdf_geonames_file):
     # regions = align_to_bigg(regions, ALL_QUERY, BIGG['AddressCountry'])
     province = align_to_bigg(province, ALL_QUERY, [BIGG['AddressProvince']])
     municipality = align_to_bigg(municipality, ALL_QUERY, [BIGG['AddressCity']])
-    regions.serialize("utils/rdf_utils/ontology/dictionaries/regions.ttl", format="ttl")
-    province.serialize("utils/rdf_utils/ontology/dictionaries/province.ttl", format="ttl")
-    municipality.serialize("utils/rdf_utils/ontology/dictionaries/municipality.ttl", format="ttl")
+    save_rdf(regions, "utils/rdf_utils/ontology/dictionaries/regions.ttl", format="ttl")
+    save_rdf(province, "utils/rdf_utils/ontology/dictionaries/province.ttl", format="ttl")
+    save_rdf(municipality, "utils/rdf_utils/ontology/dictionaries/municipality.ttl", format="ttl")
 
 
 def align_qudt(qudt_file):
@@ -75,6 +82,6 @@ def align_qudt(qudt_file):
     units.serialize("utils/rdf_utils/ontology/dictionaries/units.ttl", format="ttl")
 
 
-#get_countries_rdf()
-#get_adm_rdf("/Users/eloigabal/Downloads/all-geonames-rdf-clean.txt")
-align_qudt("/Users/eloigabal/Downloads/qudtUnits.ttl")
+# #get_countries_rdf()
+get_adm_rdf("/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-BG.txt")
+# align_qudt("/Users/eloigabal/Downloads/qudtUnits.ttl")
