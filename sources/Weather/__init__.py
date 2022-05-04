@@ -1,5 +1,6 @@
 import pytz
 from .gather import gather
+from .harmonizer import harmonize_command_line
 from .harmonizer.mapper_ts import harmonize_data
 from .. import SourcePlugin
 
@@ -33,3 +34,6 @@ class Plugin(SourcePlugin):
 
     def get_store_table(self, message):
         return None
+
+    def harmonizer_command_line(self, arguments):
+        harmonize_command_line(arguments, config=self.config, settings=self.settings)

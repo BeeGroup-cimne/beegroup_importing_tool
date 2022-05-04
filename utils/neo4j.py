@@ -3,6 +3,13 @@ import settings
 bigg = settings.namespace_mappings['bigg']
 
 
+def get_all_weather_stations(session):
+    weather_stations = session.run(f"""
+        Match(d:{bigg}__WeatherStation) return d
+    """)
+    return weather_stations
+
+
 def get_devices_from_datasource(session, user, device_id, source):
     device_neo = session.run(f"""
                 MATCH ({bigg}__Organization{{userID:'{user}'}})-[:{bigg}__hasSubOrganization*0..]->(o:{bigg}__Organization)-
@@ -13,7 +20,7 @@ def get_devices_from_datasource(session, user, device_id, source):
 
 
 def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estimation_method_uri, measurement_uri,
-                  is_cumulative, is_on_change, freq, agg_func, dt_ini, dt_end):
+                  is_regular, is_cumulative, is_on_change, freq, agg_func, dt_ini, dt_end):
     session.run(f"""
         MATCH (device: {bigg}__Device {{uri:"{device_uri}"}})
         MATCH (msu: {bigg}__MeasurementUnit {{uri:"{unit_uri}"}})
@@ -27,8 +34,9 @@ def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estim
         Merge(s)-[:{bigg}__hasSensorEstimationMethod]->(se)        
         Merge(s)-[:{bigg}__hasMeasurement]->(ms: {bigg}__Measurement{{uri: "{measurement_uri}"}})
         SET
-            s.{bigg}__sensorIsCumulative= "{is_cumulative}",
-            s.{bigg}__sensorIsOnChange= "{is_on_change}",
+            s.{bigg}__sensorIsCumulative= {is_cumulative},
+            s.{bigg}__sensorIsRegular= {is_regular},
+            s.{bigg}__sensorIsOnChange= {is_on_change},
             s.{bigg}__sensorFrequency= "{freq}",
             s.{bigg}__sensorTimeAggregationFunction= "{agg_func}",
             s.{bigg}__sensorStart = CASE 

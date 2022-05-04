@@ -843,6 +843,10 @@ bigg:measurementDescription a owl:DatatypeProperty;
   rdfs:domain bigg:Sensor;
   rdfs:range xsd:string .
 
+bigg:sensorIsRegular a owl:DatatypeProperty;
+  rdfs:domain bigg:Sensor;
+  rdfs:range xsd:boolean .
+
 bigg:sensorIsCumulative a owl:DatatypeProperty;
   rdfs:domain bigg:Sensor;
   rdfs:range xsd:boolean .
