@@ -6,7 +6,6 @@ from rdflib import Namespace
 from thefuzz import process
 
 from sources.BulgariaSummary.harmonizer.Mapper import Mapper
-from utils.data_transformations import fuzzy_dictionary_match
 from utils.rdf_utils.rdf_functions import generate_rdf
 
 

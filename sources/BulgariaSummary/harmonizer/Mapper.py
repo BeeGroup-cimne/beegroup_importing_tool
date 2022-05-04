@@ -3,10 +3,11 @@ from functools import partial
 from slugify import slugify
 
 from utils.data_transformations import building_subject, location_info_subject, building_department_subject, \
-    building_space_subject, gross_area_subject, epc_subject, building_space_use_type_subject, to_object_property
+    building_space_subject, gross_area_subject, epc_subject, building_space_use_type_subject, to_object_property, \
+    construction_element_subject, device_subject
 from utils.rdf_utils.ontology.bigg_classes import Organization, Building, LocationInfo, BuildingSpace, Area, \
-    EnergyPerformanceCertificate, BuildingSpaceUseType, AreaType, AreaUnitOfMeasurement, EnergySaving, \
-    EnergyEfficiencyMeasure
+    EnergyPerformanceCertificate, BuildingSpaceUseType, AreaType, AreaUnitOfMeasurement, Element, Device, \
+    EnergyEfficiencyMeasure, Sensor
 from utils.rdf_utils.ontology.namespaces_definition import Bigg, units, bigg_enums, countries
 
 
@@ -22,8 +23,10 @@ class Mapper(object):
         EnergyPerformanceCertificate.set_namespace(namespace)
         AreaType.set_namespace(namespace)
         AreaUnitOfMeasurement.set_namespace(namespace)
-        EnergySaving.set_namespace(namespace)
+        Element.set_namespace(namespace)
+        Device.set_namespace(namespace)
         EnergyEfficiencyMeasure.set_namespace(namespace)
+        Sensor.set_namespace(namespace)
 
     def get_mappings(self, group):
         organization = {
@@ -109,7 +112,7 @@ class Mapper(object):
                 },
                 "energy_performance_certificate_before": {
                     "type": Bigg.hasEPC,
-                    "link": "subject"
+                    "link": "epc_subject_before"
                 },
                 "energy_performance_certificate_after": {
                     "type": Bigg.hasEPC,
@@ -118,46 +121,25 @@ class Mapper(object):
             }
         }
 
-        building_space = {
-            "name": "building_space",
-            "class": BuildingSpace,
+        location_info = {
+            "name": "location_info",
+            "class": LocationInfo,
             "type": {
                 "origin": "row"
             },
             "params": {
                 "raw": {
-                    "buildingSpaceName": "Building",
+                    "hasAddressCountry":
+                        to_object_property("732800/", namespace=countries)
                 },
                 "mapping": {
                     "subject": {
                         "key": "subject",
-                        "operations": [building_space_subject]
-                    }
-                }
-            },
-            "links": {
-                "gross_floor_area": {
-                    "type": Bigg.hasArea,
-                    "link": "subject"
-                },
-                "building_space_use_type": {
-                    "type": Bigg.hasBuildingSpaceUseType,
-                    "link": "subject"
-                }
-            }
-        }
-
-        building_space_use_type = {
-            "name": "building_space_use_type",
-            "class": BuildingSpaceUseType,
-            "type": {
-                "origin": "row"
-            },
-            "params": {
-                "mapping": {
-                    "subject": {
-                        "key": "type_of_building",
-                        "operations": [building_space_use_type_subject]
+                        "operations": [location_info_subject]
+                    },
+                    "hasAddressCity": {
+                        "key": "municipality",
+                        "operations": []
                     }
                 }
             }
@@ -215,25 +197,50 @@ class Mapper(object):
             }
         }
 
-        location_info = {
-            "name": "location_info",
-            "class": LocationInfo,
+        building_space = {
+            "name": "building_space",
+            "class": BuildingSpace,
             "type": {
                 "origin": "row"
             },
             "params": {
                 "raw": {
-                    "hasAddressCountry":
-                        to_object_property("732800/", namespace=countries)
+                    "buildingSpaceName": "Building",
                 },
                 "mapping": {
                     "subject": {
                         "key": "subject",
-                        "operations": [location_info_subject]
-                    },
-                    "hasAddressCity": {
-                        "key": "municipality",
-                        "operations": []
+                        "operations": [building_space_subject]
+                    }
+                }
+            },
+            "links": {
+                "gross_floor_area": {
+                    "type": Bigg.hasArea,
+                    "link": "subject"
+                },
+                "building_space_use_type": {
+                    "type": Bigg.hasBuildingSpaceUseType,
+                    "link": "subject"
+                },
+                "element": {
+                    "type": Bigg.isAssociatedWithElement,
+                    "link": "subject"
+                }
+            }
+        }
+
+        building_space_use_type = {
+            "name": "building_space_use_type",
+            "class": BuildingSpaceUseType,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "type_of_building",
+                        "operations": [building_space_use_type_subject]
                     }
                 }
             }
@@ -263,14 +270,82 @@ class Mapper(object):
             }
         }
 
+        element = {
+            "name": "element",
+            "class": Element,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "subject",
+                        "operations": [construction_element_subject]
+                    },
+
+                }
+            },
+            "links": {
+                "device": {
+                    "type": Bigg.isObservedByDevice,
+                    "link": "subject"
+                },
+                # "energy_efficiency_measurement": {
+                #     "type": Bigg.isAffectedByMeasure,
+                #     "link": "subject"
+                # }
+            }
+        }
+
+        device = {
+            "name": "device",
+            "class": Device,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "subject",
+                        "operations": [partial(device_subject, source=self.source)]
+                    },
+
+                }
+            },
+            # "links": {
+            #     "sensor_1": {
+            #         "type": Bigg.isObservedByDevice,
+            #         "link": "subject"
+            #     }
+            # }
+        }
+
+        sensors = [
+            {"name": f"sensor_{i}",
+             "class": Sensor,
+             "type": {
+                 "origin": "row"
+             },
+             "params": {
+                 "mapping": {
+                     "subject": {
+                         "key": "subject",
+                         "operations": []
+                     },
+
+                 }
+             }
+             } for i in range(0, 6)]
+
+        energy_efficiency_measurement = {
+
+        }
+
         grouped_modules = {
             "all": [organization, building_organization, buildings, building_space,
                     building_space_use_type, gross_floor_area, location_info, energy_performance_certificate_before,
-                    energy_performance_certificate_after
+                    energy_performance_certificate_after, element, device
                     ]
         }
-
-        energy_measurement = {}
-        energy_savings = {}
 
         return grouped_modules[group]
