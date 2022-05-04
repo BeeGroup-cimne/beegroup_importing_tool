@@ -60,6 +60,13 @@ def harmonize_data(data, **kwargs):
     df['epc_date_before'] = df['epc_date'] - timedelta(days=365)
     df['epc_subject_before'] = df['subject'] + '-' + df['epc_energy_class_before']
     df['epc_subject_after'] = df['subject'] + '-' + df['epc_energy_class_after']
+
+    value_dict = {0: 'liquidFuel', 1: 'hardFuel', 2: 'Gas', 3: 'others', 4: 'heatEnergy', 5: 'electricity'}
+
+    for i in range(6):
+        df[f"subject_sensor_{i}"] = 'SENSOR-' + config['source'] + '-' + df['subject'] + '-' + value_dict[
+            i] + '-RAW-P1Y'
+
     df.dropna(subset=['epc_subject_before', 'epc_subject_before'], inplace=True)
     g = generate_rdf(mapper.get_mappings("all"), df)
     print(g.serialize(format="ttl"))

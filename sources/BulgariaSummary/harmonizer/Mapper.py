@@ -312,12 +312,12 @@ class Mapper(object):
 
                 }
             },
-            # "links": {
-            #     "sensor_1": {
-            #         "type": Bigg.isObservedByDevice,
-            #         "link": "subject"
-            #     }
-            # }
+            "links": {
+                "sensor_1": {
+                    "type": Bigg.hasSensor,
+                    "link": "subject"
+                }
+            }
         }
 
         sensors = [
@@ -329,7 +329,7 @@ class Mapper(object):
              "params": {
                  "mapping": {
                      "subject": {
-                         "key": "subject",
+                         "key": f"subject_sensor_{i}",
                          "operations": []
                      },
 
@@ -345,7 +345,7 @@ class Mapper(object):
             "all": [organization, building_organization, buildings, building_space,
                     building_space_use_type, gross_floor_area, location_info, energy_performance_certificate_before,
                     energy_performance_certificate_after, element, device
-                    ]
+                    ] + sensors
         }
 
         return grouped_modules[group]
