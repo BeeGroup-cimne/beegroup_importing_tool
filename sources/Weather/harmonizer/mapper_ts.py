@@ -7,7 +7,7 @@ from datetime import timedelta
 import settings
 from utils.hbase import save_to_hbase
 from utils.data_transformations import *
-from utils.neo4j import create_sensor, get_all_weather_stations
+from utils.neo4j import create_sensor, get_weather_stations_by_location
 from utils.rdf_utils.ontology.generate_namespaces import get_namespace_subject
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums, units
 from utils.utils import log_string
@@ -51,14 +51,15 @@ def harmonize_data(data, **kwargs):
         if k in df.columns:
             df["value"] = df[k]
             for station_id, data_group in df.groupby("stationid"):
-                data_group.set_index("ts", inplace=True)
-                data_group.sort_index(inplace=True)
-                # find device with ID imported from source
-                dt_ini = data_group.iloc[0].name
-                dt_end = data_group.iloc[-1].name
+                lat, long = station_id.split("~")
                 with neo.session() as session:
-                    ws_neo = get_all_weather_stations(session)
+                    ws_neo = get_weather_stations_by_location(session, lat, long)
                     for ws_n in ws_neo:
+                        data_group.set_index("ts", inplace=True)
+                        data_group.sort_index(inplace=True)
+                        # find device with ID imported from source
+                        dt_ini = data_group.iloc[0].name
+                        dt_end = data_group.iloc[-1].name
                         device_uri = ws_n["d"].get("uri")
                         prop = get_namespace_subject(v['property'])[1]
                         sensor_id = sensor_subject("weather", "("+station_id+")", prop, "RAW", freq)

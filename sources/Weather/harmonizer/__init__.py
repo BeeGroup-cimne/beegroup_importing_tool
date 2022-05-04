@@ -13,7 +13,7 @@ def harmonize_command_line(arguments, config=None, settings=None):
     i = 0
     weather_table = "darksky_historical"
     freq = "PT1H"
-    for data in get_hbase_data_batch(hbase_conn, weather_table, batch_size=100000):
+    for data in get_hbase_data_batch(hbase_conn, weather_table, columns=[b"info:temperature", b"info:humidity"], batch_size=100000):
         data_list = []
         for key, row in data:
             item = dict()

@@ -1,11 +1,12 @@
 import settings
 
 bigg = settings.namespace_mappings['bigg']
+wgs = settings.namespace_mappings['wgs']
 
 
-def get_all_weather_stations(session):
+def get_weather_stations_by_location(session, lat, long):
     weather_stations = session.run(f"""
-        Match(d:{bigg}__WeatherStation) return d
+        Match(d:{bigg}__WeatherStation) WHERE d.{wgs}__lat="{lat}" AND d.{wgs}__long="{long}" return d
     """)
     return weather_stations
 

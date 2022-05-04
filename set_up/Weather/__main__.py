@@ -8,6 +8,7 @@ from utils.utils import read_config
 
 # get namespaces
 bigg = settings.namespace_mappings['bigg']
+wgs = settings.namespace_mappings['wgs']
 
 def link_ws(driver, ws_subject, l_subject):
     with driver.session() as session:
@@ -27,8 +28,8 @@ def create_ws(driver, stations):
             subject = f"{args.namespace}{float(s.latitude):.3f}~{float(s.longitude):.3f}"
             session.run(
                 f"""
-                       MERGE (ws:{bigg}__WeatherStation:{bigg}__Device:ns1__SpatialThing{{uri:"{subject}"}})
-                       SET ws.ns1__lat="{float(s.latitude):.3f}", ws.ns1__long="{float(s.longitude):.3f}",
+                       MERGE (ws:{bigg}__WeatherStation:{bigg}__Device:{wgs}__SpatialThing{{uri:"{subject}"}})
+                       SET ws.{wgs}__lat="{float(s.latitude):.3f}", ws.{wgs}__long="{float(s.longitude):.3f}",
                            ws.{bigg}__weatherStationType="darksky"
                        RETURN ws
                    """
@@ -39,7 +40,7 @@ def get_ws_locations(driver):
     with driver.session() as session:
         location = session.run(
             f"""
-                   Match(n:{bigg}__WeatherStation) return n.uri as subject, n.ns1__lat as latitude, n.ns1__long as longitude
+                   Match(n:{bigg}__WeatherStation) return n.uri as subject, n.{wgs}__lat as latitude, n.{wgs}__long as longitude
                """
         ).data()
         return location
