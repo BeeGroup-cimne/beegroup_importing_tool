@@ -15,7 +15,7 @@ def link_ws(driver, ws_subject, l_subject):
             f"""
                 MATCH(ws:{bigg}__WeatherStation{{uri:"{ws_subject}"}})
                 MATCH(l:{bigg}__BuildingSpace{{uri:"{l_subject}"}})
-                Merge (l)-[:{bigg}__isObservedBy]->(ws)
+                Merge (l)-[:{bigg}__isObservedByDevice]->(ws)
                 RETURN l
             """
         )
@@ -51,14 +51,14 @@ def get_building_locations (driver, stations):
             f"""
                    Match (bs:{bigg}__BuildingSpace)<-[]-(n:{bigg}__Building)-[:{bigg}__hasLocationInfo]->(l:{bigg}__LocationInfo)
                    WHERE l.{bigg}__addressLatitude IS NOT NULL and l.{bigg}__addressLongitude IS NOT NULL
-                   RETURN bs.uri AS subject, toFloat(l.{bigg}__addressLatitude) AS latitude, toFloat(l.{bigg}__addressLongitude) AS longitude
+                   RETURN bs.uri AS subject, toFloat(l.{bigg}__addressLatitude[0]) AS latitude, toFloat(l.{bigg}__addressLongitude[0]) AS longitude
                """
         ).data()
         postal_code = session.run(
             f"""
                    Match (bs:{bigg}__BuildingSpace)<-[]-(n:{bigg}__Building)-[:{bigg}__hasLocationInfo]-(l:{bigg}__LocationInfo) 
                    WHERE l.{bigg}__addressPostalCode IS NOT NULL and (l.{bigg}__addressLatitude IS NULL or l.{bigg}__addressLongitude IS NULL)
-                   RETURN bs.uri as subject, l.{bigg}__addressPostalCode as postal_code
+                   RETURN bs.uri as subject, l.{bigg}__addressPostalCode[0] as postal_code
                """
         ).data()
         for cp in postal_code:
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     parser.add_argument("--create", "-c", help="create the weather stations", action='store_true')
     parser.add_argument("--update", "-u", help="update the links of buildings with weather stations", action='store_true')
     if os.getenv("PYCHARM_HOSTED"):
-        args_t = ["-f", "data/Weather/cpcat.json", "-n", "https://weather.beegroup-cimne.com#", "-c"]
+        args_t = ["-f", "data/Weather/cpcat.json", "-n", "https://weather.beegroup-cimne.com#", "-c", "-u"]
         args = parser.parse_args(args_t)
     else:
         args = parser.parse_args()

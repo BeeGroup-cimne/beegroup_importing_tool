@@ -911,12 +911,9 @@ bigg:deviceAggregatorName a owl:DatatypeProperty;
   rdfs:domain bigg:DeviceAggregator;
   rdfs:range xsd:string .
 
-bigg:DeviceAggregatorProperty a owl:Class;
-  rdfs:comment "Physical property calculated" .
-
 bigg:hasDeviceAggregatorProperty a owl:ObjectProperty;
   rdfs:domain bigg:DeviceAggregator;
-  rdfs:range bigg:DeviceAggregatorProperty .
+  rdfs:range  bigg:MeasuredProperty .
 
 bigg:deviceAggregatorFrequency a owl:DatatypeProperty;
   rdfs:domain bigg:DeviceAggregator;
