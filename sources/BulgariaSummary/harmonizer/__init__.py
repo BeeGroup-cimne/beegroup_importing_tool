@@ -8,6 +8,25 @@ from thefuzz import process
 from sources.BulgariaSummary.harmonizer.Mapper import Mapper
 from utils.rdf_utils.rdf_functions import generate_rdf
 
+measurement_properties = ['OilSaving', 'CoalSaving', 'GasSaving', 'DistrictHeatingSaving',
+                          'GridElectricitySaving',
+                          'TotalEnergySaving']
+
+energy_efficiency_measurement_list = ['BuildingFabricMeasure.WallMeasure.WallCavityInsulation',
+                                      'BuildingFabricMeasure.WallMeasure.WallInternalInsulation',
+                                      'BuildingFabricMeasure.RoofAndCeilingMeasure',
+                                      'BuildingFabricMeasure.FloorMeasure', 'BuildingFabricMeasure',
+                                      'HVACAndHotWaterMeasure',
+                                      'HVACAndHotWaterMeasure.CombinedHeatingCoolingSystemMeasure',
+                                      'HVACAndHotWaterMeasure.HeatingSystemMeasure.HeatingFinalElementsMeasure.HeatingFinalElementsReplacement',
+                                      'HVACAndHotWaterMeasure.CombinedHeatingCoolingSystemMeasure.HeatingAndCoolingDistributionMeasure.HeatingAndCoolingDistributionSystemReplacement',
+                                      'HVACAndHotWaterMeasure.CombinedHeatingCoolingSystemMeasure.HeatingAndCoolingControlMeasure',
+                                      'HVACAndHotWaterMeasure.HotWaterSystemMeasure.HotWaterProductionMeasure.OtherHotWaterProductionMeasure',
+                                      'RenewableGenerationMeasure',
+                                      'LightingMeasure',
+                                      'ElectricPowerSystemMeasure.ElectricEquipmentMeasure.ElectricApplianceMeasure'
+                                      ]
+
 
 def harmonize_command_line():
     pass
@@ -60,14 +79,21 @@ def harmonize_data(data, **kwargs):
     df['epc_date_before'] = df['epc_date'] - timedelta(days=365)
     df['epc_subject_before'] = df['subject'] + '-' + df['epc_energy_class_before']
     df['epc_subject_after'] = df['subject'] + '-' + df['epc_energy_class_after']
+    df['device_subject'] = 'DEVICE - ' + config['source'] + ' - ' + df['subject']
 
-    value_dict = {0: 'liquidFuel', 1: 'hardFuel', 2: 'Gas', 3: 'others', 4: 'heatEnergy', 5: 'electricity'}
+    value_dict = {0: 'EnergyConsumptionOil', 1: 'EnergyConsumptionCoal', 2: 'EnergyConsumptionGas',
+                  3: 'EnergyConsumptionOthers', 4: 'EnergyConsumptionDistrictHeating',
+                  5: 'EnergyConsumptionGridElectricity',
+                  6: 'EnergyConsumptionTotal'}
 
-    for i in range(6):
+    for i in range(8):
         df[f"subject_sensor_{i}"] = 'SENSOR-' + config['source'] + '-' + df['subject'] + '-' + value_dict[
             i] + '-RAW-P1Y'
 
     df.dropna(subset=['epc_subject_before', 'epc_subject_before'], inplace=True)
     g = generate_rdf(mapper.get_mappings("all"), df)
+
     print(g.serialize(format="ttl"))
+
     # save_rdf_with_source(g, config['source'], config['neo4j'])
+    # create_sensor

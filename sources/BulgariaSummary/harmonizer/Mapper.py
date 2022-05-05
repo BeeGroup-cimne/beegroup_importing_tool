@@ -311,41 +311,20 @@ class Mapper(object):
                     },
 
                 }
-            },
-            "links": {
-                "sensor_1": {
-                    "type": Bigg.hasSensor,
-                    "link": "subject"
-                }
             }
         }
 
-        sensors = [
-            {"name": f"sensor_{i}",
-             "class": Sensor,
-             "type": {
-                 "origin": "row"
-             },
-             "params": {
-                 "mapping": {
-                     "subject": {
-                         "key": f"subject_sensor_{i}",
-                         "operations": []
-                     },
 
-                 }
-             }
-             } for i in range(0, 6)]
 
         energy_efficiency_measurement = {
-
+            "name": "en"
         }
 
         grouped_modules = {
             "all": [organization, building_organization, buildings, building_space,
                     building_space_use_type, gross_floor_area, location_info, energy_performance_certificate_before,
                     energy_performance_certificate_after, element, device
-                    ] + sensors
+                    ]
         }
 
         return grouped_modules[group]
