@@ -93,19 +93,15 @@ def harmonize_data(data, **kwargs):
     df['gross_floor_area_subject'] = 'AREA-GrossFloorArea-' + config['source'] + '-' + df['subject']
     df['element_subject'] = 'ELEMENT-' + df['subject']
 
-    df['device_subject'] = 'DEVICE - ' + config['source'] + ' - ' + df['subject']
+    df['device_subject'] = 'DEVICE-' + config['source'] + '-' + df['subject']
 
     value_dict = {0: 'EnergyConsumptionOil', 1: 'EnergyConsumptionCoal', 2: 'EnergyConsumptionGas',
                   3: 'EnergyConsumptionOthers', 4: 'EnergyConsumptionDistrictHeating',
                   5: 'EnergyConsumptionGridElectricity',
                   6: 'EnergyConsumptionTotal'}
 
-    for i in range(8):
-        df[f"subject_sensor_{i}"] = 'SENSOR-' + config['source'] + '-' + df['subject'] + '-' + value_dict[
-            i] + '-RAW-P1Y'
-
     for i in range(14):
-        df[f"subject_eem_{i}"] = ''
+        df[f"subject_eem_{i}"] = 'EEM-' + energy_efficiency_measurement_list[i]
 
     df.dropna(subset=['epc_subject_before', 'epc_subject_before'], inplace=True)
     g = generate_rdf(mapper.get_mappings("all"), df)

@@ -290,10 +290,10 @@ class Mapper(object):
                     "type": Bigg.isObservedByDevice,
                     "link": "subject"
                 },
-                # "energy_efficiency_measurement": {
-                #     "type": Bigg.isAffectedByMeasure,
-                #     "link": "subject"
-                # }
+                "energy_efficiency_measurement": {
+                    "type": Bigg.isAffectedByMeasure,
+                    "link": "subject"
+                }
             }
         }
 
@@ -314,15 +314,29 @@ class Mapper(object):
             }
         }
 
-        energy_efficiency_measurement = {
-            "name": "en"
-        }
+        eem = [{
+            "name": f"eem_{i}",
+            "class": EnergyPerformanceCertificate,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": f"subject_eem_{i}",
+                        "operations": []
+                    },
+
+                }
+            }
+
+        } for i in range(14)]
 
         grouped_modules = {
             "all": [organization, building_organization, buildings, building_space,
                     building_space_use_type, gross_floor_area, location_info, energy_performance_certificate_before,
                     energy_performance_certificate_after, element, device
-                    ]
+                    ] + eem
         }
 
         return grouped_modules[group]
