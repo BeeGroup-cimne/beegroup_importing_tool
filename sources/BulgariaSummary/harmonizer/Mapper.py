@@ -62,8 +62,8 @@ class Mapper(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": "subject",
-                        "operations": [building_department_subject]
+                        "key": "organization_subject",
+                        "operations": []
                     },
                     "organizationName": {
                         "key": "building_name",
@@ -88,8 +88,8 @@ class Mapper(object):
             "params": {
                 "mapping": {
                     "subject": {
-                        "key": "subject",
-                        "operations": [building_subject]
+                        "key": "building_subject",
+                        "operations": []
                     },
                     "buildingName": {
                         "key": "building_name",
@@ -134,8 +134,8 @@ class Mapper(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": "subject",
-                        "operations": [location_info_subject]
+                        "key": "location_subject",
+                        "operations": []
                     },
                     "hasAddressCity": {
                         "key": "municipality",
@@ -155,7 +155,7 @@ class Mapper(object):
                 "mapping": {
                     "subject": {
                         "key": "epc_subject_before",
-                        "operations": [epc_subject]
+                        "operations": []
                     },
                     "energyPerformanceCertificateDateOfAssessment": {
                         "key": "epc_date_before",
@@ -183,7 +183,7 @@ class Mapper(object):
                 "mapping": {
                     "subject": {
                         "key": "epc_subject_after",
-                        "operations": [epc_subject]
+                        "operations": []
                     },
                     "energyPerformanceCertificateDateOfAssessment": {
                         "key": "epc_date",
@@ -209,8 +209,8 @@ class Mapper(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": "subject",
-                        "operations": [building_space_subject]
+                        "key": "building_space_subject",
+                        "operations": []
                     }
                 }
             },
@@ -239,8 +239,8 @@ class Mapper(object):
             "params": {
                 "mapping": {
                     "subject": {
-                        "key": "type_of_building",
-                        "operations": [building_space_use_type_subject]
+                        "key": "building_space_use_type_subject",
+                        "operations": []
                     }
                 }
             }
@@ -259,8 +259,8 @@ class Mapper(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": "subject",
-                        "operations": [partial(gross_area_subject, a_source=self.source)]
+                        "key": "gross_floor_area_subject",
+                        "operations": []
                     },
                     "areaValue": {
                         "key": "gross_floor_area",
@@ -279,8 +279,8 @@ class Mapper(object):
             "params": {
                 "mapping": {
                     "subject": {
-                        "key": "subject",
-                        "operations": [construction_element_subject]
+                        "key": "element_subject",
+                        "operations": []
                     },
 
                 }
@@ -306,15 +306,13 @@ class Mapper(object):
             "params": {
                 "mapping": {
                     "subject": {
-                        "key": "subject",
-                        "operations": [partial(device_subject, source=self.source)]
+                        "key": "device_subject",
+                        "operations": []
                     },
 
                 }
             }
         }
-
-
 
         energy_efficiency_measurement = {
             "name": "en"

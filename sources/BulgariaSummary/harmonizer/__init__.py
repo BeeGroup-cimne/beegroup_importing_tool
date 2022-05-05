@@ -75,10 +75,24 @@ def harmonize_data(data, **kwargs):
     df = set_taxonomy(pd.DataFrame().from_records(data))
 
     df['subject'] = df['filename'] + '-' + df['id'].astype(str)
+
+    df['organization_subject'] = 'ORGANIZATION-' + df['subject']
+
+    df['building_subject'] = 'BUILDING-' + df['subject']
     df['building_name'] = df['subject'] + '-' + df['municipality'] + '-' + df['type_of_building']
+
+    df['location_subject'] = 'LOCATION-' + df['subject']
+
     df['epc_date_before'] = df['epc_date'] - timedelta(days=365)
-    df['epc_subject_before'] = df['subject'] + '-' + df['epc_energy_class_before']
-    df['epc_subject_after'] = df['subject'] + '-' + df['epc_energy_class_after']
+    df['epc_subject_before'] = 'EPC-' + df['subject'] + '-' + df['epc_energy_class_before']
+    df['epc_subject_after'] = 'EPC-' + df['subject'] + '-' + df['epc_energy_class_after']
+
+    df['building_space_subject'] = 'BUILDINGSPACE-' + df['subject']
+    df['building_space_use_type_subject'] = 'BUILDING-SPACE-USE-TYPE-' + df['subject']
+
+    df['gross_floor_area_subject'] = 'AREA-GrossFloorArea-' + config['source'] + '-' + df['subject']
+    df['element_subject'] = 'ELEMENT-' + df['subject']
+
     df['device_subject'] = 'DEVICE - ' + config['source'] + ' - ' + df['subject']
 
     value_dict = {0: 'EnergyConsumptionOil', 1: 'EnergyConsumptionCoal', 2: 'EnergyConsumptionGas',
@@ -89,6 +103,9 @@ def harmonize_data(data, **kwargs):
     for i in range(8):
         df[f"subject_sensor_{i}"] = 'SENSOR-' + config['source'] + '-' + df['subject'] + '-' + value_dict[
             i] + '-RAW-P1Y'
+
+    for i in range(14):
+        df[f"subject_eem_{i}"] = ''
 
     df.dropna(subset=['epc_subject_before', 'epc_subject_before'], inplace=True)
     g = generate_rdf(mapper.get_mappings("all"), df)
