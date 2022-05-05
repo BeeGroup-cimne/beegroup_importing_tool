@@ -52,15 +52,15 @@ outdoor_weather_device_agg = [
         measured_property=bigg_enums.Temperature,
         device_query=f"""{bigg}__Device:{bigg}__WeatherStation""",
         freq="PT1H",
-        agg_name="externalTemperature",
+        agg_name="outdoorTemperature",
         required="true",
         agg_func="AVG"
     ),
     create_dev_agg(
-        measured_property=bigg_enums.Humidity,
+        measured_property=bigg_enums.HumidityRatio,
         device_query=f"""{bigg}__Device:{bigg}__WeatherStation""",
         freq="PT1H",
-        agg_name="externalHumidity",
+        agg_name="outdoorHumidityRatio",
         required="false",
         agg_func="AVG"
     )
