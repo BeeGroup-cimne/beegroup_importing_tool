@@ -107,6 +107,7 @@ def prepare_df_clean_linked(df):
     df['building_space_subject'] = df.NumEns.apply(building_space_subject)
     df['utility_point_subject'] = df.CUPS.apply(delivery_subject)
 
+
 def harmonize_data_device(data, **kwargs):
     namespace = kwargs['namespace']
     user = kwargs['user']
@@ -140,28 +141,3 @@ def harmonize_data_device(data, **kwargs):
         # log_string("linking with source")
         link_devices_with_source(g, datasource, config['neo4j'])
 
-        #
-        # for device in data:
-        #     uri = n[f"{device['device']}-DEVICE-nedgia"]
-        #     try:
-        #         query_create_device = f"""
-        #         MERGE (d:{bigg}__Device{{{bigg}__deviceName:"{device['device']}",{bigg}__deviceType:"gas",
-        #         {bigg}__source:"nedgia",uri:"{uri}"}}) RETURN d"""
-        #
-        #         session.run(query_create_device)
-        #
-        #         query_has_device = f""" MATCH (n:{bigg}__UtilityPointOfDelivery{{{bigg}__pointOfDeliveryIDFromUser:"{device['device']}"}})
-        #         MATCH (d:{bigg}__Device{{{bigg}__deviceName:"{device['device']}",{bigg}__source:"nedgia"}})
-        #         MERGE (n)-[:{bigg}__hasDevice]-(d) RETURN d"""
-        #
-        #         session.run(query_has_device)
-        #
-        #         query_datasource = f"""MATCH (s) WHERE id(s) = {datasource}
-        #         MATCH (d:{bigg}__Device{{{bigg}__deviceName:"{device['device']}",{bigg}__source:"nedgia"}})
-        #         MERGE (s)-[:{bigg}__importedFromSource]->(d)
-        #         RETURN d
-        #         """
-        #
-        #         session.run(query_datasource)
-        #     except Exception as ex:
-        #         print(str(ex))

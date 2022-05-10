@@ -25,11 +25,6 @@ def __neo4j_with_source(ses, source, data_links={}):
         n_query = f"""
             Match (n{{uri: "{subject}"}})
         """
-        """
-OPTIONAL MATCH (n)-[l:bigg__hasAddressProvince]->(s) WHERE l.source is null DELETE l
-WITH n, s
-    MERGE (n)-[l:bigg__hasAddressProvince{source: "gemweb"}]->(s)
-Return n"""
         for link_attr in links:
             l, o, s_diff = link_attr
             n_query += f"""

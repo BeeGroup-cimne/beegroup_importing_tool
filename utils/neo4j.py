@@ -44,7 +44,7 @@ def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estim
         MATCH (msu: {bigg}__MeasurementUnit {{uri:"{unit_uri}"}})
         MATCH (mp: {bigg}__MeasuredProperty {{uri:"{property_uri}"}})
         MATCH (se: {bigg}__SensorEstimationMethod {{uri:"{estimation_method_uri}"}})   
-        MERGE (s: {bigg}__Sensor {{
+        MERGE (s: {bigg}__Sensor:Resource {{
             uri: "{sensor_uri}"
         }})<-[:{bigg}__hasSensor]-(device)
         Merge(s)-[:{bigg}__hasMeasurementUnit]->(msu)

@@ -1,3 +1,11 @@
+# CREATE CONSTRAINT n10s_unique_uri ON (r:Resource) ASSERT r.uri IS UNIQUE
+# CALL n10s.graphconfig.init({ keepLangTag: true, handleMultival:"ARRAY"});
+# CALL n10s.nsprefixes.add("bigg","http://bigg-project.eu/ontology#");
+# CALL n10s.nsprefixes.add("geo","http://www.geonames.org/ontology#");
+# CALL n10s.nsprefixes.add("unit","http://qudt.org/vocab/unit/");
+# CALL n10s.nsprefixes.add("wgs","http://www.w3.org/2003/01/geo/wgs84_pos#");
+# CALL n10s.nsprefixes.add("ttt","http://ttt.cat#");
+
 echo "dict"
 python3 -m set_up.Dictionaries
 echo "org"
