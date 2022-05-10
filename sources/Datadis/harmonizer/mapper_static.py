@@ -1,6 +1,8 @@
 import pandas as pd
 from neo4j import GraphDatabase
 from rdflib import Namespace
+
+from utils.neo4j import get_cups_id_link
 from .Datadis_mapping import Mapping
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.rdf_utils.save_rdf import save_rdf_with_source, link_devices_with_source
@@ -51,15 +53,8 @@ def harmonize_data(data, **kwargs):
     # get codi_ens from neo4j
     neo = GraphDatabase.driver(**config['neo4j'])
     with neo.session() as ses:
-        datadis_source = ses.run(f"""
-            Match (u:{bigg}__UtilityPointOfDelivery)<-[:{bigg}__hasSpace|{bigg}__hasUtilityPointOfDelivery *]-
-                  (b:{bigg}__Building)<-[:{bigg}__managesBuilding|{bigg}__hasSubOrganization *]-
-                  (o:{bigg}__Organization{{userID:"{user}"}}) 
-            RETURN u.{bigg}__pointOfDeliveryIDFromOrganization as CUPS, b.{bigg}__buildingIDFromOrganization as NumEns
-            """
-        )
-        cups_code = {x['CUPS'][0]: x['NumEns'][0]
-                     for x in datadis_source}
+        cups_code = get_cups_id_link(ses, user)
+
     df['NumEns'] = df.cups.map(cups_code)
 
     prepare_df_clean_all(df)

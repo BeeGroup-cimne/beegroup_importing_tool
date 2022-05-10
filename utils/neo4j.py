@@ -4,6 +4,16 @@ bigg = settings.namespace_mappings['bigg']
 wgs = settings.namespace_mappings['wgs']
 
 
+def get_cups_id_link(session, user):
+    cups_device = session.run(f"""
+        Match (u:{bigg}__UtilityPointOfDelivery)<-[:{bigg}__hasSpace|{bigg}__hasUtilityPointOfDelivery *]-
+              (b:{bigg}__Building)<-[:{bigg}__managesBuilding|{bigg}__hasSubOrganization *]-
+              (o:{bigg}__Organization{{userID:"{user}"}}) 
+        RETURN u.{bigg}__pointOfDeliveryIDFromOrganization as CUPS, b.{bigg}__buildingIDFromOrganization as NumEns
+    """)
+    return {x['CUPS'][0]: x['NumEns'][0] for x in cups_device}
+
+
 def get_weather_stations_by_location(session, lat, long):
     weather_stations = session.run(f"""
         Match(d:{bigg}__WeatherStation) WHERE d.{wgs}__lat="{lat}" AND d.{wgs}__long="{long}" return d
@@ -22,6 +32,13 @@ def get_devices_from_datasource(session, user, device_id, source):
 
 def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estimation_method_uri, measurement_uri,
                   is_regular, is_cumulative, is_on_change, freq, agg_func, dt_ini, dt_end):
+    def convert(tz):
+        if not tz.tz:
+            tz = tz.tz_localize("UTC")
+        if "UTC" != tz.tz.tzname(tz):
+            tz = tz.tz_convert("UTC")
+        return tz
+
     session.run(f"""
         MATCH (device: {bigg}__Device {{uri:"{device_uri}"}})
         MATCH (msu: {bigg}__MeasurementUnit {{uri:"{unit_uri}"}})
@@ -42,15 +59,15 @@ def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estim
             s.{bigg}__sensorTimeAggregationFunction= "{agg_func}",
             s.{bigg}__sensorStart = CASE 
                 WHEN s.{bigg}__sensorStart < 
-                 datetime("{dt_ini.tz_localize("UTC").to_pydatetime().isoformat()}") 
+                 datetime("{convert(dt_ini).to_pydatetime().isoformat()}") 
                     THEN s.{bigg}__sensorStart 
-                    ELSE datetime("{dt_ini.tz_localize("UTC").to_pydatetime().isoformat()}") 
+                    ELSE datetime("{convert(dt_ini).to_pydatetime().isoformat()}") 
                 END,
             s.{bigg}__sensorEnd = CASE 
                 WHEN s.{bigg}__sensorEnd >
-                 datetime("{dt_end.tz_localize("UTC").to_pydatetime().isoformat()}") 
+                 datetime("{convert(dt_end).to_pydatetime().isoformat()}") 
                     THEN s.{bigg}__sensorEnd
-                    ELSE datetime("{dt_end.tz_localize("UTC").to_pydatetime().isoformat()}") 
+                    ELSE datetime("{convert(dt_end).to_pydatetime().isoformat()}") 
                 END  
         return s
     """)

@@ -1,11 +1,21 @@
 import hashlib
+from collections import defaultdict
 from datetime import datetime
 
 import pandas as pd
 from neo4j import GraphDatabase
 from rdflib import Namespace
 
+import settings
+from sources.Nedgia.harmonizer.Nedgia_mapping import Mapping
+from utils.data_transformations import *
 from utils.hbase import save_to_hbase
+from utils.neo4j import get_cups_id_link, get_devices_from_datasource, create_sensor
+from utils.rdf_utils.ontology.namespaces_definition import bigg_enums, units
+from utils.rdf_utils.rdf_functions import generate_rdf
+from utils.rdf_utils.save_rdf import save_rdf_with_source, link_devices_with_source
+
+bigg = settings.namespace_mappings['bigg']
 
 
 def harmonize_data_ts(data, **kwargs):
@@ -23,96 +33,79 @@ def harmonize_data_ts(data, **kwargs):
 
     # Init dataframe
     df = pd.DataFrame.from_records(data)
+    df = df.applymap(decode_hbase)
     # df = pd.read_excel('data/Generalitat Extracción_2018.xlsx',skiprows=2)
 
     # Add timezone
-
+    df['Fecha fin Docu. cálculo'] = pd.to_datetime(df['Fecha fin Docu. cálculo'])
     df['Fecha fin Docu. cálculo'] += pd.Timedelta(hours=23)
 
+    df['Fecha inicio Docu. cálculo'] = pd.to_datetime(df['Fecha inicio Docu. cálculo'])
     df['Fecha inicio Docu. cálculo'] = df['Fecha inicio Docu. cálculo'].dt.tz_localize(tz_info)
     df['Fecha fin Docu. cálculo'] = df['Fecha fin Docu. cálculo'].dt.tz_localize(tz_info)
-
+    df['ts'] = df['Fecha inicio Docu. cálculo']
     # datatime64 [ns] to unix time
-    df['measurementStart'] = df['Fecha inicio Docu. cálculo'].astype('int') / 10 ** 9
-    df['measurementStart'] = df['measurementStart'].astype('int')
+    df['start'] = df['Fecha inicio Docu. cálculo'].astype('int') / 10 ** 9
+    df['start'] = df['start'].astype('int')
 
-    df['measurementEnd'] = df['Fecha fin Docu. cálculo'].astype('int') / 10 ** 9
-    df['measurementEnd'] = df['measurementEnd'].astype('int')
-    df['ts'] = df['measurementStart']
+    df['end'] = df['Fecha fin Docu. cálculo'].astype('int') / 10 ** 9
+    df['end'] = df['end'].astype('int')
 
     # Calculate kWh
-    df['measurementValue'] = df['Consumo kWh ATR'].fillna(0) + df['Consumo kWh GLP'].fillna(0)
+    df['value'] = df['Consumo kWh ATR'].fillna(0) + df['Consumo kWh GLP'].fillna(0)
 
-    df = df[['CUPS', 'ts', 'measurementStart', 'measurementEnd', 'measurementValue', 'Tipo Lectura']]
+    # isReal
+    df['isReal'] = df["Tipo Lectura"].map(defaultdict(lambda : False, {"ESTIMADA": False, "REAL": True}))
+
+    # bucket
+    df['bucket'] = (df['start'] // settings.ts_buckets) % settings.buckets
+
+    df = df[['ts', 'bucket', 'CUPS', 'start', 'end', 'value', 'isReal']]
 
     for cups, data_group in df.groupby("CUPS"):
         data_group.set_index("ts", inplace=True)
         data_group.sort_index(inplace=True)
 
-        device_id = cups
-
-        dt_ini = data_group['measurementStart'].iloc[0]
-        dt_end = data_group['measurementEnd'].iloc[-1]
+        dt_ini = data_group.iloc[0].name.tz_convert("UTC").tz_convert(None)
+        dt_end = data_group.iloc[-1].name.tz_convert("UTC").tz_convert(None)
 
         with neo.session() as session:
             n = Namespace(namespace)
-            uri = n[f"{device_id}-DEVICE-nedgia"]
-            query_devices = f"""
-            MATCH (n:ns0__Device{{uri:"{uri}"}}) return n
-            """
-            devices_list = session.run(query_devices)
+            devices_neo = get_devices_from_datasource(session, user, cups, "NedgiaSource")
+            for device in devices_neo:
+                device_uri = device['d'].get("uri")
+                sensor_id = sensor_subject("nedgia", cups, "EnergyConsumptionGas", "RAW", "")
+                sensor_uri = str(n[sensor_id])
+                measurement_id = hashlib.sha256(sensor_uri.encode("utf-8"))
+                measurement_id = measurement_id.hexdigest()
+                measurement_uri = str(n[measurement_id])
+                create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
+                              bigg_enums.EnergyConsumptionGas, bigg_enums.TrustedModel,
+                              measurement_uri, False,
+                              False, False, "", "SUM", dt_ini, dt_end)
 
-            for devices in devices_list:
-                list_id = f"{device_id}-DEVICE-{config['source']}-LIST-RAW-invoices"
-                list_uri = n[list_id]
-                new_d_id = hashlib.sha256(list_uri.encode("utf-8"))
-                new_d_id = new_d_id.hexdigest()
-                try:
-                    query_measures = f"""
-                        MATCH (device: ns0__Device {{uri:"{devices["n"].get("uri")}"}})
-                        MERGE (list: ns0__MeasurementList{{uri: "{list_uri}", ns0__measurementKey: "{new_d_id}",
-                        ns0__measurementFrequency: "invoices"}} )<-[:ns0__hasMeasurementLists]-(device)
-                        SET
-                            list.ns0__measurementUnit= "kWh",
-                            list.ns0__measuredProperty= "gasConsumption",
-                            list.ns0__measurementListStart = CASE 
-                                WHEN list.ns0__measurementListStart < 
-                                 datetime("{datetime.fromtimestamp(dt_ini).isoformat()}") 
-                                    THEN list.ns0__measurementListStart 
-                                    ELSE datetime("{datetime.fromtimestamp(dt_ini).isoformat()}") 
-                                END,
-                            list.ns0__measurementListEnd = CASE 
-                                WHEN list.ns0__measurementListEnd >
-                                 datetime("{datetime.fromtimestamp(dt_end).isoformat()}") 
-                                    THEN list.ns0__measurementListEnd 
-                                    ELSE datetime("{datetime.fromtimestamp(dt_end).isoformat()}") 
-                                END  
-                        return list
-                    """
+                data_group['listKey'] = measurement_id
+                device_table = f"harmonized_online_EnergyConsumptionGas_000_SUM__{user}"
 
-                    session.run(query_measures)
+                save_to_hbase(data_group.to_dict(orient="records"),
+                              device_table,
+                              hbase_conn2,
+                              [("info", ['end', 'isReal']), ("v", ['value'])],
+                              row_fields=['bucket', 'listKey', 'start'])
+                period_table = f"harmonized_batch_EnergyConsumptionGas_000_SUM__{user}"
+                save_to_hbase(data_group.to_dict(orient="records"),
+                              period_table, hbase_conn2,
+                              [("info", ['end', 'isReal']), ("v", ['value'])],
+                              row_fields=['bucket', 'start', 'listKey'])
 
-                    data_group['listKey'] = new_d_id
-                    data_group['Tipo Lectura'] = data_group['Tipo Lectura'].apply(lambda x: x == 'REAL')
-                    data_group.rename(
-                        columns={'Tipo Lectura': 'isReal', 'measurementEnd': 'end', 'measurementStart': 'start',
-                                 'measurementValue': 'value'},
-                        inplace=True)
 
-                    save_to_hbase(data_group.to_dict(orient="records"),
-                                  f"harmonized_ts_invoices_invoices_{user}",
-                                  hbase_conn2,
-                                  [("info", ['end', 'isReal']), ("v", ['value'])],
-                                  row_fields=['listKey', 'start'])  # todo: change pointer
+def prepare_df_clean_all(df):
+    df['device_subject'] = df.CUPS.apply(partial(device_subject, source="nedgia"))
 
-                    save_to_hbase(data_group.to_dict(orient="records"),
-                                  f"harmonized_analyticsTs_invoices_invoices_{user}", hbase_conn2,
-                                  [("info", ['end', 'isReal']), ("v", ['value'])],
-                                  row_fields=['start', 'listKey'])  # todo: change pointer
 
-                except Exception as ex:
-                    print(str(ex))
-
+def prepare_df_clean_linked(df):
+    df['building_space_subject'] = df.NumEns.apply(building_space_subject)
+    df['utility_point_subject'] = df.CUPS.apply(delivery_subject)
 
 def harmonize_data_device(data, **kwargs):
     namespace = kwargs['namespace']
@@ -121,33 +114,54 @@ def harmonize_data_device(data, **kwargs):
 
     neo = GraphDatabase.driver(**config['neo4j'])
     n = Namespace(namespace)
+
+    df = pd.DataFrame.from_records(data)
+
     with neo.session() as session:
         nedgia_datasource = session.run(f"""
-              MATCH (o:ns0__Organization{{ns0__userId:'{user}'}})-[:ns0__hasSource]->(s:NedgiaSource) return id(s)""").single()
-
+              MATCH (o:{bigg}__Organization{{userID:'{user}'}})-[:hasSource]->(s:NedgiaSource) return id(s)""").single()
         datasource = nedgia_datasource['id(s)']
-        for device in data:
 
-            uri = n[f"{device['device']}-DEVICE-nedgia"]
-            try:
-                query_create_device = f"""
-                MERGE (d:ns0__Device{{ns0__deviceName:"{device['device']}",ns0__deviceType:"gas",
-                ns0__source:"nedgia",uri:"{uri}"}}) RETURN d"""
+        device_id = get_cups_id_link(session, user)
+        df['NumEns'] = df.CUPS.map(device_id)
+        prepare_df_clean_all(df)
+        linked_supplies = df[df["NumEns"].isna() == False]
+        unlinked_supplies = df[df["NumEns"].isna()]
 
-                session.run(query_create_device)
+    for linked, df in [("linked", linked_supplies), ("unlinked", unlinked_supplies)]:
+        if linked == "linked":
+            prepare_df_clean_linked(df)
+        # log_string("generating rdf")
+        n = Namespace(namespace)
+        mapping = Mapping(config['source'], n)
+        g = generate_rdf(mapping.get_mappings(linked), df)
+        # log_string("saving to neo4j")
+        save_rdf_with_source(g, config['source'], config['neo4j'])
+        # log_string("linking with source")
+        link_devices_with_source(g, datasource, config['neo4j'])
 
-                query_has_device = f""" MATCH (n:ns0__UtilityPointOfDelivery{{ns0__pointOfDeliveryIDFromUser:"{device['device']}"}})
-                MATCH (d:ns0__Device{{ns0__deviceName:"{device['device']}",ns0__source:"nedgia"}})
-                MERGE (n)-[:ns0__hasDevice]-(d) RETURN d"""
-
-                session.run(query_has_device)
-
-                query_datasource = f"""MATCH (s) WHERE id(s) = {datasource}
-                MATCH (d:ns0__Device{{ns0__deviceName:"{device['device']}",ns0__source:"nedgia"}})
-                MERGE (s)-[:ns0__importedFromSource]->(d)
-                RETURN d
-                """
-
-                session.run(query_datasource)
-            except Exception as ex:
-                print(str(ex))
+        #
+        # for device in data:
+        #     uri = n[f"{device['device']}-DEVICE-nedgia"]
+        #     try:
+        #         query_create_device = f"""
+        #         MERGE (d:{bigg}__Device{{{bigg}__deviceName:"{device['device']}",{bigg}__deviceType:"gas",
+        #         {bigg}__source:"nedgia",uri:"{uri}"}}) RETURN d"""
+        #
+        #         session.run(query_create_device)
+        #
+        #         query_has_device = f""" MATCH (n:{bigg}__UtilityPointOfDelivery{{{bigg}__pointOfDeliveryIDFromUser:"{device['device']}"}})
+        #         MATCH (d:{bigg}__Device{{{bigg}__deviceName:"{device['device']}",{bigg}__source:"nedgia"}})
+        #         MERGE (n)-[:{bigg}__hasDevice]-(d) RETURN d"""
+        #
+        #         session.run(query_has_device)
+        #
+        #         query_datasource = f"""MATCH (s) WHERE id(s) = {datasource}
+        #         MATCH (d:{bigg}__Device{{{bigg}__deviceName:"{device['device']}",{bigg}__source:"nedgia"}})
+        #         MERGE (s)-[:{bigg}__importedFromSource]->(d)
+        #         RETURN d
+        #         """
+        #
+        #         session.run(query_datasource)
+        #     except Exception as ex:
+        #         print(str(ex))
