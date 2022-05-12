@@ -5,7 +5,7 @@ from rdflib import Namespace
 from datetime import timedelta
 from utils.hbase import save_to_hbase
 from utils.data_transformations import *
-from utils.neo4j import get_devices_from_datasource, create_sensor
+from utils.neo4j import get_device_from_datasource, create_sensor
 from utils.rdf_utils.ontology.namespaces_definition import units, bigg_enums
 
 time_to_timedelta = {
@@ -41,7 +41,7 @@ def harmonize_data(data, **kwargs):
         dt_ini = data_group.iloc[0].name
         dt_end = data_group.iloc[-1].name
         with neo.session() as session:
-            device_neo = get_devices_from_datasource(session, user, device_id, "DatadisSource")
+            device_neo = get_device_from_datasource(session, user, device_id, "DatadisSource")
             for d_neo in device_neo:
                 device_uri = d_neo["d"].get("uri")
                 sensor_id = sensor_subject("datadis", device_id, "EnergyConsumptionGridElectricity", "RAW", freq)

@@ -10,7 +10,7 @@ import settings
 from sources.Nedgia.harmonizer.Nedgia_mapping import Mapping
 from utils.data_transformations import *
 from utils.hbase import save_to_hbase
-from utils.neo4j import get_cups_id_link, get_devices_from_datasource, create_sensor
+from utils.neo4j import get_cups_id_link, get_device_from_datasource, create_sensor
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums, units
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.rdf_utils.save_rdf import save_rdf_with_source, link_devices_with_source
@@ -71,7 +71,7 @@ def harmonize_data_ts(data, **kwargs):
 
         with neo.session() as session:
             n = Namespace(namespace)
-            devices_neo = get_devices_from_datasource(session, user, cups, "NedgiaSource")
+            devices_neo = get_device_from_datasource(session, user, cups, "NedgiaSource")
             for device in devices_neo:
                 device_uri = device['d'].get("uri")
                 sensor_id = sensor_subject("nedgia", cups, "EnergyConsumptionGas", "RAW", "")

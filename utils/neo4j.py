@@ -21,13 +21,22 @@ def get_weather_stations_by_location(session, lat, long):
     return weather_stations
 
 
-def get_devices_from_datasource(session, user, device_id, source):
+def get_device_from_datasource(session, user, device_id, source):
     device_neo = session.run(f"""
                 MATCH ({bigg}__Organization{{userID:'{user}'}})-[:{bigg}__hasSubOrganization*0..]->(o:{bigg}__Organization)-
                 [:hasSource]->(s:{source})<-[:importedFromSource]-(d)
                 WHERE d.source = "{source}" AND d.{bigg}__deviceName = ["{device_id}"] return d            
                 """)
     return device_neo
+
+
+def get_all_buildings_id_from_datasource(session, source_id):
+    buildings_neo = session.run(f"""
+        MATCH (n:{bigg}__Building)<-[:{bigg}__managesBuilding]-()<-[{bigg}__hasSubOrganization *0..]-
+                (o:{bigg}__Organization)-[:hasSource]->(s:GemwebSource) 
+                    Where id(s)={source_id} 
+                    return n.{bigg}__buildingIDFromOrganization""")
+    return list(set([x[0][0] for x in buildings_neo.values()]))
 
 
 def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estimation_method_uri, measurement_uri,

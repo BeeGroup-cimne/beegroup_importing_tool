@@ -5,12 +5,6 @@ from utils.rdf_utils.ontology.bigg_classes import Organization, Building, Locati
 from slugify import slugify as slugify
 from utils.data_transformations import *
 
-building_type_taxonomy = partial(taxonomy_mapping, taxonomy_file="sources/Gemweb/harmonizer/BuildingUseTypeTaxonomy.xls",
-                                 default="Other")
-
-utility_type_taxonomy = partial(taxonomy_mapping, taxonomy_file="sources/Gemweb/harmonizer/EnergyTypeTaxonomy.xls",
-                                default="")
-
 
 class Mapping(object):
 
@@ -37,16 +31,16 @@ class Mapping(object):
             "params": {
                 "mapping": {
                     "subject": {
-                        "key": "codi",
-                        "operations": [decode_hbase, id_zfill, building_subject]
+                        "key": "building",
+                        "operations": []
                     },
                     "buildingIDFromOrganization": {
-                        "key": "codi",
-                        "operations": [decode_hbase, id_zfill]
+                        "key": "num_ens",
+                        "operations": []
                     },
                     "buildingName": {
                         "key": "nom",
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     },
                     # "buildingUseType": {
                     #     "key": "subtipus",
@@ -83,45 +77,36 @@ class Mapping(object):
             "params": {
                 "mapping": {
                     "subject": {
-                        "key": "codi",
-                        "operations": [decode_hbase, id_zfill, location_info_subject]
+                        "key": "location_info",
+                        "operations": []
                     },
                     "hasAddressCountry": {
-                        "key": "pais",
-                        "operations": [decode_hbase,
-                                       partial(fuzzy_dictionary_match,
-                                               dictionary="utils/rdf_utils/ontology/dictionaries/countries.ttl",
-                                               predicates=['ns1:countryCode'])]
+                        "key": "hasAddressCountry",
+                        "operations": []
                     },
                     "hasAddressProvince": {
-                        "key": "provincia",
-                        "operations": [decode_hbase,
-                                       partial(fuzzy_dictionary_match,
-                                               dictionary="utils/rdf_utils/ontology/dictionaries/province.ttl",
-                                               predicates=['ns1:name'])]
+                        "key": "hasAddressProvince",
+                        "operations": []
                     },
                     "hasAddressCity": {
-                        "key": "poblacio",
-                        "operations": [decode_hbase,
-                                       partial(fuzzy_dictionary_match,
-                                               dictionary="utils/rdf_utils/ontology/dictionaries/municipality.ttl",
-                                               predicates=['ns1:name'])]
+                        "key": "hasAddressCity",
+                        "operations": []
                     },
                     "addressPostalCode": {
                         "key": "codi_postal",
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     },
                     "addressStreetName": {
                         "key": "direccio",
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     },
                     "addressLongitude": {
                         "key": "longitud",
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     },
                     "addressLatitude": {
                         "key": "latitud",
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     }
                 }
             }
@@ -132,12 +117,12 @@ class Mapping(object):
             "class": CadastralInfo,
             "type": {
                 "origin": "row_split_column",
-                "operations": [decode_hbase, ref_cadastral, validate_ref_cadastral],
+                "operations": [],
                 "sep": ";",
-                "column": "observacionsbuilding",
+                "column": "cadastral_info",
                 "column_mapping": {
-                    "subject": [str.strip, cadastral_info_subject],
-                    "landCadastralReference": [str.strip]
+                    "subject": [cadastral_info_subject],
+                    "landCadastralReference": []
                 }
             },
             "params": {
@@ -160,12 +145,12 @@ class Mapping(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": "codi",
-                        "operations": [decode_hbase, id_zfill, slugify, building_space_subject, ]
+                        "key": "building_space",
+                        "operations": []
                     },
                     "hasBuildingSpaceUseType": {
-                        "key": "subtipus",
-                        "operations": [decode_hbase, building_type_taxonomy, partial(to_object_property, namespace=bigg_enums)]
+                        "key": "hasBuildingSpaceUseType",
+                        "operations": []
                     }
                 }
             },
@@ -202,12 +187,12 @@ class Mapping(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": "codi",
-                        "operations": [decode_hbase, id_zfill, partial(gross_area_subject, a_source=self.source)]
+                        "key": "gross_floor_area",
+                        "operations": []
                     },
                     "areaValue": {
                         "key": "superficie",
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     }
                 }
             }
@@ -226,8 +211,8 @@ class Mapping(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": "codi",
-                        "operations": [decode_hbase, id_zfill, construction_element_subject]
+                        "key": "building_element",
+                        "operations": []
                     }
                 }
             }
@@ -242,16 +227,16 @@ class Mapping(object):
             "params": {
                 "mapping": {
                     "subject": {
-                        "key": "cups",
-                        "operations": [decode_hbase, delivery_subject]
+                        "key": "utility_point",
+                        "operations": []
                     },
                     "pointOfDeliveryIDFromOrganization": {
                         "key": "cups",
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     },
                     "hasUtilityType": {
-                        "key": "tipus_submin",
-                        "operations": [decode_hbase, utility_type_taxonomy, partial(to_object_property, namespace=bigg_enums)]
+                        "key": "hasUtilityType",
+                        "operations": []
                     }
                 }
             },
@@ -270,17 +255,16 @@ class Mapping(object):
             },
             "params": {
                 "raw": {
-                    #"source": "gemweb", segurament no cal posar source, ja que no es de RDF. Afegir despres fora.
                     "hasDeviceType": to_object_property("Meter.EnergyMeter", namespace=bigg_enums)
                 },
                 "mapping": {
                     "subject": {
-                        "key": "dev_gem_id",
-                        "operations": [decode_hbase, partial(device_subject, source=self.source)]
+                        "key": "device",
+                        "operations": []
                     },
                     "deviceName":  {
                         "key": "cups",
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     }
                 }
             }

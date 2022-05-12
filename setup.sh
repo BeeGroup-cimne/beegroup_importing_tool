@@ -23,6 +23,5 @@ python3 -m harmonizer -so GPG -u "icaen" -n "https://icaen.cat#" -o -c
 echo "Gemweb"
 python3 -m harmonizer -so Gemweb -u "icaen" -n "https://icaen.cat#" -c
 echo "Gemweb"
-python3 -m harmonizer -so Gemweb -u "icaen" -n "https://icaen.cat#"
 
 

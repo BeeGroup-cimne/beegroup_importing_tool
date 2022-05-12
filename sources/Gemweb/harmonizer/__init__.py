@@ -32,7 +32,7 @@ def harmonize_command_line(arguments, config=None, settings=None):
 
     supp_table = f"raw_Gemweb_static_supplies__{args.user}"
     i = 0
-    for data in utils.hbase.get_hbase_data_batch(hbase_conn, supp_table, batch_size=100):
+    for data in utils.hbase.get_hbase_data_batch(hbase_conn, supp_table, batch_size=1000):
         supp_list = []
         for n_ens, x in data:
             item = dict()
