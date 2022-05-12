@@ -1,6 +1,7 @@
 import ast
 import os
 import re
+from collections import defaultdict
 from functools import partial
 
 import pandas as pd
@@ -8,34 +9,40 @@ import rdflib
 from thefuzz import process
 
 
-def fuzzy_dictionary_match(text, dictionary, predicates, prequery=None):
+def load_dic(dictionary_list):
     dicty = rdflib.Graph()
-    for d in dictionary:
+    for d in dictionary_list:
         dicty.load(d, format="ttl")
-    if prequery:
-        res = dicty.query(prequery)
+    return dicty
+
+
+def fuzz_params(dicty, fields, filter_query=None):
+    if filter_query:
+        res = dicty.query(filter_query)
         ns = dicty.namespace_manager.namespaces()
         dicty = rdflib.Graph()
         for pre, nsp in ns:
             dicty.namespace_manager.bind(pre, nsp)
         for triple in res:
             dicty.add(triple)
-    query = f"""SELECT ?s ?obj WHERE{{ {" UNION ".join([f"{{ ?s {p} ?obj }}" for p in predicates])} }}"""
+    query = f"""SELECT ?s ?obj WHERE{{ {" UNION ".join([f"{{ ?s {p} ?obj }}" for p in fields])} }}"""
     obj = dicty.query(query)
-    map_dict = {o[1]: o[0] for o in obj}
+    return {o[1]: o[0] for o in obj}
+
+
+def fuzzy_dictionary_match(text, map_dict, default):
     match, score = process.extractOne(text, list(map_dict.keys()))
     if score > 90:
         return map_dict[match]
+    else:
+        return default
 
 
-def taxonomy_mapping(source_key, taxonomy_file, default):
+def get_taxonomy_mapping(taxonomy_file, default):
     # Transformation function
     taxonomy_dict = \
         pd.read_excel(taxonomy_file,  index_col="SOURCE").to_dict()["TAXONOMY"]
-    try:
-        return taxonomy_dict[source_key]
-    except KeyError:
-        return default
+    return defaultdict(lambda: default, taxonomy_dict)
 
 
 def to_object_property(text, namespace):

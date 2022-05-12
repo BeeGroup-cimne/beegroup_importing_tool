@@ -2,11 +2,8 @@ from utils.data_transformations import *
 from utils.rdf_utils.ontology.namespaces_definition import Bigg, bigg_enums, units, countries
 from utils.rdf_utils.ontology.bigg_classes import Organization, Building, LocationInfo, CadastralInfo, BuildingSpace, \
     Area, BuildingConstructionElement
-from slugify import slugify as slugify
-from .transform_functions import *
 
-building_type_taxonomy = partial(taxonomy_mapping, taxonomy_file="sources/GPG/harmonizer/BuildingUseTypeTaxonomy.xls",
-                                 default="Other")
+
 
 class Mapper(object):
     def __init__(self, source, namespace):
@@ -20,31 +17,16 @@ class Mapper(object):
         BuildingConstructionElement.set_namespace(namespace)
 
     def get_mappings(self, group):
-        others_organization = {
-            "name": "others_organization",
-            "class": Organization,
-            "type": {
-                "origin": "static",
-            },
-            "params": {
-                "raw": {
-                    "subject": slugify("altres"),
-                    "organizationName": "Altres",
-                    "organizationDivisionType": "Department"
-                }
-            }
-        }
-
         department_organization = {
             "name": "department_organization",
             "class": Organization,
             "type": {
                 "origin": "row_split_column",
-                "operations": [decode_hbase, ],
+                "operations": [],
                 "sep": ";",
-                "column": "Departament_Assig_Adscrip",
+                "column": "department_organization",
                 "column_mapping": {
-                    "subject": [clean_department, slugify],
+                    "subject": [],
                 }
             },
             "params": {
@@ -79,12 +61,12 @@ class Mapper(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": "Num_Ens_Inventari",
-                        "operations": [decode_hbase, id_zfill, building_department_subject]
+                        "key": "building_organization",
+                        "operations": []
                     },
                     "organizationName": {
                         "key": "Espai",
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     }
                 }
             },
@@ -113,16 +95,16 @@ class Mapper(object):
             "params": {
                 "mapping": {
                     "subject": {
-                        "key": "Num_Ens_Inventari",
-                        "operations": [decode_hbase, id_zfill,  building_subject]
+                        "key": "building",
+                        "operations": []
                     },
                     "buildingIDFromOrganization": {
-                        "key": "Num_Ens_Inventari",
-                        "operations": [decode_hbase, id_zfill]
+                        "key": "buildingIDFromOrganization",
+                        "operations": []
                     },
                     "buildingName": {
                         "key": "Espai",
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     }
                 }
             },
@@ -159,34 +141,28 @@ class Mapper(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": "Num_Ens_Inventari",
-                        "operations": [decode_hbase, id_zfill,  location_info_subject]
+                        "key": "location_info",
+                        "operations": []
                     },
                     "hasAddressProvince": {
-                        "key": "Provincia",
-                        "operations": [decode_hbase,
-                                       partial(fuzzy_dictionary_match,
-                                               dictionary="utils/rdf_utils/ontology/dictionaries/province.ttl",
-                                               predicates=['ns1:name'])]
+                        "key": "hasAddressProvince",
+                        "operations": []
                     },
                     "hasAddressCity": {
-                        "key": "Municipi",
-                        "operations": [decode_hbase,
-                                       partial(fuzzy_dictionary_match,
-                                               dictionary="utils/rdf_utils/ontology/dictionaries/municipality.ttl",
-                                               predicates=['ns1:name'])]
+                        "key": "hasAddressCity",
+                        "operations": []
                     },
                     "addressPostalCode": {
                         "key": "Codi_postal",
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     },
                     "addressStreetNumber": {
                         "key": "Num_via",
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     },
                     "addressStreetName": {
                         "key": "Via",
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     }
                 }
             }
@@ -197,12 +173,12 @@ class Mapper(object):
             "class": CadastralInfo,
             "type": {
                 "origin": "row_split_column",
-                "operations": [decode_hbase, validate_ref_cadastral],
+                "operations": [],
                 "sep": ";",
-                "column": "Ref_Cadastral",
+                "column": "cadastral_info",
                 "column_mapping": {
-                    "subject": [str.strip, cadastral_info_subject],
-                    "landCadastralReference": [str.strip]
+                    "subject": [cadastral_info_subject],
+                    "landCadastralReference": []
                 }
             },
             "params": {
@@ -213,7 +189,7 @@ class Mapper(object):
                 "mapping": {
                     "landArea": {
                         "key": "Sup_terreny",
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     }  # ,
                     # "landType": {
                     #     "key": "Classificacio_sol",
@@ -235,13 +211,12 @@ class Mapper(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": "Num_Ens_Inventari",
-                        "operations": [decode_hbase, id_zfill,  building_space_subject]
+                        "key": "building_space",
+                        "operations": []
                     },
                     "hasBuildingSpaceUseType": {
-                        "key": "Tipus_us",
-                        "operations": [decode_hbase, ast.literal_eval, reverse_list, list.pop, building_type_taxonomy,
-                                       partial(to_object_property, namespace=bigg_enums)]
+                        "key": "hasBuildingSpaceUseType",
+                        "operations": []
                     }
                 }
             },
@@ -278,12 +253,12 @@ class Mapper(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": "Num_Ens_Inventari",
-                        "operations": [decode_hbase,  id_zfill, partial(gross_area_subject, a_source=self.source)]
+                        "key": "gross_floor_area",
+                        "operations": []
                     },
                     "areaValue": {
                         "key": "Sup_const_total",
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     }
                 }
             }
@@ -302,12 +277,12 @@ class Mapper(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": "Num_Ens_Inventari",
-                        "operations": [decode_hbase, id_zfill, partial(gross_area_subject_above, a_source=self.source)]
+                        "key": "gross_floor_area_above_ground",
+                        "operations": []
                     },
                     "areaValue": {
                         "key": "Sup_const_sobre_rasant",
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     }
                 }
             }
@@ -326,12 +301,12 @@ class Mapper(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": "Num_Ens_Inventari",
-                        "operations": [decode_hbase, id_zfill, partial(gross_area_subject_under, a_source=self.source)]
+                        "key": "gross_floor_area_under_ground",
+                        "operations": []
                     },
                     "areaValue": {
                         "key": "Sup_const_sota rasant",
-                        "operations": [decode_hbase, ]
+                        "operations": []
                     }
                 }
             }
@@ -349,8 +324,8 @@ class Mapper(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": "Num_Ens_Inventari",
-                        "operations": [decode_hbase, id_zfill, construction_element_subject]
+                        "key": "building_element",
+                        "operations": []
                     }
                 }
             }
@@ -361,7 +336,6 @@ class Mapper(object):
                     building_element],
             "buildings": [building_organization, building, location_info, cadastral_info, building_space,
                           gross_floor_area, gross_floor_area_under_ground, gross_floor_area_above_ground,
-                          building_element],
-            "other": [others_organization]
+                          building_element]
         }
         return grouped_modules[group]

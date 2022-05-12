@@ -28,9 +28,9 @@ def create_ws(driver, stations):
             subject = f"{args.namespace}{float(s.latitude):.3f}~{float(s.longitude):.3f}"
             session.run(
                 f"""
-                       MERGE (ws:{bigg}__WeatherStation:{bigg}__Device:{wgs}__SpatialThing{{uri:"{subject}"}}:Resource)
+                       MERGE (ws:{bigg}__WeatherStation:{bigg}__Device:{wgs}__SpatialThing:Resource{{uri:"{subject}"}})
                        SET ws.{wgs}__lat="{float(s.latitude):.3f}", ws.{wgs}__long="{float(s.longitude):.3f}",
-                           ws.{bigg}__weatherStationType="darksky"
+                           ws.source="Darksky"
                        RETURN ws
                    """
             )
@@ -134,3 +134,4 @@ if __name__ == "__main__":
             ws['dist'] = ws.apply(get_distance, lat=l['latitude'], lon=l['longitude'], axis=1)
             ws_sel = ws[ws.dist == ws.dist.min()].subject
             link_ws(driver, ws_sel.values[0], l['subject'])
+    driver.close()

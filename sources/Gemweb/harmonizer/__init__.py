@@ -5,7 +5,6 @@ from .mapper_static import harmonize_data as map_data_static
 import argparse
 import re
 import utils
-from utils.rdf_utils.save_rdf import save_rdf_with_source
 from .mapper_static import harmonize_data
 
 
