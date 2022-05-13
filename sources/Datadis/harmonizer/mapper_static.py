@@ -14,10 +14,8 @@ from utils.utils import log_string
 bigg = settings.namespace_mappings['bigg']
 
 
-province_find = partial(fuzzy_dictionary_match,
-        dictionary=["utils/rdf_utils/ontology/dictionaries/province.ttl"],
-        predicates=['ns1:name'])
-
+def prepare_df_clean_all(df):
+    df['device_subject'] = df.cups.apply(partial(device_subject, source="DatadisSource"))
 
 def city_find(province):
     prequery = f"""SELECT ?s ?p ?o WHERE {{?s ?p ?o . ?s ns1:parentADM2 <{province}>}}"""
@@ -29,15 +27,32 @@ def city_find(province):
     return city_find
 
 
-def prepare_df_clean_all(df):
-    df['device_subject'] = df.cups.apply(partial(device_subject, source="DatadisSource"))
-
-
 def prepare_df_clean_linked(df):
     df['location_subject'] = df.NumEns.apply(id_zfill).apply(location_info_subject)
-    df['hasAddressProvince'] = df.province.apply(province_find)
-    for g, grouped in df.groupby("hasAddressProvince"):
-        df['hasAddressCity'] = grouped.municipality.apply(city_find(g))
+    province_dic = load_dic(["utils/rdf_utils/ontology/dictionaries/province.ttl"])
+    province_fuzz = partial(fuzzy_dictionary_match,
+                           map_dict=fuzz_params(province_dic, ['ns1:name']),
+                           default=None)
+    unique_prov = df['province'].unique()
+    province_map = {x: province_fuzz(x) for x in unique_prov}
+    df['hasAddressProvince'] = df.province.map(province_map)
+
+    municipality_dic = load_dic(["utils/rdf_utils/ontology/dictionaries/municipality.ttl"])
+    for prov_k, prov_uri in province_map.items():
+        if prov_uri is None:
+            df.loc[df['province'] == prov_k, 'hasAddressCity'] = None
+            continue
+        grouped = df.groupby("province").get_group(prov_k)
+        city_fuzz = partial(fuzzy_dictionary_match,
+                            map_dict=fuzz_params(
+                                municipality_dic,
+                                ['ns1:name'],
+                                filter_query=f"""SELECT ?s ?p ?o WHERE {{?s ?p ?o . ?s ns1:parentADM2 <{prov_uri}>}}"""
+                            ),
+                            default=None)
+        unique_city = grouped.municipality.unique()
+        city_map = {k: city_fuzz(k) for k in unique_city}
+        df.loc[df['province'] == prov_k, 'hasAddressCity'] = grouped.municipality.map(city_find(city_map))
     df['building_space_subject'] = df.NumEns.apply(id_zfill).apply(building_space_subject)
     df['utility_point_subject'] = df.cups.apply(delivery_subject)
 
