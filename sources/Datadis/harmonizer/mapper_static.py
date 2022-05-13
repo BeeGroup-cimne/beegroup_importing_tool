@@ -17,15 +17,6 @@ bigg = settings.namespace_mappings['bigg']
 def prepare_df_clean_all(df):
     df['device_subject'] = df.cups.apply(partial(device_subject, source="DatadisSource"))
 
-def city_find(province):
-    prequery = f"""SELECT ?s ?p ?o WHERE {{?s ?p ?o . ?s ns1:parentADM2 <{province}>}}"""
-    city_find = partial(fuzzy_dictionary_match,
-                        dictionary=["utils/rdf_utils/ontology/dictionaries/municipality.ttl",
-                                    "utils/rdf_utils/ontology/dictionaries/province.ttl"],
-                        predicates=['ns1:name'],
-                        prequery=prequery)
-    return city_find
-
 
 def prepare_df_clean_linked(df):
     df['location_subject'] = df.NumEns.apply(id_zfill).apply(location_info_subject)
@@ -52,7 +43,7 @@ def prepare_df_clean_linked(df):
                             default=None)
         unique_city = grouped.municipality.unique()
         city_map = {k: city_fuzz(k) for k in unique_city}
-        df.loc[df['province'] == prov_k, 'hasAddressCity'] = grouped.municipality.map(city_find(city_map))
+        df.loc[df['province'] == prov_k, 'hasAddressCity'] = grouped.municipality.map(city_map)
     df['building_space_subject'] = df.NumEns.apply(id_zfill).apply(building_space_subject)
     df['utility_point_subject'] = df.cups.apply(delivery_subject)
 
