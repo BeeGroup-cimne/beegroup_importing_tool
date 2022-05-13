@@ -74,9 +74,10 @@ def harmonize_data(data, **kwargs):
             # log_string(f"generating_rdf for {group}, {linked},{len(supply_by_group)}")
             if supply_by_group.empty:
                 continue
-            datadis_source = ses.run(
-                f"""Match (n: DatadisSource{{username:"{group}"}}) return n""").single()
-            datadis_source = datadis_source.get("n").id
+            with neo.session() as ses:
+                datadis_source = ses.run(
+                    f"""Match (n: DatadisSource{{username:"{group}"}}) return n""").single()
+                datadis_source = datadis_source.get("n").id
             # log_string("generating rdf")
             n = Namespace(namespace)
             mapping = Mapping(config['source'], n)
