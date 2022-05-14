@@ -28,7 +28,7 @@ def harmonize_data(data, **kwargs):
     df = pd.DataFrame.from_records(data)
     df = df.applymap(decode_hbase)
     df["ts"] = pd.to_datetime(df['timestamp'].apply(int), unit="s")
-    df["bucket"] = (df['timestamp'] // settings.ts_buckets) % settings.buckets
+    df["bucket"] = (df['timestamp'].apply(int) // settings.ts_buckets) % settings.buckets
     df['start'] = df['timestamp'].apply(decode_hbase)
     df['end'] = (df.ts + time_to_timedelta[freq]).astype(int) / 10**9
     df['value'] = df['consumptionKWh']
