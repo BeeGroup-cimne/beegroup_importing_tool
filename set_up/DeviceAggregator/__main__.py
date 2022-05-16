@@ -21,7 +21,7 @@ def create_dev_agg(measured_property, device_query, freq, agg_name, required, ag
     WHERE s.{bigg}__sensorFrequency="{freq}" 
           AND EXISTS((s)-[:{bigg}__hasMeasuredProperty]->(prop))
     WITH bs, d, prop, ts, split(bs.uri, "-")[0]+"-AGGREGATOR-{id_prop}-TOTAL-"+split(bs.uri, "-")[1] as uri
-    MERGE (da:{bigg}__DeviceAggregator{{uri:uri}}:Resource)
+    MERGE (da:{bigg}__DeviceAggregator:Resource{{uri:uri}})
     MERGE (da)-[:{bigg}__includesDevice]->(d)
     WITH da, apoc.text.join(collect("<mi>"+split(ts.uri,"#")[1]+"</mi>"), "<mo>"+"+"+"</mo>") as key1, prop, bs
     SET da.required = {required}, 

@@ -120,6 +120,7 @@ if __name__ == "__main__":
         create_ws(driver, stations)
     if args.update:
         location = pd.DataFrame(get_building_locations(driver, stations))
+        location = location[(pd.isna(location.latitude) | pd.isna(location.longitude)) == False]
         ws = pd.DataFrame(get_ws_locations(driver))
 
         from math import sin, cos, sqrt, atan2, radians

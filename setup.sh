@@ -22,6 +22,22 @@ echo "GPG"
 python3 -m harmonizer -so GPG -u "icaen" -n "https://icaen.cat#" -o -c
 echo "Gemweb"
 python3 -m harmonizer -so Gemweb -u "icaen" -n "https://icaen.cat#" -c
-echo "Gemweb"
+echo "Genercat"
+python3 -m harmonizer -so Genercat -u "icaen" -n "https://icaen.cat#" -c
+echo "Datadis static"
+python3 -m harmonizer -so Datadis -n "https://icaen.cat#" -u icaen -t static -c
+echo "Datadis TS"
+python3 -m harmonizer -so Datadis -n "https://icaen.cat#" -u icaen -t ts -c
+echo "Weather ts"
+python3 -m harmonizer -so Weather -n "https://weather.beegroup-cimne.com#" -c
+echo "Nedgia"
+python3 -m harmonizer -so Nedgia -n "https://icaen.cat#" -u icaen -tz "Europe/Madrid" -c
+echo "DeviceAggregators datadis"
+python3 -m set_up.DeviceAggregator -t "totalElectricityConsumption"
+echo "DeviceAggregators nedgia"
+python3 -m set_up.DeviceAggregator -t "totalGasConsumption"
+echo "DeviceAggregators weather"
+python3 -m set_up.DeviceAggregator -t "externalWeather"
+python3 -m set_up.Weather -f data/Weather/cpcat.json -n "https://weather.beegroup-cimne.com#" -u
 
 
