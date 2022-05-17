@@ -1,8 +1,6 @@
 import uuid
 import happybase
 
-import settings
-
 
 def __get_h_table__(hbase, table_name, cf=None):
     try:
@@ -81,9 +79,9 @@ def get_hbase_data_batch(hbase_conf, hbase_table, row_start=None, row_stop=None,
 
 def get_hbase_data_batch_bucket(hbase_conf, hbase_table, row_start=None, row_stop=None, row_prefix=None, columns=None,
                                 _filter=None, timestamp=None, include_timestamp=False, batch_size=100000,
-                                scan_batching=None, limit=None, sorted_columns=False, reverse=False):
+                                scan_batching=None, limit=None, sorted_columns=False, reverse=False, buckets=20):
 
-    for buck in range(settings.buckets):
+    for buck in range(buckets):
         if row_prefix:
             row_start = "~".join([str(buck), row_prefix.decode()]).encode()
             row_stop = row_start[:-1]+chr(row_start[-1]+1).encode("utf-8")
