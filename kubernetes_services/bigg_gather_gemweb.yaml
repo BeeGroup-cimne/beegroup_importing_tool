@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: bigg
-  name:	bigg-genercat_gather
+  name:	bigg-gemweb-gather
 spec:
   replicas: 1
   selector:
@@ -40,11 +40,11 @@ spec:
       containers:
         - name: bigg-store-dl
           image: docker.tech.beegroup-cimne.com/jobs/importing_tool:latest
-          command: ["echo", "Genercat no esta preparat per ser un cronjob"]
+          command: ["echo", "Gemweb no esta preparat per ser un cronjob"]
           volumeMounts:
           - name: biggsecrets
             mountPath: /home/ubuntu/beegroup_importing_tool/config.json
-            subPath: config_development.json
+            subPath: config.json
 
           - name: biggsecrets
             mountPath: /home/ubuntu/beegroup_importing_tool/sources/Datadis/config.json
@@ -67,8 +67,13 @@ spec:
             subPath: config_weather.json
 
           - name: biggsecrets
+            mountPath: /home/ubuntu/beegroup_importing_tool/sources/Nedgia/config.json
+            subPath: config_nedgia.json
+
+          - name: biggsecrets
             mountPath: /home/ubuntu/beegroup_importing_tool/.env
             subPath: .env
+
 
       imagePullSecrets:
         - name: registrypullsecret
@@ -78,8 +83,8 @@ spec:
           secret:
             secretName: main
             items:
-            - key: config_development.json
-              path: config_development.json
+            - key: config.json
+              path: config.json
             - key: config_datadis.json
               path: config_datadis.json
             - key: config_gemweb.json
@@ -90,5 +95,7 @@ spec:
               path: config_gpg.json
             - key: config_weather.json
               path: config_weather.json
+            - key: config_nedgia.json
+              path: config_nedgia.json
             - key: .env
               path: .env
