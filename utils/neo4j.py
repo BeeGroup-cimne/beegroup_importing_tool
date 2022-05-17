@@ -20,6 +20,7 @@ def get_all_linked_weather_stations(session, ns_mappings):
                     RETURN n.{wgs}__lat as latitude, n.{wgs}__long as longitude
                 """
     ).data()
+    return location
 
 
 def get_weather_stations_by_location(session, lat, long, ns_mappings):
