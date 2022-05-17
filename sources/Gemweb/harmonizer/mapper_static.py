@@ -114,7 +114,7 @@ def harmonize_data(data, **kwargs):
         source_id = source_id.single().get("id(s)")
 
     with neo.session() as ses:
-        ids = get_all_buildings_id_from_datasource(ses, source_id)
+        ids = get_all_buildings_id_from_datasource(ses, source_id, settings.namespace_mappings)
     # create num_ens column with parsed values in df
     df = pd.DataFrame.from_records(data)
     df = df.applymap(decode_hbase)

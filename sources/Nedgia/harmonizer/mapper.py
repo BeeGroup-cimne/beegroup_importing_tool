@@ -71,7 +71,7 @@ def harmonize_data_ts(data, **kwargs):
 
         with neo.session() as session:
             n = Namespace(namespace)
-            devices_neo = get_device_from_datasource(session, user, cups, "NedgiaSource")
+            devices_neo = get_device_from_datasource(session, user, cups, "NedgiaSource", settings.namespace_mappings)
             for device in devices_neo:
                 device_uri = device['d'].get("uri")
                 sensor_id = sensor_subject("nedgia", cups, "EnergyConsumptionGas", "RAW", "")
@@ -82,7 +82,7 @@ def harmonize_data_ts(data, **kwargs):
                 create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
                               bigg_enums.EnergyConsumptionGas, bigg_enums.TrustedModel,
                               measurement_uri, False,
-                              False, False, "", "SUM", dt_ini, dt_end)
+                              False, False, "", "SUM", dt_ini, dt_end, settings.namespace_mappings)
 
                 data_group['listKey'] = measurement_id
                 device_table = f"harmonized_online_EnergyConsumptionGas_000_SUM__{user}"
@@ -123,7 +123,7 @@ def harmonize_data_device(data, **kwargs):
               MATCH (o:{bigg}__Organization{{userID:'{user}'}})-[:hasSource]->(s:NedgiaSource) return id(s)""").single()
         datasource = nedgia_datasource['id(s)']
 
-        device_id = get_cups_id_link(session, user)
+        device_id = get_cups_id_link(session, user, settings.namespace_mappings)
         df['NumEns'] = df.CUPS.map(device_id)
         prepare_df_clean_all(df)
         linked_supplies = df[df["NumEns"].isna() == False]

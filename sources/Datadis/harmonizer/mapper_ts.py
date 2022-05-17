@@ -41,7 +41,7 @@ def harmonize_data(data, **kwargs):
         dt_ini = data_group.iloc[0].name
         dt_end = data_group.iloc[-1].name
         with neo.session() as session:
-            device_neo = get_device_from_datasource(session, user, device_id, "DatadisSource")
+            device_neo = get_device_from_datasource(session, user, device_id, "DatadisSource", settings.namespace_mappings)
             for d_neo in device_neo:
                 device_uri = d_neo["d"].get("uri")
                 sensor_id = sensor_subject("datadis", device_id, "EnergyConsumptionGridElectricity", "RAW", freq)
@@ -53,7 +53,7 @@ def harmonize_data(data, **kwargs):
                 create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
                               bigg_enums.EnergyConsumptionGridElectricity, bigg_enums.TrustedModel,
                               measurement_uri, True,
-                              False, False, freq, "SUM", dt_ini, dt_end)
+                              False, False, freq, "SUM", dt_ini, dt_end, settings.namespace_mappings)
 
                 data_group['listKey'] = measurement_id
                 device_table = f"harmonized_online_EnergyConsumptionGridElectricity_100_SUM_{freq}_{user}"

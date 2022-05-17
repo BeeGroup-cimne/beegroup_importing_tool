@@ -53,7 +53,7 @@ def harmonize_data(data, **kwargs):
             for station_id, data_group in df.groupby("stationid"):
                 lat, long = station_id.split("~")
                 with neo.session() as session:
-                    ws_neo = get_weather_stations_by_location(session, lat, long)
+                    ws_neo = get_weather_stations_by_location(session, lat, long, settings.namespace_mappings)
                     for ws_n in ws_neo:
                         data_group.set_index("ts", inplace=True)
                         data_group.sort_index(inplace=True)
@@ -70,7 +70,8 @@ def harmonize_data(data, **kwargs):
                         create_sensor(session, device_uri, sensor_uri, v['units'],
                                       v['property'], bigg_enums.TrustedModel,
                                       measurement_uri,
-                                      True, False, False, freq, v['aggregation'], dt_ini, dt_end)
+                                      True, False, False, freq, v['aggregation'], dt_ini, dt_end,
+                                      settings.namespace_mappings)
 
                         data_group['listKey'] = measurement_id
                         station_table = f"harmonized_online_{prop}_100_AVG_{freq}_public"

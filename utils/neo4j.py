@@ -1,10 +1,6 @@
-import settings
 
-bigg = settings.namespace_mappings['bigg']
-wgs = settings.namespace_mappings['wgs']
-
-
-def get_cups_id_link(session, user):
+def get_cups_id_link(session, user, ns_mappings):
+    bigg = ns_mappings['bigg']
     cups_device = session.run(f"""
         Match (u:{bigg}__UtilityPointOfDelivery)<-[:{bigg}__hasSpace|{bigg}__hasUtilityPointOfDelivery *]-
               (b:{bigg}__Building)<-[:{bigg}__managesBuilding|{bigg}__hasSubOrganization *]-
@@ -14,14 +10,17 @@ def get_cups_id_link(session, user):
     return {x['CUPS'][0]: x['NumEns'][0] for x in cups_device}
 
 
-def get_weather_stations_by_location(session, lat, long):
+def get_weather_stations_by_location(session, lat, long, ns_mappings):
+    bigg = ns_mappings['bigg']
+    wgs = ns_mappings['wgs']
     weather_stations = session.run(f"""
         Match(d:{bigg}__WeatherStation) WHERE d.{wgs}__lat="{lat}" AND d.{wgs}__long="{long}" return d
     """)
     return weather_stations
 
 
-def get_device_from_datasource(session, user, device_id, source):
+def get_device_from_datasource(session, user, device_id, source, ns_mappings):
+    bigg = ns_mappings['bigg']
     device_neo = session.run(f"""
                 MATCH ({bigg}__Organization{{userID:'{user}'}})-[:{bigg}__hasSubOrganization*0..]->(o:{bigg}__Organization)-
                 [:hasSource]->(s:{source})<-[:importedFromSource]-(d)
@@ -30,7 +29,8 @@ def get_device_from_datasource(session, user, device_id, source):
     return device_neo
 
 
-def get_all_buildings_id_from_datasource(session, source_id):
+def get_all_buildings_id_from_datasource(session, source_id, ns_mappings):
+    bigg = ns_mappings['bigg']
     buildings_neo = session.run(f"""
         MATCH (n:{bigg}__Building)<-[:{bigg}__managesBuilding]-()<-[{bigg}__hasSubOrganization *0..]-
                 (o:{bigg}__Organization)-[:hasSource]->(s:GemwebSource) 
@@ -40,7 +40,8 @@ def get_all_buildings_id_from_datasource(session, source_id):
 
 
 def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estimation_method_uri, measurement_uri,
-                  is_regular, is_cumulative, is_on_change, freq, agg_func, dt_ini, dt_end):
+                  is_regular, is_cumulative, is_on_change, freq, agg_func, dt_ini, dt_end, ns_mappings):
+    bigg = ns_mappings['bigg']
     def convert(tz):
         if not tz.tz:
             tz = tz.tz_localize("UTC")

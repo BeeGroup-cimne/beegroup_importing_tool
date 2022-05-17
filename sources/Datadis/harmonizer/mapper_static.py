@@ -59,7 +59,7 @@ def harmonize_data(data, **kwargs):
     # get codi_ens from neo4j
     neo = GraphDatabase.driver(**config['neo4j'])
     with neo.session() as ses:
-        cups_code = get_cups_id_link(ses, user)
+        cups_code = get_cups_id_link(ses, user, settings.namespace_mappings)
 
     df['NumEns'] = df.cups.map(cups_code)
 
