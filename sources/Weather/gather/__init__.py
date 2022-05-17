@@ -2,7 +2,7 @@ import argparse
 from datetime import datetime
 import pandas as pd
 from neo4j import GraphDatabase
-from utils.utils import log_string
+from utils.neo4j import get_all_linked_weather_stations
 from utils.mongo import mongo_logger
 import pickle
 from tempfile import NamedTemporaryFile
@@ -10,16 +10,10 @@ from utils.hdfs import put_file_to_hdfs, remove_file, remove_file_from_hdfs, gen
 from .weather_gather_mr import WeatherMRJob
 
 
-def get_weather_stations(neo4j):
+def get_weather_stations(neo4j, ns_mappings):
     driver = GraphDatabase.driver(**neo4j)
     with driver.session() as session:
-        location = session.run(
-            f"""
-                Match (n:ns0__WeatherStation) 
-                WHERE (n)-[:ns0__isObservedBy]-(:ns0__BuildingSpace) 
-                RETURN n.ns1__lat as latitude, n.ns1__long as longitude
-            """
-        ).data()
+        location = get_all_linked_weather_stations(session, ns_mappings)
 
         df_loc = pd.DataFrame.from_records(location)
         df_loc.latitude = df_loc.latitude.apply(lambda x: f"{float(x):.3f}")
@@ -41,7 +35,7 @@ def get_timeseries_data(config, settings):
 
     # Get all CP to generate the MR input file
     # log_string("getting weather stations")
-    stations = get_weather_stations(config['neo4j'])
+    stations = get_weather_stations(config['neo4j'], settings.namespace_mappings)
     local_input = generate_input_tsv(stations.to_dict(orient="records"), ["latitude", "longitude"])
     input_mr = put_file_to_hdfs(source_file_path=local_input, destination_file_path='/tmp/weather_tmp/')
     remove_file(local_input)

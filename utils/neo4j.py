@@ -10,6 +10,18 @@ def get_cups_id_link(session, user, ns_mappings):
     return {x['CUPS'][0]: x['NumEns'][0] for x in cups_device}
 
 
+def get_all_linked_weather_stations(session, ns_mappings):
+    bigg = ns_mappings['bigg']
+    wgs = ns_mappings['wgs']
+    location = session.run(
+        f"""
+                    Match (n:{bigg}__WeatherStation) 
+                    WHERE (n)-[:{bigg}__isObservedByDevice]-(:{bigg}__BuildingSpace) 
+                    RETURN n.{wgs}__lat as latitude, n.{wgs}__long as longitude
+                """
+    ).data()
+
+
 def get_weather_stations_by_location(session, lat, long, ns_mappings):
     bigg = ns_mappings['bigg']
     wgs = ns_mappings['wgs']
