@@ -192,7 +192,7 @@ def download_chunk(supply, type_params, credentials, status):
             raise GetDataException("No data could be found")
         return consumption
     except GetDataException as e:
-        utils.utils.log_string(f"Error gathering data from datadis for user {credentials['username']}: {e}")
+        utils.utils.log_string(f"Error user {credentials['username']} device {supply}: {e}")
         return list()
     except Exception as e:
         utils.utils.log_string(f"Received an exception when downloading: {e}")
