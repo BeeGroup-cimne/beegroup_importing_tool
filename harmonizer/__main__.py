@@ -51,7 +51,7 @@ def start_harmonizer():
                 except Exception as e:
                     log_string(f"part {message_part} from {message['source']} harmonized error: {e}")
             duration = time.time() - start
-            print(duration)
+            log_string(duration)
     except Exception as e:
         time.sleep(10)
         print(e)
