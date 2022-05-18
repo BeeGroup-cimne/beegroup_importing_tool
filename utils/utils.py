@@ -28,4 +28,4 @@ def log_string(text):
         mongo_logger.log(text)
     except Exception as e:
         logging.info(f"Error with mongo: {e}")
-    logging.info(text)
+    logging.error(text)

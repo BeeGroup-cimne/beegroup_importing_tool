@@ -2,8 +2,6 @@ import argparse
 from datetime import datetime
 import utils
 from .GPG_gather import read_data_from_xlsx
-from ...Datadis import Plugin
-
 
 def gather(arguments, config=None, settings=None):
     ap = argparse.ArgumentParser()
