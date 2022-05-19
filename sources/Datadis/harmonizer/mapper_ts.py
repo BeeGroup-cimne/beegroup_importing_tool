@@ -23,7 +23,6 @@ def harmonize_data(data, **kwargs):
     hbase_conn2 = config['hbase_store_harmonized_data']
     neo4j_connection = config['neo4j']
 
-    neo = GraphDatabase.driver(**neo4j_connection)
     n = Namespace(namespace)
     df = pd.DataFrame.from_records(data)
     df = df.applymap(decode_hbase)
@@ -40,9 +39,10 @@ def harmonize_data(data, **kwargs):
 
         dt_ini = data_group.iloc[0].name
         dt_end = data_group.iloc[-1].name
+        neo = GraphDatabase.driver(**neo4j_connection)
         with neo.session() as session:
             device_neo = list(get_device_from_datasource(session, user, device_id, "DatadisSource",
-                                                  settings.namespace_mappings))
+                                                         settings.namespace_mappings))
         for d_neo in device_neo:
             device_uri = d_neo["d"].get("uri")
             sensor_id = sensor_subject("datadis", device_id, "EnergyConsumptionGridElectricity", "RAW", freq)
@@ -65,3 +65,4 @@ def harmonize_data(data, **kwargs):
             save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn2,
                           [("info", ['end', 'isReal']), ("v", ['value'])],
                           row_fields=['bucket', 'start', 'listKey'])
+        neo.close()

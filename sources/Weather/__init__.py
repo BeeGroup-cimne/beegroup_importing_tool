@@ -3,6 +3,7 @@ from .gather import gather
 from .harmonizer import harmonize_command_line
 from .harmonizer.mapper_ts import harmonize_data
 from .. import SourcePlugin
+from utils.utils import log_string
 
 
 class Plugin(SourcePlugin):
@@ -13,6 +14,7 @@ class Plugin(SourcePlugin):
 
     def get_mapper(self, message):
         if message["collection_type"] == "darksky":
+            log_string("weather ts", mongo=False)
             return harmonize_data
         else:
             return None

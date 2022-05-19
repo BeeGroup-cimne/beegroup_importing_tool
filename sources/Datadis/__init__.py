@@ -4,7 +4,7 @@ from .harmonizer import harmonize_command_line
 from .harmonizer.mapper_static import harmonize_data as harmonize_data_static
 from .harmonizer.mapper_ts import harmonize_data as harmonize_data_ts
 from .. import SourcePlugin
-
+from utils.utils import log_string
 
 class Plugin(SourcePlugin):
     source_name = "datadis"
@@ -14,8 +14,10 @@ class Plugin(SourcePlugin):
 
     def get_mapper(self, message):
         if message["collection_type"] == "supplies":
+            log_string("datadis supplies", mongo=False)
             return harmonize_data_static
         elif re.match(r"EnergyConsumptionGridElectricity_.*", message["collection_type"]):
+            log_string("datadis ts", mongo=False)
             return harmonize_data_ts
         else:
             return None

@@ -34,12 +34,10 @@ def get_timeseries_data(config, settings):
     config_file.close()
 
     # Get all CP to generate the MR input file
-    # log_string("getting weather stations")
     stations = get_weather_stations(config['neo4j'], settings.namespace_mappings)
     local_input = generate_input_tsv(stations.to_dict(orient="records"), ["latitude", "longitude"])
     input_mr = put_file_to_hdfs(source_file_path=local_input, destination_file_path='/tmp/weather_tmp/')
     remove_file(local_input)
-    # log_string("launching hadoop job")
     # Map Reduce
     MOUNTS = 'YARN_CONTAINER_RUNTIME_DOCKER_MOUNTS=/hadoop_stack:/hadoop_stack:ro'
     IMAGE = 'YARN_CONTAINER_RUNTIME_DOCKER_IMAGE=docker.tech.beegroup-cimne.com/mr/mr-weather'

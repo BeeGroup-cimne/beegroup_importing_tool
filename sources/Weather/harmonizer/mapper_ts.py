@@ -10,7 +10,6 @@ from utils.data_transformations import *
 from utils.neo4j import create_sensor, get_weather_stations_by_location
 from utils.rdf_utils.ontology.generate_namespaces import get_namespace_subject
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums, units
-from utils.utils import log_string
 
 time_to_timedelta = {
     "PT1H": timedelta(hours=1),
@@ -67,7 +66,6 @@ def harmonize_data(data, **kwargs):
                     measurement_id = hashlib.sha256(sensor_uri.encode("utf-8"))
                     measurement_id = measurement_id.hexdigest()
                     measurement_uri = str(n[measurement_id])
-                    neo = GraphDatabase.driver(**neo4j_connection)
                     with neo.session() as session:
                         create_sensor(session, device_uri, sensor_uri, v['units'],
                                       v['property'], bigg_enums.TrustedModel,
@@ -83,4 +81,4 @@ def harmonize_data(data, **kwargs):
                     save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn2,
                                   [("info", ['end', 'isReal']), ("v", ["value"])],
                                   row_fields=['bucket', 'start', 'listKey'])
-
+                    neo.close()

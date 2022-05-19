@@ -13,10 +13,8 @@ def gather(arguments, config=None, settings=None):
     mongo_logger = utils.mongo.mongo_logger
     mongo_logger.create(config['mongo_db'], config['data_sources'][config['source']]['log'], 'gather', user=args.user,
                         log_exec=datetime.utcnow())
-    # utils.utils.log_string("start to parse a new file")
     try:
         gpg_list = read_data_from_xlsx(file=args.file)
-        # utils.utils.log_string("file parsed correctly")
     except Exception as e:
         gpg_list = []
         utils.utils.log_string(f"could not parse file: {e}")
@@ -24,7 +22,7 @@ def gather(arguments, config=None, settings=None):
 
     if args.store == "kafka":
         try:
-            # utils.utils.log_string(f"sending message")
+            utils.utils.log_string(f"saving to kafka", mongo=False)
             kafka_message = {
                 "namespace": args.namespace,
                 "user": args.user,
@@ -37,16 +35,14 @@ def gather(arguments, config=None, settings=None):
             k_harmonize_topic = config["kafka"]["topic"]
             utils.kafka.save_to_kafka(topic=k_harmonize_topic, info_document=kafka_message,
                                       config=config['kafka']['connection'], batch=settings.kafka_message_size)
-            # utils.utils.log_string(f"message sent correctly")
         except Exception as e:
             utils.utils.log_string(f"error when sending message: {e}")
     elif args.store == "hbase":
-        # utils.utils.log_string(f"saving to hbase")
+        utils.utils.log_string(f"saving to hbase", mongo=False)
         try:
             h_table_name = f"raw_GPG_static_buildings__{args.user}"
             utils.hbase.save_to_hbase(gpg_list, h_table_name, config['hbase_store_raw_data'], [("info", "all")],
                                       row_fields=["Num_Ens_Inventari"])
-            # utils.utils.log_string(f"successfully saved to hbase")
         except Exception as e:
             utils.utils.log_string(f"error saving to hbase: {e}")
     else:

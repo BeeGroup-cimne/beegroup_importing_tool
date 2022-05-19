@@ -23,9 +23,10 @@ def read_config(conf_file):
         return config
 
 
-def log_string(text):
-    try:
-        mongo_logger.log(text)
-    except Exception as e:
-        logging.info(f"Error with mongo: {e}")
+def log_string(text, mongo=True):
+    if mongo:
+        try:
+            mongo_logger.log(text)
+        except Exception as e:
+            logging.info(f"Error with mongo: {e}")
     logging.error(text)

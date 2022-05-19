@@ -31,8 +31,8 @@ def login(username, password):
 
 def save_datadis_data(data, credentials, data_type, row_keys, column_map, config):
     if config['store'] == "kafka":
+        utils.utils.log_string(f"saving to kafka", mongo=False)
         try:
-            # utils.utils.log_string(f"sending data to kafka")
             k_topic = config["kafka"]["topic"]
             kafka_message = {
                 "namespace": credentials["namespace"],
@@ -46,18 +46,16 @@ def save_datadis_data(data, credentials, data_type, row_keys, column_map, config
             utils.kafka.save_to_kafka(topic=k_topic, info_document=kafka_message,
                                       config=config['kafka']['connection'], batch=config["kafka_message_size"])
 
-            # utils.utils.log_string(f"message sent correctly")
         except Exception as e:
             utils.utils.log_string(f"error when sending message: {e}")
     elif config['store'] == "hbase":
-        # utils.utils.log_string(f"Saving to HBASE")
+        utils.utils.log_string(f"saving to hbase", mongo=False)
         try:
             type_d = "static" if data_type == "supplies" else "ts"
             data_type = "supplies_" if data_type == "supplies" else data_type
             h_table_name = f"raw_{config['source']}_{type_d}_{data_type}_{credentials['user']}"
             utils.hbase.save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
                                       row_fields=row_keys)
-            # utils.utils.log_string(f"Supplies saved successfully")
         except Exception as e:
             utils.utils.log_string(f"Error saving datadis supplies to HBASE: {e}")
     else:
@@ -184,7 +182,7 @@ def download_chunk(supply, type_params, credentials, status):
     try:
         date_ini_req = status['date_ini_block'].date()
         date_end_req = status['date_end_block'].date()
-        # utils.utils.log_string(f"Obtaining from {date_ini_req} to {date_end_req}")
+        utils.utils.log_string(f"Obtaining from {date_ini_req} to {date_end_req}", mongo=False)
 
         kwargs = parse_arguments(supply, type_params, date_ini_req, date_end_req)
         consumption = datadis.datadis_query(type_params['endpoint'], **kwargs)
@@ -214,11 +212,9 @@ class DatadisMRJob(MRJob, ABC):
                                         'gather', user=credentials["user"], datasource_user=credentials["username"],
                                         log_exec=datetime.utcnow())
         try:
-            # utils.utils.log_string(f"Login to datadis")
             login(credentials["username"], credentials["password"])
 
             # Obtain supplies from the user logged
-            # utils.utils.log_string(f"Obtaining datadis supplies")
             supplies = datadis.datadis_query(ENDPOINTS.GET_SUPPLIES)
             if not supplies:
                 utils.utils.log_string("The user has 0 supplies")
@@ -229,7 +225,7 @@ class DatadisMRJob(MRJob, ABC):
             log_exported['log_id'] = str(log_exported['log_id'])
             supplies_by_reducer = 4
             id_key = 0
-            # utils.utils.log_string(f"Obtained: {len(supplies)} supplies")
+            utils.utils.log_string(f"Obtained: {len(supplies)} supplies", mongo=False)
             for i, supply in enumerate(supplies):
                 key = f"{credentials['username']}~{id_key}"
                 value = {"supply": supply, "credentials": credentials, "logger": log_exported}
@@ -256,7 +252,6 @@ class DatadisMRJob(MRJob, ABC):
             import_log = info['logger']
             import_log['log_id'] = bson.objectid.ObjectId(import_log['log_id'])
             utils.mongo.mongo_logger.import_log(import_log, "gather")
-            # utils.utils.log_string(f"Processing: {supply['cups']}")
             datadis_devices = (
                 utils.mongo.mongo_connection(self.config['mongo_db'])
                 [self.config['data_sources'][self.config['source']]['log_devices']])
@@ -319,7 +314,6 @@ class DatadisMRJob(MRJob, ABC):
             except LoginException as e:
                 utils.utils.log_string(f"Error in login to datadis for user {credentials['username']}: {e}")
             for data_type, type_params in data_types_dict.items():
-                # utils.utils.log_string(f"Type {data_type}")
                 if type_params['type_data'] == "timeseries":
                     if self.config['policy'] == "last":
                         try:
@@ -337,7 +331,6 @@ class DatadisMRJob(MRJob, ABC):
                         if len(data_df) > 0:
                             save_datadis_data(data_df, credentials, data_type,
                                               ["cups", "timestamp"], [("info", "all")], self.config)
-                            # utils.utils.log_string(f"Request sent")
                             status['date_min'] = pd.to_datetime(data_df[0]['timestamp'], unit="s").tz_localize(pytz.UTC)
                             status['date_max'] = pd.to_datetime(data_df[-1]['timestamp'], unit="s"). \
                                 tz_localize(pytz.UTC)
@@ -355,7 +348,6 @@ class DatadisMRJob(MRJob, ABC):
                             if len(data_df) > 0:
                                 save_datadis_data(data_df, credentials, data_type,
                                                   ["cups", "timestamp"], [("info", "all")], self.config)
-                                # utils.utils.log_string(f"Request sent")
                                 status['date_min'] = pd.to_datetime(data_df[0]['timestamp'], unit="s").tz_localize(
                                     pytz.UTC)
                                 status['date_max'] = pd.to_datetime(data_df[-1]['timestamp'], unit="s"). \
@@ -364,7 +356,6 @@ class DatadisMRJob(MRJob, ABC):
                                 # store status info
                                 status['retries'] -= 1
                             status['values'] = len(data_df)
-            # utils.utils.log_string(f"finished device")
             datadis_devices.replace_one({"_id": device['_id']}, device, upsert=True)
             self.increment_counter('gathered', 'device', 1)
 

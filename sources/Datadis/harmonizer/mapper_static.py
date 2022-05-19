@@ -8,8 +8,6 @@ from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.rdf_utils.save_rdf import save_rdf_with_source, link_devices_with_source
 from utils.data_transformations import *
 import settings
-from utils.utils import log_string
-
 
 bigg = settings.namespace_mappings['bigg']
 
@@ -71,18 +69,14 @@ def harmonize_data(data, **kwargs):
         if linked == "linked":
             prepare_df_clean_linked(df)
         for group, supply_by_group in df.groupby("nif"):
-            # log_string(f"generating_rdf for {group}, {linked},{len(supply_by_group)}")
             if supply_by_group.empty:
                 continue
             with neo.session() as ses:
                 datadis_source = ses.run(
                     f"""Match (n: DatadisSource{{username:"{group}"}}) return n""").single()
                 datadis_source = datadis_source.get("n").id
-            # log_string("generating rdf")
             n = Namespace(namespace)
             mapping = Mapping(config['source'], n)
             g = generate_rdf(mapping.get_mappings(linked), supply_by_group)
-            # log_string("saving to neo4j")
             save_rdf_with_source(g, config['source'], config['neo4j'])
-            # log_string("linking with source")
             link_devices_with_source(g, datadis_source, config['neo4j'])

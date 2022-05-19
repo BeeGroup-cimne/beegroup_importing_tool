@@ -1,8 +1,7 @@
 import argparse
-import hashlib
 from datetime import datetime
-from .genercat_gather import get_data
 import utils
+from .BIS_gather import read_data_from_xlsx
 
 
 def gather(arguments, config=None, settings=None):
@@ -16,38 +15,36 @@ def gather(arguments, config=None, settings=None):
     mongo_logger.create(config['mongo_db'], config['data_sources'][config['source']]['log'], 'gather', user=args.user,
                         log_exec=datetime.utcnow())
     try:
-        data = get_data(args.file)
-        file_id = hashlib.md5(bytes(args.file.split("/")[-1], encoding="utf-8")).hexdigest()
-        for i, datat in enumerate(data):
-            datat['id_'] = f"{file_id}~{i}"
+        bis_list = read_data_from_xlsx(file=args.file)
     except Exception as e:
-        data = []
-        utils.utils.log_string(f"error parsing the file: {e}")
+        bis_list = []
+        utils.utils.log_string(f"could not parse file: {e}")
         exit(1)
+
     if args.store == "kafka":
         utils.utils.log_string(f"saving to kafka", mongo=False)
         try:
             kafka_message = {
                 "namespace": args.namespace,
                 "user": args.user,
-                "collection_type": "eem",
+                "collection_type": "buildings",
                 "source": config['source'],
-                "row_keys": ["id_"],
+                "row_keys": ["Unique Code"],
                 "logger": mongo_logger.export_log(),
-                "data": data
+                "data": bis_list
             }
-            k_topic = config["kafka"]["topic"]
-            utils.kafka.save_to_kafka(topic=k_topic, info_document=kafka_message,
+            k_harmonize_topic = config["kafka"]["topic"]
+            utils.kafka.save_to_kafka(topic=k_harmonize_topic, info_document=kafka_message,
                                       config=config['kafka']['connection'], batch=settings.kafka_message_size)
         except Exception as e:
             utils.utils.log_string(f"error when sending message: {e}")
     elif args.store == "hbase":
         utils.utils.log_string(f"saving to hbase", mongo=False)
         try:
-            h_table_name = f"raw_{config['source']}_static_eem__{args.user}"
-            utils.hbase.save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], [("info", "all")], row_fields=["id_"])
+            h_table_name = f"raw_BIS_static_buildings__{args.user}"
+            utils.hbase.save_to_hbase(bis_list, h_table_name, config['hbase_store_raw_data'], [("info", "all")],
+                                      row_fields=["Unique Code"])
         except Exception as e:
             utils.utils.log_string(f"error saving to hbase: {e}")
     else:
         utils.utils.log_string(f"store {args.store} is not supported")
-

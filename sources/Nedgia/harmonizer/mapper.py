@@ -134,12 +134,9 @@ def harmonize_data_device(data, **kwargs):
     for linked, df in [("linked", linked_supplies), ("unlinked", unlinked_supplies)]:
         if linked == "linked":
             prepare_df_clean_linked(df)
-        # log_string("generating rdf")
         n = Namespace(namespace)
         mapping = Mapping(config['source'], n)
         g = generate_rdf(mapping.get_mappings(linked), df)
-        # log_string("saving to neo4j")
         save_rdf_with_source(g, config['source'], config['neo4j'])
-        # log_string("linking with source")
         link_devices_with_source(g, datasource, config['neo4j'])
 

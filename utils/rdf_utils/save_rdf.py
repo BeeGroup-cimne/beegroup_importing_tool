@@ -5,10 +5,11 @@ from neo4j import GraphDatabase
 from rdflib import Graph, RDF, URIRef
 
 from utils.rdf_utils.ontology.namespaces_definition import Bigg
-from utils.utils import log_string
+
 
 def get_area_type_from_uri(uri):
     return uri.split("#")[1].split("-")[1]
+
 
 multi_value_classes = {
     Bigg.LocationInfo: {Bigg.hasAddressCountry: [], Bigg.hasAddressProvince: [], Bigg.hasAddressCity: [],
