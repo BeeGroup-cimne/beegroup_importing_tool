@@ -54,7 +54,6 @@ def harmonize_data(data, **kwargs):
                 neo = GraphDatabase.driver(**neo4j_connection)
                 with neo.session() as session:
                     ws_neo = list(get_weather_stations_by_location(session, lat, long, settings.namespace_mappings))
-                neo.close()
                 for ws_n in ws_neo:
                     data_group.set_index("timestamp", inplace=True)
                     data_group.sort_index(inplace=True)
@@ -75,7 +74,6 @@ def harmonize_data(data, **kwargs):
                                       measurement_uri,
                                       True, False, False, freq, v['aggregation'], dt_ini, dt_end,
                                       settings.namespace_mappings)
-                    neo.close()
                     data_group['listKey'] = measurement_id
                     station_table = f"harmonized_online_{prop}_100_AVG_{freq}_public"
                     save_to_hbase(data_group.to_dict(orient="records"), station_table, hbase_conn2,

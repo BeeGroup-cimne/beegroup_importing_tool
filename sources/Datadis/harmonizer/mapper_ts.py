@@ -41,26 +41,27 @@ def harmonize_data(data, **kwargs):
         dt_ini = data_group.iloc[0].name
         dt_end = data_group.iloc[-1].name
         with neo.session() as session:
-            device_neo = get_device_from_datasource(session, user, device_id, "DatadisSource", settings.namespace_mappings)
-            for d_neo in device_neo:
-                device_uri = d_neo["d"].get("uri")
-                sensor_id = sensor_subject("datadis", device_id, "EnergyConsumptionGridElectricity", "RAW", freq)
-                sensor_uri = str(n[sensor_id])
-                measurement_id = hashlib.sha256(sensor_uri.encode("utf-8"))
-                measurement_id = measurement_id.hexdigest()
-                measurement_uri = str(n[measurement_id])
-
+            device_neo = list(get_device_from_datasource(session, user, device_id, "DatadisSource",
+                                                  settings.namespace_mappings))
+        for d_neo in device_neo:
+            device_uri = d_neo["d"].get("uri")
+            sensor_id = sensor_subject("datadis", device_id, "EnergyConsumptionGridElectricity", "RAW", freq)
+            sensor_uri = str(n[sensor_id])
+            measurement_id = hashlib.sha256(sensor_uri.encode("utf-8"))
+            measurement_id = measurement_id.hexdigest()
+            measurement_uri = str(n[measurement_id])
+            with neo.session() as session:
                 create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
                               bigg_enums.EnergyConsumptionGridElectricity, bigg_enums.TrustedModel,
                               measurement_uri, True,
                               False, False, freq, "SUM", dt_ini, dt_end, settings.namespace_mappings)
 
-                data_group['listKey'] = measurement_id
-                device_table = f"harmonized_online_EnergyConsumptionGridElectricity_100_SUM_{freq}_{user}"
-                save_to_hbase(data_group.to_dict(orient="records"), device_table, hbase_conn2,
-                              [("info", ['end', 'isReal']), ("v", ['value'])],
-                              row_fields=['bucket', 'listKey', 'start'])
-                period_table = f"harmonized_batch_EnergyConsumptionGridElectricity_100_SUM_{freq}_{user}"
-                save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn2,
-                              [("info", ['end', 'isReal']), ("v", ['value'])],
-                              row_fields=['bucket', 'start', 'listKey'])
+            data_group['listKey'] = measurement_id
+            device_table = f"harmonized_online_EnergyConsumptionGridElectricity_100_SUM_{freq}_{user}"
+            save_to_hbase(data_group.to_dict(orient="records"), device_table, hbase_conn2,
+                          [("info", ['end', 'isReal']), ("v", ['value'])],
+                          row_fields=['bucket', 'listKey', 'start'])
+            period_table = f"harmonized_batch_EnergyConsumptionGridElectricity_100_SUM_{freq}_{user}"
+            save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn2,
+                          [("info", ['end', 'isReal']), ("v", ['value'])],
+                          row_fields=['bucket', 'start', 'listKey'])
