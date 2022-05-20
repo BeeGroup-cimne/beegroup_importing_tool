@@ -27,6 +27,6 @@ def harmonize_command_line(arguments, config=None, settings=None):
             dic_list.append(item)
         log_string("parsed. Mapping...", mongo=False)
         i += len(dic_list)
-        log_string(i, mongo=False
+        log_string(i, mongo=False)
         harmonize_data(dic_list, namespace=args.namespace, user=args.user,
                        organizations=args.organizations, config=config)
