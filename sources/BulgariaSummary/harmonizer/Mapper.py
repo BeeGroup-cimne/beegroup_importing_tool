@@ -313,6 +313,7 @@ class Mapper(object):
         eem = []
         for i in range(14):
             links = {}
+
             for j in range(7):
                 links.update({
                     f"energy_saving_{i}_{j}": {
@@ -331,7 +332,7 @@ class Mapper(object):
                     "raw": {
                         "hasEnergyEfficiencyMeasureInvestmentCurrency": units["BulgarianLev"],
                         "energyEfficiencyMeasureCurrencyExchangeRate": "0.51",
-                        "hasEnergyEfficiencyMeasureType": to_object_property(f"emm_{i}_type", namespace=bigg_enums),
+                        # "hasEnergyEfficiencyMeasureType": to_object_property(f"emm_{i}_type", namespace=bigg_enums),
                     },
                     "mapping": {
                         "subject": {
@@ -363,7 +364,7 @@ class Mapper(object):
                     },
                     "params": {
                         "raw": {
-                            "hasEnergySavingType": to_object_property(hasEnergySavingsType[j], namespace=bigg_enums)
+                            # "hasEnergySavingType": to_object_property(hasEnergySavingsType[j], namespace=bigg_enums)
                         },
                         "mapping": {
                             "subject": {
