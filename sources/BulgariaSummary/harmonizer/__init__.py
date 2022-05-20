@@ -95,18 +95,27 @@ def harmonize_data(data, **kwargs):
 
     df['device_subject'] = 'DEVICE-' + config['source'] + '-' + df['subject']
 
-    value_dict = {0: 'EnergyConsumptionOil', 1: 'EnergyConsumptionCoal', 2: 'EnergyConsumptionGas',
-                  3: 'EnergyConsumptionOthers', 4: 'EnergyConsumptionDistrictHeating',
-                  5: 'EnergyConsumptionGridElectricity',
-                  6: 'EnergyConsumptionTotal'}
+    value_dict = {0: 'OilSaving', 1: 'CoalSaving', 2: 'GasSaving',
+                  3: 'OtherSavings', 4: 'DistrictHeatingSaving',
+                  5: 'GridElectricitySaving',
+                  6: 'TotalEnergySaving'}
 
-    for i in range(14):
-        df[f"subject_eem_{i}"] = 'EEM-' + energy_efficiency_measurement_list[i]
+    for i in range(len(energy_efficiency_measurement_list)):
+        df[f"subject_eem_{i}"] = 'EEM-' + df['subject'] + '-' + energy_efficiency_measurement_list[i]
+        df[f"emm_{i}_type"] = energy_efficiency_measurement_list[i]
+        for j in range(7):
+            df[f"energy_saving_{i}_{j}_subject"] = 'EnergySaving-' + df['subject'] + '-' + \
+                                                   energy_efficiency_measurement_list[
+                                                       i] + '-' + value_dict[j]
+            df[f"energy_saving_{i}_{j}_type"] = value_dict[j]
 
-    df.dropna(subset=['epc_subject_before', 'epc_subject_before'], inplace=True)
+    df.dropna(subset=['epc_subject_before'], inplace=True)
     g = generate_rdf(mapper.get_mappings("all"), df)
 
     print(g.serialize(format="ttl"))
 
-    # save_rdf_with_source(g, config['source'], config['neo4j'])
-    # create_sensor
+    with open('out.ttl', 'w') as f:
+        f.write(g.serialize(format="ttl"))
+
+# save_rdf_with_source(g, config['source'], config['neo4j'])
+# create_sensor

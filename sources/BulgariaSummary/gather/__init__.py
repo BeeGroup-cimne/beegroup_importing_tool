@@ -16,7 +16,7 @@ EXCEL_COLUMNS = ["municipality", "type_of_building", "gross_floor_area", "epc_da
 variables = "Liquid fuels	Hard fuels	Gas	Others	Heat energy	Electricity	Total	Emission reduction	Finacial savings".split(
     "\t") + "Investments	Payback".split("\t")
 
-for i in range(1, 15):
+for i in range(14):
     for j in variables:
         aux = j.replace(" ", "_")
         EXCEL_COLUMNS.append(f"measurement_{i}_{aux}")

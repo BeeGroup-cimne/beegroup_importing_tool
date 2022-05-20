@@ -1,13 +1,9 @@
-from functools import partial
-
 from slugify import slugify
 
-from utils.data_transformations import building_subject, location_info_subject, building_department_subject, \
-    building_space_subject, gross_area_subject, epc_subject, building_space_use_type_subject, to_object_property, \
-    construction_element_subject, device_subject
+from utils.data_transformations import to_object_property
 from utils.rdf_utils.ontology.bigg_classes import Organization, Building, LocationInfo, BuildingSpace, Area, \
     EnergyPerformanceCertificate, BuildingSpaceUseType, AreaType, AreaUnitOfMeasurement, Element, Device, \
-    EnergyEfficiencyMeasure, Sensor
+    EnergyEfficiencyMeasure, Sensor, EnergySaving
 from utils.rdf_utils.ontology.namespaces_definition import Bigg, units, bigg_enums, countries
 
 
@@ -27,6 +23,7 @@ class Mapper(object):
         Device.set_namespace(namespace)
         EnergyEfficiencyMeasure.set_namespace(namespace)
         Sensor.set_namespace(namespace)
+        EnergySaving.set_namespace(namespace)
 
     def get_mappings(self, group):
         organization = {
@@ -309,34 +306,91 @@ class Mapper(object):
                         "key": "device_subject",
                         "operations": []
                     },
-
                 }
             }
         }
 
-        eem = [{
-            "name": f"eem_{i}",
-            "class": EnergyPerformanceCertificate,
-            "type": {
-                "origin": "row"
-            },
-            "params": {
-                "mapping": {
-                    "subject": {
-                        "key": f"subject_eem_{i}",
-                        "operations": []
+        eem = []
+        for i in range(14):
+            links = {}
+            for j in range(7):
+                links.update({
+                    f"energy_saving_{i}_{j}": {
+                        "type": Bigg.producesSaving,
+                        "link": "subject"
+                    }
+                })
+
+            eem.append({
+                "name": f"eem_{i}",
+                "class": EnergyEfficiencyMeasure,
+                "type": {
+                    "origin": "row"
+                },
+                "params": {
+                    "raw": {
+                        "hasEnergyEfficiencyMeasureInvestmentCurrency": units["BulgarianLev"],
+                        "energyEfficiencyMeasureCurrencyExchangeRate": "0.51",
+                        "hasEnergyEfficiencyMeasureType": to_object_property(f"emm_{i}_type", namespace=bigg_enums),
                     },
-
+                    "mapping": {
+                        "subject": {
+                            "key": f"subject_eem_{i}",
+                            "operations": []
+                        },
+                        "energyEfficiencyMeasureInvestment": {
+                            "key": f"measurement_{i}_Investments",
+                            "operations": []
+                        }
+                    },
+                    "links": links
                 }
-            }
 
-        } for i in range(14)]
+            })
+
+        energy_savings = []
+
+        energy_savings_types = ["Liquid_fuels", "Hard_fuels", "Gas", "Others", "Heat_energy", "Electricity", "Total"]
+        hasEnergySavingsType = ['OilSaving', 'CoalSaving', 'GasSaving', 'OtherSavings', 'DistrictHeatingSaving',
+                                'GridElectricitySaving', 'TotalEnergySaving']
+        for i in range(14):
+            for j in range(7):
+                energy_savings.append({
+                    "name": f"energy_saving_{i}_{j}",
+                    "class": EnergySaving,
+                    "type": {
+                        "origin": "row"
+                    },
+                    "params": {
+                        "raw": {
+                            "hasEnergySavingType": to_object_property(hasEnergySavingsType[j], namespace=bigg_enums)
+                        },
+                        "mapping": {
+                            "subject": {
+                                "key": f"energy_saving_{i}_{j}_subject",
+                                "operations": []
+                            },
+                            "energySavingValue": {
+                                "key": f"measurement_{i}_{energy_savings_types[j]}",
+                                "operations": []
+                            },
+                            "energySavingStartDate": {
+                                "key": f"epc_date_before",
+                                "operations": []
+                            },
+                            "energySavingEndDate": {
+                                "key": f"epc_date",
+                                "operations": []
+                            },
+                        }
+                    }
+                })
 
         grouped_modules = {
             "all": [organization, building_organization, buildings, building_space,
                     building_space_use_type, gross_floor_area, location_info, energy_performance_certificate_before,
                     energy_performance_certificate_after, element, device
-                    ] + eem
+                    ] + eem + energy_savings
         }
 
         return grouped_modules[group]
