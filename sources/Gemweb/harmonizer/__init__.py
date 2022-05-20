@@ -1,5 +1,6 @@
 import pandas as pd
 
+from utils.utils import log_string
 from .mapper_static import harmonize_data as map_data_static
 
 import argparse
@@ -25,7 +26,7 @@ def harmonize_command_line(arguments, config=None, settings=None):
                 item[k1] = v
             item.update({"build_gem_id": n_ens.decode()})
             building_list.append(item)
-        print("parsed. Mapping...")
+        log_string("parsed. Mapping...", mongo=False)
 
     building_df = pd.DataFrame.from_records(building_list)
     building_df.set_index("build_gem_id", inplace=True)
@@ -41,9 +42,9 @@ def harmonize_command_line(arguments, config=None, settings=None):
                 item[k1] = v
             item.update({"dev_gem_id": n_ens.decode()})
             supp_list.append(item)
-        print("parsed. Mapping...")
+        log_string("parsed. Mapping...", mongo=False)
         i = i + len(supp_list)
-        print(i)
+        log_string(i, mongo=False)
         supplies_df = pd.DataFrame.from_records(supp_list)
         supplies_df['id_centres_consum'] = supplies_df['id_centres_consum'].apply(lambda idc: idc.decode())
         df = supplies_df.join(building_df, on='id_centres_consum', lsuffix="supply", rsuffix="building", how="left")

@@ -5,7 +5,7 @@ from .. import SourcePlugin
 
 
 class Plugin(SourcePlugin):
-    source_name = "GPG"
+    source_name = "BIS"
 
     def gather(self, arguments):
         gather(arguments, settings=self.settings, config=self.config)

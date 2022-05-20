@@ -30,21 +30,14 @@ class Mapper(object):
                 }
             },
             "params": {
-                "raw": {
-                    "organizationDivisionType": "Department"
-                },
                 "column_mapping": {
                     "subject": "subject",
                 }
             },
             "links": {
-                # "main_organization": {
-                #     "type": Bigg.hasSuperOrganization,
-                #     "link": "__all__"
-                # },
                 "building_organization": {
                     "type": Bigg.hasSubOrganization,
-                    "link": "Num_Ens_Inventari"
+                    "link": "Unique Code"
                 }
             }
         }
@@ -65,23 +58,15 @@ class Mapper(object):
                         "operations": []
                     },
                     "organizationName": {
-                        "key": "Espai",
+                        "key": "Name",
                         "operations": []
                     }
                 }
             },
             "links": {
-                # "department_organization": {
-                #     "type": Bigg.hasSuperOrganization,
-                #     "link": "Num_Ens_Inventari",
-                #     "fallback": {
-                #         "key": "main_organization",
-                #         "bidirectional": Bigg.hasSubOrganization
-                #     }
-                # },
                 "building": {
                     "type": Bigg.managesBuilding,
-                    "link": "Num_Ens_Inventari"
+                    "link": "Unique Code"
                 }
             }
         }
@@ -99,31 +84,27 @@ class Mapper(object):
                         "operations": []
                     },
                     "buildingIDFromOrganization": {
-                        "key": "buildingIDFromOrganization",
+                        "key": "Unique Code",
                         "operations": []
                     },
                     "buildingName": {
-                        "key": "Espai",
+                        "key": "Name",
                         "operations": []
                     }
                 }
             },
             "links": {
-                # "building_organization": {
-                #     "type": Bigg.pertainsToOrganization,
-                #     "link": "Num_Ens_Inventari"
-                # },
                 "building_space": {
                     "type": Bigg.hasSpace,
-                    "link": "Num_Ens_Inventari"
+                    "link": "Unique Code"
                 },
                 "location_info": {
                     "type": Bigg.hasLocationInfo,
-                    "link": "Num_Ens_Inventari"
+                    "link": "Unique Code"
                 },
                 "cadastral_info": {
                     "type": Bigg.hasCadastralInfo,
-                    "link": "Num_Ens_Inventari"
+                    "link": "Unique Code"
                 }
             }
         }
@@ -135,13 +116,13 @@ class Mapper(object):
                 "origin": "row"
             },
             "params": {
-                "raw": {
-                    "hasAddressCountry":
-                        to_object_property("2510769/", namespace=countries)
-                },
                 "mapping": {
                     "subject": {
                         "key": "location_info",
+                        "operations": []
+                    },
+                    "hasAddressCountry":{
+                        "key": "hasAddressCountry",
                         "operations": []
                     },
                     "hasAddressProvince": {
@@ -153,15 +134,23 @@ class Mapper(object):
                         "operations": []
                     },
                     "addressPostalCode": {
-                        "key": "Codi_postal",
+                        "key": "CP",
                         "operations": []
                     },
                     "addressStreetNumber": {
-                        "key": "Num_via",
+                        "key": 'Road Number',
                         "operations": []
                     },
                     "addressStreetName": {
-                        "key": "Via",
+                        "key": 'Road',
+                        "operations": []
+                    },
+                    "addressLatitude": {
+                        "key": 'Latitud',
+                        "operations": []
+                    },
+                    "addressLongitude": {
+                        "key": 'Longitud',
                         "operations": []
                     }
                 }
@@ -175,7 +164,7 @@ class Mapper(object):
                 "origin": "row_split_column",
                 "operations": [],
                 "sep": ";",
-                "column": "cadastral_info",
+                "column": 'Cadastral References',
                 "column_mapping": {
                     "subject": [cadastral_info_subject],
                     "landCadastralReference": []
@@ -188,13 +177,9 @@ class Mapper(object):
                 },
                 "mapping": {
                     "landArea": {
-                        "key": "Sup_terreny",
+                        "key": "Land Area",
                         "operations": []
-                    }  # ,
-                    # "landType": {
-                    #     "key": "Classificacio_sol",
-                    #     "operations": [decode_hbase, ]
-                    # }
+                    }
                 }
             }
         }
@@ -223,19 +208,19 @@ class Mapper(object):
             "links": {
                 "gross_floor_area": {
                     "type": Bigg.hasArea,
-                    "link": "Num_Ens_Inventari"
+                    "link": "Unique Code"
                 },
                 "gross_floor_area_above_ground": {
                     "type": Bigg.hasArea,
-                    "link": "Num_Ens_Inventari"
+                    "link": "Unique Code"
                 },
                 "gross_floor_area_under_ground": {
                     "type": Bigg.hasArea,
-                    "link": "Num_Ens_Inventari"
+                    "link": "Unique Code"
                 },
                 "building_element": {
                     "type": Bigg.isAssociatedWithElement,
-                    "link": "Num_Ens_Inventari"
+                    "link": "Unique Code"
                 }
             }
         }
@@ -257,7 +242,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "areaValue": {
-                        "key": "Sup_const_total",
+                        "key": 'Gross Floor Area',
                         "operations": []
                     }
                 }
@@ -281,7 +266,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "areaValue": {
-                        "key": "Sup_const_sobre_rasant",
+                        "key": 'Gross Floor Area Above Ground',
                         "operations": []
                     }
                 }
@@ -305,7 +290,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "areaValue": {
-                        "key": "Sup_const_sota rasant",
+                        "key": 'Gross Floor Area Under Ground',
                         "operations": []
                     }
                 }
@@ -333,9 +318,6 @@ class Mapper(object):
         grouped_modules = {
             "all": [department_organization, building_organization, building, location_info, cadastral_info,
                     building_space, gross_floor_area, gross_floor_area_under_ground, gross_floor_area_above_ground,
-                    building_element],
-            "buildings": [building_organization, building, location_info, cadastral_info, building_space,
-                          gross_floor_area, gross_floor_area_under_ground, gross_floor_area_above_ground,
-                          building_element]
+                    building_element]
         }
         return grouped_modules[group]

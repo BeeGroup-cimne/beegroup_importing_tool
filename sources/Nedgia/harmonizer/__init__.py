@@ -4,6 +4,7 @@ import re
 import pandas as pd
 
 import utils
+from utils.utils import log_string
 from .mapper import harmonize_data_device, harmonize_data_ts
 
 
@@ -32,7 +33,7 @@ def harmonize_command_line(arguments, config=None, settings=None):
         if len(dic_list) <= 0:
             continue
         i += len(dic_list)
-        print(i)
+        log_string(i, mongo=False)
         df = pd.DataFrame.from_records(dic_list)
         data_raw = pd.DataFrame(data={'CUPS': df['CUPS'].unique(), 'devices': df['CUPS'].unique()}).to_dict(
                 orient="records")

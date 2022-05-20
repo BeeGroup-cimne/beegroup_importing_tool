@@ -32,4 +32,4 @@ if __name__ == '__main__':
                     log_string(f"error storing part {message_part} to HBASE: {e}")
     except Exception as e:
         time.sleep(10)
-        print(e)
+        log_string(e, mongo=False)

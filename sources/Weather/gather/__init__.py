@@ -7,6 +7,7 @@ from utils.mongo import mongo_logger
 import pickle
 from tempfile import NamedTemporaryFile
 from utils.hdfs import put_file_to_hdfs, remove_file, remove_file_from_hdfs, generate_input_tsv
+from utils.utils import log_string
 from .weather_gather_mr import WeatherMRJob
 
 
@@ -58,7 +59,7 @@ def get_timeseries_data(config, settings):
         remove_file_from_hdfs(input_mr)
         remove_file(config_file.name)
     except Exception as e:
-        print(f"error in map_reduce: {e}")
+        log_string(f"error in map_reduce: {e}", mongo=False)
         remove_file_from_hdfs(input_mr)
         remove_file(config_file.name)
 

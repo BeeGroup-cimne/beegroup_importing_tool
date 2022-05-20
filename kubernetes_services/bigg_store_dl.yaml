@@ -71,6 +71,10 @@ spec:
             subPath: config_nedgia.json
 
           - name: biggsecrets
+            mountPath: /home/ubuntu/beegroup_importing_tool/sources/BIS/config.json
+            subPath: config_bis.json
+
+          - name: biggsecrets
             mountPath: /home/ubuntu/beegroup_importing_tool/.env
             subPath: .env
 
@@ -96,5 +100,7 @@ spec:
               path: config_weather.json
             - key: config_nedgia.json
               path: config_nedgia.json
+            - key: config_bis.json
+              path: config_bis.json
             - key: .env
               path: .env

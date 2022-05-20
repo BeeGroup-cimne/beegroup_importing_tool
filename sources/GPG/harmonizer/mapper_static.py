@@ -8,6 +8,7 @@ from utils.data_transformations import *
 from utils.rdf_utils.ontology.namespaces_definition import Bigg, bigg_enums
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.rdf_utils.save_rdf import save_rdf_with_source
+from utils.utils import log_string
 from .GPG_mapping import Mapper
 from .transform_functions import *
 
@@ -121,15 +122,15 @@ def harmonize_data(data, **kwargs):
     n = Namespace(namespace)
     mapper = Mapper(config['source'], n)
     df = pd.DataFrame.from_records(data)
-    print("preparing df")
+    log_string("preparing df", mongo=False)
     df = df.applymap(decode_hbase)
     clean_dataframe(df)
-    print("generating rdf")
+    log_string("generating rdf", mongo=False)
     if organizations:
-        print("maching organizations")
+        log_string("maching organizations", mongo=False)
         fuzz_departments(df, user, config['neo4j'])
         g = generate_rdf(mapper.get_mappings("all"), df)
     else:
         g = generate_rdf(mapper.get_mappings("buildings"), df)
-    print("saving")
+    log_string("saving", mongo=False)
     save_rdf_with_source(g, config['source'], config['neo4j'])

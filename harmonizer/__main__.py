@@ -51,7 +51,7 @@ def start_harmonizer():
             log_string(duration, mongo=False)
     except Exception as e:
         time.sleep(10)
-        print(e)
+        log_string(e)
 
 
 def harmonize_source(g_args):

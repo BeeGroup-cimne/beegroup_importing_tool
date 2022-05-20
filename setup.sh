@@ -6,6 +6,10 @@
 # CALL n10s.nsprefixes.add("wgs","http://www.w3.org/2003/01/geo/wgs84_pos#");
 # CALL n10s.nsprefixes.add("ttt","http://ttt.cat#");
 
+# set en names to taxonomies.
+#Match(n:bigg__BuildingSpaceUseType) set n.rdfs__label=[apoc.text.regreplace(apoc.text.split(apoc.text.split(n.uri,"#")[1],"\.")[-1], "(.)([A-Z])", "$1 $2")+"@en"]
+#Match(n:bigg__AreaType) set n.rdfs__label=[apoc.text.regreplace(apoc.text.split(apoc.text.split(n.uri,"#")[1],"\.")[-1], "(.)([A-Z])", "$1 $2")+"@en"]
+
 echo "dict"
 python3 -m set_up.Dictionaries
 echo "org"

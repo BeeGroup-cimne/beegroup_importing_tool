@@ -1,6 +1,7 @@
 .idea/
 __pycache__/
 config*.json
+config_files
 .env
 logs/
 *.ovpn

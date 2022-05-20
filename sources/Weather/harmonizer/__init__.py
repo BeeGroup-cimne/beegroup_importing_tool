@@ -4,6 +4,7 @@ import argparse
 
 import pandas as pd
 
+from utils.utils import log_string
 from .mapper_ts import harmonize_data
 from utils.hbase import get_hbase_data_batch
 
@@ -31,6 +32,6 @@ def harmonize_command_line(arguments, config=None, settings=None):
         if len(data_list) <= 0:
             continue
         i += len(data_list)
-        print(f"{freq}: {i}")
+        log_string(f"{freq}: {i}", mongo=False)
         harmonize_data(data_list, freq=freq, namespace=args.namespace, config=config)
 

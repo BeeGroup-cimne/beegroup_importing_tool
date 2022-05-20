@@ -1,6 +1,7 @@
 import argparse
 import re
 import utils
+from utils.utils import log_string
 from .mapper_static import harmonize_data
 
 
@@ -16,7 +17,7 @@ def harmonize_command_line(arguments, config=None, settings=None):
     i = 0
     for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table, batch_size=1000):
         dic_list = []
-        print("parsing hbase")
+        log_string("parsing hbase", mongo=False)
         for n_ens, x in data:
             item = dict()
             for k, v in x.items():
@@ -24,8 +25,8 @@ def harmonize_command_line(arguments, config=None, settings=None):
                 item[k1] = v
             item.update({"Num_Ens_Inventari": n_ens})
             dic_list.append(item)
-        print("parsed. Mapping...")
+        log_string("parsed. Mapping...", mongo=False)
         i += len(dic_list)
-        print(i)
+        log_string(i, mongo=False
         harmonize_data(dic_list, namespace=args.namespace, user=args.user,
                        organizations=args.organizations, config=config)

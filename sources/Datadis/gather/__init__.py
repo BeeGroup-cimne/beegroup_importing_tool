@@ -2,6 +2,7 @@ import argparse
 import pickle
 from tempfile import NamedTemporaryFile
 import utils
+from utils.utils import log_string
 from .datadis_utils import get_users, decrypt_passwords
 from .datadis_gather_mr import DatadisMRJob
 
@@ -41,7 +42,7 @@ def get_timeseries_data(store, policy, config, settings):
         utils.hdfs.remove_file_from_hdfs(input_mr)
         utils.hdfs.remove_file(config_file.name)
     except Exception as e:
-        print(f"error in map_reduce: {e}")
+        log_string(f"error in map_reduce: {e}")
         utils.hdfs.remove_file_from_hdfs(input_mr)
         utils.hdfs.remove_file(config_file.name)
 
