@@ -9,8 +9,8 @@ from sources.BulgariaSummary.harmonizer.Mapper import Mapper
 from utils.rdf_utils.rdf_functions import generate_rdf
 
 energy_type_list = ['OilSaving', 'CoalSaving', 'GasSaving', 'OtherSavings', 'DistrictHeatingSaving',
-                          'GridElectricitySaving',
-                          'TotalEnergySaving']
+                    'GridElectricitySaving',
+                    'TotalEnergySaving']
 
 energy_efficiency_measurement_list = ['BuildingFabricMeasure.WallMeasure.WallCavityInsulation',
                                       'BuildingFabricMeasure.WallMeasure.WallInternalInsulation',

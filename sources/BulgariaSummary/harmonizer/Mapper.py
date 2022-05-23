@@ -311,43 +311,6 @@ class Mapper(object):
             }
         }
 
-        eem = []
-
-        for i in range(14):
-            links = {}
-            for j in range(7):
-                links.update({f"energy_saving_{i}_{j}": {
-                    "type": Bigg.producesSaving,
-                    "link": f"subject"
-                }})
-
-            eem.append({
-                "name": f"eem_{i}",
-                "class": EnergyEfficiencyMeasure,
-                "type": {
-                    "origin": "row"
-                },
-                "params": {
-                    "raw": {
-                        "hasEnergyEfficiencyMeasureInvestmentCurrency": units["BulgarianLev"],
-                        "energyEfficiencyMeasureCurrencyExchangeRate": "0.51",
-                        "hasEnergyEfficiencyMeasureType": to_object_property(energy_efficiency_measurement_list[i],
-                                                                             namespace=bigg_enums),
-                    },
-                    "mapping": {
-                        "subject": {
-                            "key": f"subject_eem_{i}",
-                            "operations": []
-                        },
-                        "energyEfficiencyMeasureInvestment": {
-                            "key": f"measurement_{i}_Investments",
-                            "operations": []
-                        }
-                    },
-                    "links": links
-                }
-            })
-
         energy_savings = []
 
         energy_savings_types = ["Liquid_fuels", "Hard_fuels", "Gas", "Others", "Heat_energy", "Electricity", "Total"]
@@ -388,6 +351,48 @@ class Mapper(object):
                         }
                     }
                 })
+
+        eem = []
+
+        for i in range(14):
+            # links = {}
+            # for j in range(7):
+            #     links.update({f"energy_saving_{i}_{j}": {
+            #         "type": Bigg.producesSaving,
+            #         "link": f"subject"
+            #     }})
+
+            eem.append({
+                "name": f"eem_{i}",
+                "class": EnergyEfficiencyMeasure,
+                "type": {
+                    "origin": "row"
+                },
+                "params": {
+                    "raw": {
+                        "hasEnergyEfficiencyMeasureInvestmentCurrency": units["BulgarianLev"],
+                        "energyEfficiencyMeasureCurrencyExchangeRate": "0.51",
+                        "hasEnergyEfficiencyMeasureType": to_object_property(energy_efficiency_measurement_list[i],
+                                                                             namespace=bigg_enums),
+                    },
+                    "mapping": {
+                        "subject": {
+                            "key": f"subject_eem_{i}",
+                            "operations": []
+                        },
+                        "energyEfficiencyMeasureInvestment": {
+                            "key": f"measurement_{i}_Investments",
+                            "operations": []
+                        }
+                    },
+                    "links": {
+                        "energy_saving_0_0": {
+                            "type": Bigg.producesSaving,
+                            "link": f"subject_eem_{i}"
+                        }
+                    }
+                }
+            })
 
         grouped_modules = {
             "all": [organization, building_organization, buildings, building_space,
