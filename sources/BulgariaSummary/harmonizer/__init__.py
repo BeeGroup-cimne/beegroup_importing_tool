@@ -8,7 +8,7 @@ from thefuzz import process
 from sources.BulgariaSummary.harmonizer.Mapper import Mapper
 from utils.rdf_utils.rdf_functions import generate_rdf
 
-measurement_properties = ['OilSaving', 'CoalSaving', 'GasSaving', 'DistrictHeatingSaving',
+energy_type_list = ['OilSaving', 'CoalSaving', 'GasSaving', 'OtherSavings', 'DistrictHeatingSaving',
                           'GridElectricitySaving',
                           'TotalEnergySaving']
 
@@ -70,7 +70,6 @@ def harmonize_data(data, **kwargs):
     user = kwargs['user']
     n = Namespace(namespace)
     config = kwargs['config']
-    mapper = Mapper(config['source'], n)
 
     df = set_taxonomy(pd.DataFrame().from_records(data))
 
@@ -110,6 +109,8 @@ def harmonize_data(data, **kwargs):
             df[f"energy_saving_{i}_{j}_type"] = value_dict[j]
 
     df.dropna(subset=['epc_subject_before'], inplace=True)
+
+    mapper = Mapper(config['source'], n)
     g = generate_rdf(mapper.get_mappings("all"), df)
 
     print(g.serialize(format="ttl"))

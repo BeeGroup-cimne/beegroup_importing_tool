@@ -1,5 +1,6 @@
 from slugify import slugify
 
+from sources.BulgariaSummary.harmonizer import energy_efficiency_measurement_list, energy_type_list
 from utils.data_transformations import to_object_property
 from utils.rdf_utils.ontology.bigg_classes import Organization, Building, LocationInfo, BuildingSpace, Area, \
     EnergyPerformanceCertificate, BuildingSpaceUseType, AreaType, AreaUnitOfMeasurement, Element, Device, \
@@ -311,16 +312,14 @@ class Mapper(object):
         }
 
         eem = []
+
         for i in range(14):
             links = {}
-
             for j in range(7):
-                links.update({
-                    f"energy_saving_{i}_{j}": {
-                        "type": Bigg.producesSaving,
-                        "link": "subject"
-                    }
-                })
+                links.update({f"energy_saving_{i}_{j}": {
+                    "type": Bigg.producesSaving,
+                    "link": f"subject"
+                }})
 
             eem.append({
                 "name": f"eem_{i}",
@@ -332,7 +331,8 @@ class Mapper(object):
                     "raw": {
                         "hasEnergyEfficiencyMeasureInvestmentCurrency": units["BulgarianLev"],
                         "energyEfficiencyMeasureCurrencyExchangeRate": "0.51",
-                        # "hasEnergyEfficiencyMeasureType": to_object_property(f"emm_{i}_type", namespace=bigg_enums),
+                        "hasEnergyEfficiencyMeasureType": to_object_property(energy_efficiency_measurement_list[i],
+                                                                             namespace=bigg_enums),
                     },
                     "mapping": {
                         "subject": {
@@ -346,16 +346,18 @@ class Mapper(object):
                     },
                     "links": links
                 }
-
             })
 
         energy_savings = []
 
         energy_savings_types = ["Liquid_fuels", "Hard_fuels", "Gas", "Others", "Heat_energy", "Electricity", "Total"]
-        hasEnergySavingsType = ['OilSaving', 'CoalSaving', 'GasSaving', 'OtherSavings', 'DistrictHeatingSaving',
-                                'GridElectricitySaving', 'TotalEnergySaving']
+
         for i in range(14):
             for j in range(7):
+                energy_type = ''
+                if energy_type_list[j] != 'OtherSavings':
+                    energy_type = to_object_property(energy_type_list[j], namespace=bigg_enums)
+
                 energy_savings.append({
                     "name": f"energy_saving_{i}_{j}",
                     "class": EnergySaving,
@@ -364,7 +366,7 @@ class Mapper(object):
                     },
                     "params": {
                         "raw": {
-                            # "hasEnergySavingType": to_object_property(hasEnergySavingsType[j], namespace=bigg_enums)
+                            "hasEnergySavingType": energy_type
                         },
                         "mapping": {
                             "subject": {
@@ -382,7 +384,7 @@ class Mapper(object):
                             "energySavingEndDate": {
                                 "key": f"epc_date",
                                 "operations": []
-                            },
+                            }
                         }
                     }
                 })
