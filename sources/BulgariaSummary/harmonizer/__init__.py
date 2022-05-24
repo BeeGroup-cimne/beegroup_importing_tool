@@ -5,27 +5,9 @@ import rdflib
 from rdflib import Namespace
 from thefuzz import process
 
+from sources.BulgariaSummary.constants import enum_energy_efficiency_measurement_type, enum_energy_saving_type
 from sources.BulgariaSummary.harmonizer.Mapper import Mapper
 from utils.rdf_utils.rdf_functions import generate_rdf
-
-energy_type_list = ['OilSaving', 'CoalSaving', 'GasSaving', 'OtherSavings', 'DistrictHeatingSaving',
-                    'GridElectricitySaving',
-                    'TotalEnergySaving']
-
-energy_efficiency_measurement_list = ['BuildingFabricMeasure.WallMeasure.WallCavityInsulation',
-                                      'BuildingFabricMeasure.WallMeasure.WallInternalInsulation',
-                                      'BuildingFabricMeasure.RoofAndCeilingMeasure',
-                                      'BuildingFabricMeasure.FloorMeasure', 'BuildingFabricMeasure',
-                                      'HVACAndHotWaterMeasure',
-                                      'HVACAndHotWaterMeasure.CombinedHeatingCoolingSystemMeasure',
-                                      'HVACAndHotWaterMeasure.HeatingSystemMeasure.HeatingFinalElementsMeasure.HeatingFinalElementsReplacement',
-                                      'HVACAndHotWaterMeasure.CombinedHeatingCoolingSystemMeasure.HeatingAndCoolingDistributionMeasure.HeatingAndCoolingDistributionSystemReplacement',
-                                      'HVACAndHotWaterMeasure.CombinedHeatingCoolingSystemMeasure.HeatingAndCoolingControlMeasure',
-                                      'HVACAndHotWaterMeasure.HotWaterSystemMeasure.HotWaterProductionMeasure.OtherHotWaterProductionMeasure',
-                                      'RenewableGenerationMeasure',
-                                      'LightingMeasure',
-                                      'ElectricPowerSystemMeasure.ElectricEquipmentMeasure.ElectricApplianceMeasure'
-                                      ]
 
 
 def harmonize_command_line():
@@ -83,8 +65,8 @@ def harmonize_data(data, **kwargs):
     df['location_subject'] = 'LOCATION-' + df['subject']
 
     df['epc_date_before'] = df['epc_date'] - timedelta(days=365)
-    df['epc_subject_before'] = 'EPC-' + df['subject'] + '-' + df['epc_energy_class_before']
-    df['epc_subject_after'] = 'EPC-' + df['subject'] + '-' + df['epc_energy_class_after']
+    df['epc_before_subject'] = 'EPC-' + df['subject'] + '-' + df['epc_energy_class_before']
+    df['epc_after_subject'] = 'EPC-' + df['subject'] + '-' + df['epc_energy_class_after']
 
     df['building_space_subject'] = 'BUILDINGSPACE-' + df['subject']
     df['building_space_use_type_subject'] = 'BUILDING-SPACE-USE-TYPE-' + df['subject']
@@ -94,29 +76,22 @@ def harmonize_data(data, **kwargs):
 
     df['device_subject'] = 'DEVICE-' + config['source'] + '-' + df['subject']
 
-    value_dict = {0: 'OilSaving', 1: 'CoalSaving', 2: 'GasSaving',
-                  3: 'OtherSavings', 4: 'DistrictHeatingSaving',
-                  5: 'GridElectricitySaving',
-                  6: 'TotalEnergySaving'}
+    for i in range(len(enum_energy_efficiency_measurement_type)):
+        df[f"eem_{i}_subject"] = 'EEM-' + df['subject'] + '-' + enum_energy_efficiency_measurement_type[i]
+        df[f"emm_{i}_type"] = enum_energy_efficiency_measurement_type[i]
 
-    for i in range(len(energy_efficiency_measurement_list)):
-        df[f"subject_eem_{i}"] = 'EEM-' + df['subject'] + '-' + energy_efficiency_measurement_list[i]
-        df[f"emm_{i}_type"] = energy_efficiency_measurement_list[i]
-        for j in range(7):
+        for j in range(len(enum_energy_saving_type)):
             df[f"energy_saving_{i}_{j}_subject"] = 'EnergySaving-' + df['subject'] + '-' + \
-                                                   energy_efficiency_measurement_list[
-                                                       i] + '-' + value_dict[j]
-            df[f"energy_saving_{i}_{j}_type"] = value_dict[j]
+                                                   enum_energy_efficiency_measurement_type[
+                                                       i] + '-' + enum_energy_saving_type[j]
+            df[f"energy_saving_{i}_{j}_type"] = enum_energy_saving_type[j]
 
-    df.dropna(subset=['epc_subject_before'], inplace=True)
+    df.dropna(subset=['epc_before_subject'], inplace=True)
 
     mapper = Mapper(config['source'], n)
-    g = generate_rdf(mapper.get_mappings("all"), df)
+    g = generate_rdf(mapper.get_mappings("test"), df[:1])
 
-    print(g.serialize(format="ttl"))
-
-    with open('out.ttl', 'w') as f:
-        f.write(g.serialize(format="ttl"))
+    g.serialize('output.ttl', format="ttl")
 
 # save_rdf_with_source(g, config['source'], config['neo4j'])
 # create_sensor
