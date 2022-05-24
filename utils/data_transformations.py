@@ -17,6 +17,8 @@ def load_dic(dictionary_list):
 
 
 def fuzz_params(dicty, fields, filter_query=None):
+    if len(dicty) == 0:
+        return {}
     if filter_query:
         res = dicty.query(filter_query)
         ns = dicty.namespace_manager.namespaces()
@@ -31,6 +33,8 @@ def fuzz_params(dicty, fields, filter_query=None):
 
 
 def fuzzy_dictionary_match(text, map_dict, default):
+    if not map_dict:
+        return default
     match, score = process.extractOne(text, list(map_dict.keys()))
     if score > 90:
         return map_dict[match]
