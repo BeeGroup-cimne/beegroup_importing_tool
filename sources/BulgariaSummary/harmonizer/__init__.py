@@ -2,11 +2,15 @@ from datetime import timedelta
 
 import pandas as pd
 import rdflib
+from neo4j import GraphDatabase
 from rdflib import Namespace
 from thefuzz import process
 
 from sources.BulgariaSummary.constants import enum_energy_efficiency_measurement_type, enum_energy_saving_type
 from sources.BulgariaSummary.harmonizer.Mapper import Mapper
+from utils.data_transformations import sensor_subject
+from utils.neo4j import create_sensor
+from utils.rdf_utils.ontology.namespaces_definition import bigg_enums, units
 from utils.rdf_utils.rdf_functions import generate_rdf
 
 
@@ -89,9 +93,26 @@ def harmonize_data(data, **kwargs):
     df.dropna(subset=['epc_before_subject'], inplace=True)
 
     mapper = Mapper(config['source'], n)
-    g = generate_rdf(mapper.get_mappings("test"), df[:1])
+    g = generate_rdf(mapper.get_mappings("test"), df)
 
     g.serialize('output.ttl', format="ttl")
+    # save_rdf_with_source(g, config['source'], config['neo4j'])
 
-# save_rdf_with_source(g, config['source'], config['neo4j'])
-# create_sensor
+    # Harmonize TS
+    neo4j_connection = config['neo4j']
+
+    neo = GraphDatabase.driver(**neo4j_connection)
+    with neo.session() as session:
+        for index, row in df.iterrows():
+            device_uri = str(n[row['device_subject']])
+            sensor_id = sensor_subject("bulgariaSummary", row['subject'], "EnergyConsumptionGridElectricity", "RAW",
+                                       'PT1Y')
+            sensor_uri = str(n[sensor_id])
+            # 'OilSaving', 'CoalSaving', 'GasSaving', 'OtherSavings', 'DistrictHeatingSaving',
+            # 'GridElectricitySaving',
+            # 'TotalEnergySaving'
+
+            create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
+                          bigg_enums.EnergyConsumptionGridElectricity, bigg_enums.TrustedModel,
+                          measurement_uri,
+                          False, False, freq, "SUM", dt_ini, dt_end)
