@@ -1,3 +1,4 @@
+import hashlib
 from datetime import timedelta
 
 import pandas as pd
@@ -12,6 +13,7 @@ from utils.data_transformations import sensor_subject
 from utils.neo4j import create_sensor
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums, units
 from utils.rdf_utils.rdf_functions import generate_rdf
+from utils.rdf_utils.save_rdf import save_rdf_with_source
 
 
 def harmonize_command_line():
@@ -44,8 +46,9 @@ def set_country(df, label='municipality', predicates=None,
 
     mapping_dict = {}
     for i in unique_municipalities:
-        match, score = process.extractOne(i, list(map_dict.keys()), score_cutoff=90)
-        mapping_dict.update({i: map_dict[match]})
+        match = process.extractOne(i, list(map_dict.keys()), score_cutoff=90)
+        if match:
+            mapping_dict.update({i: map_dict[match[0]]})
 
     df['municipality'] = df['municipality'].map(mapping_dict)
     return df
@@ -58,6 +61,7 @@ def harmonize_data(data, **kwargs):
     config = kwargs['config']
 
     df = set_taxonomy(pd.DataFrame().from_records(data))
+    df = set_country(df)
 
     df['subject'] = df['filename'] + '-' + df['id'].astype(str)
 
@@ -93,10 +97,10 @@ def harmonize_data(data, **kwargs):
     df.dropna(subset=['epc_before_subject'], inplace=True)
 
     mapper = Mapper(config['source'], n)
-    g = generate_rdf(mapper.get_mappings("test"), df)
+    g = generate_rdf(mapper.get_mappings("all"), df)
 
     g.serialize('output.ttl', format="ttl")
-    # save_rdf_with_source(g, config['source'], config['neo4j'])
+    save_rdf_with_source(g, config['source'], config['neo4j'])
 
     # Harmonize TS
     neo4j_connection = config['neo4j']
@@ -108,11 +112,26 @@ def harmonize_data(data, **kwargs):
             sensor_id = sensor_subject("bulgariaSummary", row['subject'], "EnergyConsumptionGridElectricity", "RAW",
                                        'PT1Y')
             sensor_uri = str(n[sensor_id])
-            # 'OilSaving', 'CoalSaving', 'GasSaving', 'OtherSavings', 'DistrictHeatingSaving',
-            # 'GridElectricitySaving',
-            # 'TotalEnergySaving'
+            measured_property_list = [bigg_enums.EnergyConsumptionOil, bigg_enums.EnergyConsumptionCoal,
+                                      bigg_enums.EnergyConsumptionGas, bigg_enums.EnergyConsumptionOthers,
+                                      bigg_enums.EnergyConsumptionDistrictHeating,
+                                      bigg_enums.EnergyConsumptionGridElectricity, bigg_enums.EnergyConsumptionTotal]
 
-            create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
-                          bigg_enums.EnergyConsumptionGridElectricity, bigg_enums.TrustedModel,
-                          measurement_uri,
-                          False, False, freq, "SUM", dt_ini, dt_end)
+            for measured_property in measured_property_list:
+                measurement_id = hashlib.sha256(sensor_uri.encode("utf-8"))
+                measurement_id = measurement_id.hexdigest()
+                measurement_uri = str(n[measurement_id])
+                create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
+                              measured_property, bigg_enums.TrustedModel,
+                              measurement_uri,
+                              False, False, 'PT1Y', "SUM", row['epc_date_before'], row['epc_date'])
+
+                # data_group['listKey'] = measurement_id
+                # device_table = f"harmonized_online_EnergyConsumptionGridElectricity_100_SUM_{freq}_{user}"
+                # save_to_hbase(data_group.to_dict(orient="records"), device_table, hbase_conn2,
+                #               [("info", ['end', 'isReal']), ("v", ['value'])],
+                #               row_fields=['bucket', 'listKey', 'start'])
+                # period_table = f"harmonized_batch_EnergyConsumptionGridElectricity_100_SUM_{freq}_{user}"
+                # save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn2,
+                #               [("info", ['end', 'isReal']), ("v", ['value'])],
+                #               row_fields=['bucket', 'start', 'listKey'])

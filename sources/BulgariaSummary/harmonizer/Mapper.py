@@ -136,7 +136,7 @@ class Mapper(object):
                 }
             },
             "links": {
-                "building": {
+                "buildings": {
                     "type": Bigg.managesBuilding,
                     "link": "subject"
                 }
@@ -353,13 +353,14 @@ class Mapper(object):
                 "device": {
                     "type": Bigg.isObservedByDevice,
                     "link": "subject"
-                },
-                "energy_efficiency_measurement": {
-                    "type": Bigg.isAffectedByMeasure,
-                    "link": "subject"
                 }
             }
         }
+
+        for i in range(len(enum_energy_efficiency_measurement_type)):
+            element['links'].update({f"eem_{i}": {
+                "type": Bigg.isAffectedByMeasure,
+                "link": "subject"}})
 
         device = {
             "name": "device",
