@@ -171,15 +171,15 @@ def gather_savings(wb, id):
 
 
 def gather_data(config, settings, args):
-    for file in os.listdir('data/prilojenie'):
+    for file in os.listdir(args.file):
         if file.endswith('.xlsx'):
-            wb = openpyxl.load_workbook('data/prilojenie/' + file, data_only=True)
+            wb = openpyxl.load_workbook(f"{args.file}/{file}", data_only=True)
             contracts = gather_contacts(wb['Contacts'])
             building_description = gather_building_description(wb['Building Description'])
 
             # General Info
-            general_info = pd.json_normalize({**contracts, **building_description}, sep="_").to_dict(
-                orient="records")
+            general_info = pd.json_normalize({**contracts, **building_description}, sep="_").to_dict(orient="records")
+
             save_data(data=general_info, data_type="generalInfo",
                       row_keys=["epc_id"],
                       column_map=[("info", "all")], config=config, settings=settings, args=args)

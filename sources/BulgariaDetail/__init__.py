@@ -1,10 +1,10 @@
 from sources import SourcePlugin
-from sources.Prilojenie.gather import gather
-from sources.Prilojenie.harmonizer.mapper import *
+from sources.BulgariaDetail.gather import gather
+from sources.BulgariaDetail.harmonizer.mapper import *
 
 
 class Plugin(SourcePlugin):
-    source_name = "prilojenie"
+    source_name = "bulgariaDetail"
 
     def gather(self, arguments):
         gather(arguments, settings=self.settings, config=self.config)

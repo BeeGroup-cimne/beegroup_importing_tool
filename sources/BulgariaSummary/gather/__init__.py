@@ -29,9 +29,9 @@ EXCEL_COLUMNS.append("Energy savings")
 
 
 def gather_data(config, settings, args):
-    for file in os.listdir("data/bulgaria_summary"):
+    for file in os.listdir(args.file):
         if file.endswith('.xlsx'):
-            path = "data/bulgaria_summary/" + file
+            path = args.file + file
             df = pd.read_excel(path, skiprows=3, sheet_name="List_residential_pilots")
 
             aux = {}
