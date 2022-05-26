@@ -3,7 +3,6 @@ import re
 
 import happybase
 
-import utils
 from utils.hbase import get_hbase_data_batch
 from .mapper_static import harmonize_data as harmonize_static_data
 from .mapper_ts import harmonize_data as harmonize_ts_data

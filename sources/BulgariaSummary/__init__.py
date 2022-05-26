@@ -1,6 +1,6 @@
 from sources import SourcePlugin
 from sources.BulgariaSummary.gather import gather
-from sources.BulgariaSummary.harmonizer import harmonize_data
+from sources.BulgariaSummary.harmonizer import harmonize_ts, harmonize_static
 
 
 class Plugin(SourcePlugin):
@@ -10,7 +10,10 @@ class Plugin(SourcePlugin):
         gather(arguments, settings=self.settings, config=self.config)
 
     def get_mapper(self, message):
-        return harmonize_data
+        if message["collection_type"] == 'static':
+            return harmonize_static
+        elif message["collection_type"] == 'ts':
+            return harmonize_ts
 
     def get_kwargs(self, message):
         return {

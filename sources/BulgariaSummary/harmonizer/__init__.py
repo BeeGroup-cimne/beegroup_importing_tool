@@ -1,23 +1,22 @@
 import hashlib
 from datetime import timedelta
 
+import numpy as np
 import pandas as pd
 import rdflib
 from neo4j import GraphDatabase
 from rdflib import Namespace
 from thefuzz import process
 
+import settings
 from sources.BulgariaSummary.constants import enum_energy_efficiency_measurement_type, enum_energy_saving_type
 from sources.BulgariaSummary.harmonizer.Mapper import Mapper
 from utils.data_transformations import sensor_subject
+from utils.hbase import save_to_hbase
 from utils.neo4j import create_sensor
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums, units
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.rdf_utils.save_rdf import save_rdf_with_source
-
-
-def harmonize_command_line():
-    pass
 
 
 def set_taxonomy(df):
@@ -31,8 +30,8 @@ def set_taxonomy(df):
     return df
 
 
-def set_country(df, label='municipality', predicates=None,
-                dictionary_ttl_file="utils/rdf_utils/ontology/dictionaries/municipality.ttl"):
+def set_municipality(df, label='municipality', predicates=None,
+                     dictionary_ttl_file="utils/rdf_utils/ontology/dictionaries/municipality.ttl"):
     if predicates is None:
         predicates = ['ns1:name']
 
@@ -54,14 +53,13 @@ def set_country(df, label='municipality', predicates=None,
     return df
 
 
-def harmonize_data(data, **kwargs):
+def harmonize_static(data, **kwargs):
     namespace = kwargs['namespace']
-    user = kwargs['user']
     n = Namespace(namespace)
     config = kwargs['config']
 
     df = set_taxonomy(pd.DataFrame().from_records(data))
-    df = set_country(df)
+    df = set_municipality(df)
 
     df['subject'] = df['filename'] + '-' + df['id'].astype(str)
 
@@ -102,36 +100,72 @@ def harmonize_data(data, **kwargs):
     g.serialize('output.ttl', format="ttl")
     save_rdf_with_source(g, config['source'], config['neo4j'])
 
-    # Harmonize TS
+
+def harmonize_ts(data, **kwargs):
+    namespace = kwargs['namespace']
+    user = kwargs['user']
+    n = Namespace(namespace)
+    config = kwargs['config']
+    freq = 'PT1Y'
+
+    df = pd.DataFrame.from_records(data)
+    df['subject'] = df['filename'] + '-' + df['id'].astype(str)
+    df['epc_date_before'] = df['epc_date'] - timedelta(days=365)
+    df['device_subject'] = 'DEVICE-' + config['source'] + '-' + df['subject']
+
     neo4j_connection = config['neo4j']
 
-    neo = GraphDatabase.driver(**neo4j_connection)
-    with neo.session() as session:
-        for index, row in df.iterrows():
-            device_uri = str(n[row['device_subject']])
-            sensor_id = sensor_subject("bulgariaSummary", row['subject'], "EnergyConsumptionGridElectricity", "RAW",
-                                       'PT1Y')
-            sensor_uri = str(n[sensor_id])
-            measured_property_list = [bigg_enums.EnergyConsumptionOil, bigg_enums.EnergyConsumptionCoal,
-                                      bigg_enums.EnergyConsumptionGas, bigg_enums.EnergyConsumptionOthers,
-                                      bigg_enums.EnergyConsumptionDistrictHeating,
-                                      bigg_enums.EnergyConsumptionGridElectricity, bigg_enums.EnergyConsumptionTotal]
+    measured_property_list = ['EnergyConsumptionOil', 'EnergyConsumptionCoal',
+                              'EnergyConsumptionGas', 'EnergyConsumptionOthers',
+                              'EnergyConsumptionDistrictHeating',
+                              'EnergyConsumptionGridElectricity', 'EnergyConsumptionTotal']
 
-            for measured_property in measured_property_list:
+    measured_property_df = ['annual_energy_consumption_before_liquid_fuels',
+                            'annual_energy_consumption_before_hard_fuels',
+                            'annual_energy_consumption_before_gas', 'annual_energy_consumption_before_others',
+                            'annual_energy_consumption_before_heat_energy',
+                            'annual_energy_consumption_before_electricity',
+                            'annual_energy_consumption_before_total_consumption']
+
+    neo = GraphDatabase.driver(**neo4j_connection)
+    hbase_conn2 = config['hbase_store_harmonized_data']
+
+    with neo.session() as session:
+        for index, row in df.iterrows()[:1]:
+            device_uri = str(n[row['device_subject']])
+
+            for i in range(len(measured_property_list)):
+                sensor_id = sensor_subject(config['source'], row['subject'], measured_property_list[i], "RAW",
+                                           freq)
+                sensor_uri = str(n[sensor_id])
                 measurement_id = hashlib.sha256(sensor_uri.encode("utf-8"))
                 measurement_id = measurement_id.hexdigest()
                 measurement_uri = str(n[measurement_id])
                 create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
-                              measured_property, bigg_enums.TrustedModel,
+                              bigg_enums[measured_property_list[i]], bigg_enums.TrustedModel,
                               measurement_uri,
-                              False, False, 'PT1Y', "SUM", row['epc_date_before'], row['epc_date'])
+                              False, False, freq, "SUM", row['epc_date_before'], row['epc_date'])
 
-                # data_group['listKey'] = measurement_id
-                # device_table = f"harmonized_online_EnergyConsumptionGridElectricity_100_SUM_{freq}_{user}"
-                # save_to_hbase(data_group.to_dict(orient="records"), device_table, hbase_conn2,
-                #               [("info", ['end', 'isReal']), ("v", ['value'])],
-                #               row_fields=['bucket', 'listKey', 'start'])
-                # period_table = f"harmonized_batch_EnergyConsumptionGridElectricity_100_SUM_{freq}_{user}"
-                # save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn2,
-                #               [("info", ['end', 'isReal']), ("v", ['value'])],
-                #               row_fields=['bucket', 'start', 'listKey'])
+                reduced_df = df[['subject', measured_property_df[i],
+                                 'epc_date',
+                                 'epc_date_before']]
+
+                reduced_df['listKey'] = measurement_id
+                reduced_df['isRead'] = True
+                reduced_df['bucket'] = (df['epc_date'].values.astype(np.int64) // 10 ** 9) % settings.buckets
+
+                reduced_df.rename(
+                    columns={"epc_date": "end", "epc_date_before": "start", measured_property_df[i]: "value"},
+                    inplace=True)
+
+                device_table = f"harmonized_online_{measured_property_list[i]}_100_SUM_{freq}_{user}"
+
+                save_to_hbase(reduced_df.to_dict(orient="records"), device_table, hbase_conn2,
+                              [("info", ['end', 'isReal']), ("v", ['value'])],
+                              row_fields=['bucket', 'listKey', 'start'])
+
+                period_table = f"harmonized_batch_{measured_property_list[i]}_100_SUM_{freq}_{user}"
+
+                save_to_hbase(reduced_df.to_dict(orient="records"), period_table, hbase_conn2,
+                              [("info", ['end', 'isReal']), ("v", ['value'])],
+                              row_fields=['bucket', 'start', 'listKey'])
