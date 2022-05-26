@@ -1,6 +1,7 @@
 import argparse
 import re
 import utils
+from harmonizer.cache import Cache
 from utils.utils import log_string
 from .mapper_static import harmonize_data
 
@@ -14,6 +15,7 @@ def harmonize_command_line(arguments, config=None, settings=None):
     hbase_conn = config['hbase_store_raw_data']
     hbase_table = f"raw_Genercat_static_eem__{args.user}"
     i = 0
+    Cache.load_cache()
     for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table, batch_size=100):
         dic_list = []
         log_string("parsing hbase", mongo=False)

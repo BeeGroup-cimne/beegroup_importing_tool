@@ -4,6 +4,7 @@ from rdflib import Namespace, Graph
 from slugify import slugify
 
 import settings
+from harmonizer.cache import Cache
 from utils.data_transformations import *
 from utils.rdf_utils.ontology.namespaces_definition import Bigg, bigg_enums
 from utils.rdf_utils.rdf_functions import generate_rdf
@@ -67,12 +68,12 @@ def fuzz_departments(df, user_id, neo4j):
     df['department_organization'] = df['department_organization'].apply(harmonize_deps).apply(lambda x: ";".join(x))
 
 
-def clean_dataframe(df):
+def clean_dataframe(df, source):
     df['building_organization'] = df['Num_Ens_Inventari'].apply(id_zfill).apply(building_department_subject)
     df['building'] = df['Num_Ens_Inventari'].apply(id_zfill).apply(building_subject)
     df['buildingIDFromOrganization'] = df['Num_Ens_Inventari'].apply(id_zfill)
     df['location_info'] = df['Num_Ens_Inventari'].apply(id_zfill).apply(location_info_subject)
-    province_dic = load_dic(["utils/rdf_utils/ontology/dictionaries/province.ttl"])
+    province_dic = Cache.province_dic
     province_fuzz = partial(fuzzy_dictionary_match,
                             map_dict=fuzz_params(province_dic, ['ns1:name']),
                             default=None
@@ -81,7 +82,7 @@ def clean_dataframe(df):
     prov_map = {k: province_fuzz(k) for k in unique_prov}
     df['hasAddressProvince'] = df['Provincia'].map(prov_map)
 
-    municipality_dic = load_dic(["utils/rdf_utils/ontology/dictionaries/municipality.ttl"])
+    municipality_dic = Cache.municipality_dic
     for prov, df_group in df.groupby('hasAddressProvince'):
         municipality_fuzz = partial(fuzzy_dictionary_match,
                                     map_dict=fuzz_params(
@@ -105,11 +106,11 @@ def clean_dataframe(df):
     df['hasBuildingSpaceUseType'] = df['Tipus_us'].apply(lambda x: ast.literal_eval(x)[-1]).map(building_type_taxonomy). \
         apply(partial(to_object_property, namespace=bigg_enums))
     df['gross_floor_area'] = df['Num_Ens_Inventari'].apply(id_zfill).\
-        apply(partial(gross_area_subject, a_source="GPGSource"))
+        apply(partial(gross_area_subject, a_source=source))
     df['gross_floor_area_above_ground'] = df['Num_Ens_Inventari'].\
-        apply(id_zfill).apply(partial(gross_area_subject_above, a_source="GPGSource"))
+        apply(id_zfill).apply(partial(gross_area_subject_above, a_source=source))
     df['gross_floor_area_under_ground'] = df['Num_Ens_Inventari'].\
-        apply(id_zfill).apply(partial(gross_area_subject_under, a_source="GPGSource"))
+        apply(id_zfill).apply(partial(gross_area_subject_under, a_source=source))
 
     df['building_element'] = df['Num_Ens_Inventari'].apply(id_zfill).apply(construction_element_subject)
 
@@ -124,7 +125,7 @@ def harmonize_data(data, **kwargs):
     df = pd.DataFrame.from_records(data)
     log_string("preparing df", mongo=False)
     df = df.applymap(decode_hbase)
-    clean_dataframe(df)
+    clean_dataframe(df, config['source'])
     log_string("generating rdf", mongo=False)
     if organizations:
         log_string("maching organizations", mongo=False)

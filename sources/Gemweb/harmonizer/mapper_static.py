@@ -4,6 +4,7 @@ import pandas as pd
 from neo4j import GraphDatabase
 from rdflib import Namespace
 import settings
+from harmonizer.cache import Cache
 from utils.neo4j import get_all_buildings_id_from_datasource
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums
 from .Gemweb_mapping import Mapping
@@ -17,13 +18,13 @@ bigg = settings.namespace_mappings['bigg']
 
 
 def clean_prepare_all_df(df):
-    df['device'] = df.dev_gem_id.apply(partial(device_subject, source="GemwebSource"))
+    df['device_subject'] = df.dev_gem_id.apply(partial(device_subject, source="GemwebSource"))
 
 
 def clean_prepare_linked_df(df):
     df['building'] = df.num_ens.apply(building_subject)
     df['location_info'] = df.num_ens.apply(location_info_subject)
-    country_dict = load_dic(["utils/rdf_utils/ontology/dictionaries/countries.ttl"])
+    country_dict = Cache.country_dic
     country_fuzz = partial(
         fuzzy_dictionary_match,
         map_dict=fuzz_params(country_dict, ['ns1:countryCode']),
@@ -32,7 +33,7 @@ def clean_prepare_linked_df(df):
     unique_country = df.pais.unique()
     country_map = {k: country_fuzz(k) for k in unique_country}
     df['hasAddressCountry'] = df.pais.map(country_map)
-    province_dic = load_dic(["utils/rdf_utils/ontology/dictionaries/province.ttl"])
+    province_dic = Cache.province_dic
     prov_map = {}
     for label, value in country_map.items():
         df_group = df.groupby("pais").get_group(label)
@@ -56,7 +57,7 @@ def clean_prepare_linked_df(df):
         unique_province = df_group.provincia.unique()
         prov_map = {k: province_fuzz(k) for k in unique_province}
         df.loc[df['pais']==label, 'hasAddressProvince'] = df_group.provincia.map(prov_map)
-    municipality_dic = load_dic(["utils/rdf_utils/ontology/dictionaries/municipality.ttl"])
+    municipality_dic = Cache.municipality_dic
     for label, value in prov_map.items():
         df_group = df.groupby("provincia").get_group(label)
         if value:
@@ -118,6 +119,7 @@ def harmonize_data(data, **kwargs):
     # create num_ens column with parsed values in df
     df = pd.DataFrame.from_records(data)
     df = df.applymap(decode_hbase)
+    df.loc[:, "source_id"] = source_id
     clean_prepare_all_df(df)
     df['num_ens'] = df['codi'].apply(id_zfill)
     df_linked = df[df['num_ens'].isin([str(i) for i in ids])]
@@ -128,5 +130,5 @@ def harmonize_data(data, **kwargs):
     for linked, df_ in [("linked", df_linked), ('unlinked', df_unlinked)]:
         g = generate_rdf(mapping.get_mappings(linked), df_)
         save_rdf_with_source(g, config['source'], config['neo4j'])
-        link_devices_with_source(g, source_id, config['neo4j'])
+    link_devices_with_source(df, n, config['neo4j'])
 

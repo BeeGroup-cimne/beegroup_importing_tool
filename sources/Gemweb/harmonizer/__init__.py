@@ -1,5 +1,6 @@
 import pandas as pd
 
+from harmonizer.cache import Cache
 from utils.utils import log_string
 from .mapper_static import harmonize_data as map_data_static
 
@@ -18,6 +19,7 @@ def harmonize_command_line(arguments, config=None, settings=None):
     hbase_conn = config['hbase_store_raw_data']
     building_table = f"raw_Gemweb_static_buildings__{args.user}"
     building_list = []
+    Cache.load_cache()
     for data in utils.hbase.get_hbase_data_batch(hbase_conn, building_table):
         for n_ens, x in data:
             item = dict()

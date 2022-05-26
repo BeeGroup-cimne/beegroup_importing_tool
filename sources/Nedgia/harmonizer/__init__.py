@@ -4,6 +4,7 @@ import re
 import pandas as pd
 
 import utils
+from harmonizer.cache import Cache
 from utils.utils import log_string
 from .mapper import harmonize_data_device, harmonize_data_ts
 
@@ -19,6 +20,7 @@ def harmonize_command_line(arguments, config=None, settings=None):
     hbase_conn = config['hbase_store_raw_data']
     i = 0
     hbase_table = f"raw_Nedgia_ts_invoices__{args.user}"
+    Cache.load_cache()
     for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table, batch_size=100):
         dic_list = []
         for key, data1 in data:

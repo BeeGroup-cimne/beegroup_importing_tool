@@ -14,6 +14,7 @@ from utils.neo4j import get_cups_id_link, get_device_from_datasource, create_sen
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums, units
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.rdf_utils.save_rdf import save_rdf_with_source, link_devices_with_source
+from utils.utils import log_string
 
 bigg = settings.namespace_mappings['bigg']
 
@@ -117,26 +118,30 @@ def harmonize_data_device(data, **kwargs):
 
     neo = GraphDatabase.driver(**config['neo4j'])
     n = Namespace(namespace)
-
+    log_string("creating df", mongo=False)
     df = pd.DataFrame.from_records(data)
-
+    log_string("preparing df", mongo=False)
     with neo.session() as session:
         nedgia_datasource = session.run(f"""
               MATCH (o:{bigg}__Organization{{userID:'{user}'}})-[:hasSource]->(s:NedgiaSource) return id(s)""").single()
         datasource = nedgia_datasource['id(s)']
-
+    with neo.session() as session:
         device_id = get_cups_id_link(session, user, settings.namespace_mappings)
-        df['NumEns'] = df.CUPS.map(device_id)
-        prepare_df_clean_all(df)
-        linked_supplies = df[df["NumEns"].isna() == False]
-        unlinked_supplies = df[df["NumEns"].isna()]
+    df['NumEns'] = df.CUPS.map(device_id)
+    df["source_id"] = datasource
+    prepare_df_clean_all(df)
+    linked_supplies = df[df["NumEns"].isna() == False]
+    unlinked_supplies = df[df["NumEns"].isna()]
 
     for linked, df in [("linked", linked_supplies), ("unlinked", unlinked_supplies)]:
         if linked == "linked":
             prepare_df_clean_linked(df)
         n = Namespace(namespace)
+        log_string("mapping df", mongo=False)
         mapping = Mapping(config['source'], n)
         g = generate_rdf(mapping.get_mappings(linked), df)
+        log_string("saving df", mongo=False)
         save_rdf_with_source(g, config['source'], config['neo4j'])
-        link_devices_with_source(g, datasource, config['neo4j'])
+    log_string("linking df", mongo=False)
+    link_devices_with_source(df, n, config['neo4j'])
 

@@ -1,6 +1,7 @@
 import argparse
 import re
 import utils
+from harmonizer.cache import Cache
 from .mapper_static import harmonize_data
 
 
@@ -12,17 +13,18 @@ def harmonize_command_line(arguments, config=None, settings=None):
     args = ap.parse_args(arguments)
 
     hbase_conn = config['hbase_store_raw_data']
-    hbase_table = f"raw_GPG_static_buildings__{args.user}"
+    hbase_table = f"raw_BIS_static_buildings__{args.user}"
     i = 0
+    Cache.load_cache()
     for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table, batch_size=1000):
         dic_list = []
         print("parsing hbase")
-        for n_ens, x in data:
+        for u_c, x in data:
             item = dict()
             for k, v in x.items():
                 k1 = re.sub("^info:", "", k.decode())
                 item[k1] = v
-            item.update({"Num_Ens_Inventari": n_ens})
+            item.update({"Unique Code": u_c})
             dic_list.append(item)
         print("parsed. Mapping...")
         i += len(dic_list)

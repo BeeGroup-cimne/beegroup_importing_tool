@@ -9,6 +9,7 @@ import os
 import settings
 import importlib
 
+from harmonizer.cache import Cache
 from utils.kafka import read_from_kafka
 from utils.mongo import mongo_logger
 from utils.utils import read_config, load_plugins, log_string
@@ -23,6 +24,7 @@ def start_harmonizer():
     sources_available = load_plugins(settings)
     consumer = read_from_kafka(config['kafka']['topic'], config["kafka"]['group_harmonize'],
                                config['kafka']['connection'])
+    Cache.load_cache()
     try:
         for x in consumer:
             start = time.time()

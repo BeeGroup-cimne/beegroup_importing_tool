@@ -259,7 +259,7 @@ class Mapping(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": "device",
+                        "key": "device_subject",
                         "operations": []
                     },
                     "deviceName":  {
