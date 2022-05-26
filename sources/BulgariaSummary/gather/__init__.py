@@ -41,7 +41,11 @@ def gather_data(config, settings, args):
             df['filename'] = hashlib.sha512(file.encode()).hexdigest()
             df['id'] = df.index
 
-            save_data(data=df.to_dict(orient='records'), data_type="summary",
+            save_data(data=df.to_dict(orient='records'), data_type="static",
+                      row_keys=["filename", "id"],
+                      column_map=[("info", "all")], config=config, settings=settings, args=args)
+
+            save_data(data=df.to_dict(orient='records'), data_type="ts",
                       row_keys=["filename", "id"],
                       column_map=[("info", "all")], config=config, settings=settings, args=args)
 

@@ -19,7 +19,8 @@ class Plugin(SourcePlugin):
         return {
             "namespace": message['namespace'],
             "user": message['user'],
-            "config": self.config
+            "config": self.config,
+            "collection_type": message['collection_type']
         }
 
     def get_store_table(self, message):

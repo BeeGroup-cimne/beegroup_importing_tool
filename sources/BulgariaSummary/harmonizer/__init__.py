@@ -131,7 +131,7 @@ def harmonize_ts(data, **kwargs):
     hbase_conn2 = config['hbase_store_harmonized_data']
 
     with neo.session() as session:
-        for index, row in df.iterrows()[:1]:
+        for index, row in df.iterrows():
             device_uri = str(n[row['device_subject']])
 
             for i in range(len(measured_property_list)):
@@ -145,17 +145,18 @@ def harmonize_ts(data, **kwargs):
                               bigg_enums[measured_property_list[i]], bigg_enums.TrustedModel,
                               measurement_uri,
                               False, False, freq, "SUM", row['epc_date_before'], row['epc_date'])
-
                 reduced_df = df[['subject', measured_property_df[i],
                                  'epc_date',
                                  'epc_date_before']]
 
                 reduced_df['listKey'] = measurement_id
                 reduced_df['isRead'] = True
-                reduced_df['bucket'] = (df['epc_date'].values.astype(np.int64) // 10 ** 9) % settings.buckets
+                reduced_df['bucket'] = (df['epc_date_before'].values.astype(np.int64) // 10 ** 9) % settings.buckets
+                reduced_df['start'] = (df['epc_date_before'].values.astype(np.int64) // 10 ** 9) % settings.buckets
+                reduced_df['end'] = (df['epc_date'].values.astype(np.int64) // 10 ** 9) % settings.buckets
 
                 reduced_df.rename(
-                    columns={"epc_date": "end", "epc_date_before": "start", measured_property_df[i]: "value"},
+                    columns={measured_property_df[i]: "value"},
                     inplace=True)
 
                 device_table = f"harmonized_online_{measured_property_list[i]}_100_SUM_{freq}_{user}"
