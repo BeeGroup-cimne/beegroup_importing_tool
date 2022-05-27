@@ -211,9 +211,24 @@ def gather_data(config, settings, args):
                       column_map=[("info", "all")], config=config, settings=settings, args=args)
 
             # Measurements
-
             save_data(data=measurements, data_type="measurements",
                       row_keys=["id", "type"],
+                      column_map=[("info", "all")], config=config, settings=settings, args=args)
+
+            # List dataframes save_data
+
+            data_to_harmonize = [{
+                "general_info": general_info,
+                "epc_id": epc_id,
+                "distribution": distribution,
+                "consumption": consumption,
+                "measurements": measurements,
+                "total_annual_savings": total_annual_savings,
+                "energy_saved": energy_saved
+            }]
+
+            save_data(data=data_to_harmonize, data_type="harmonize",
+                      row_keys=["id"],
                       column_map=[("info", "all")], config=config, settings=settings, args=args)
 
 

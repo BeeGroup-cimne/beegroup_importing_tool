@@ -14,26 +14,15 @@ class Plugin(SourcePlugin):
             "namespace": message['namespace'],
             "user": message['user'],
             "config": self.config,
+            "collection_type": message['collection_type']
         }
 
     def get_mapper(self, message):
-        if message["collection_type"] == 'generalInfo':
-            return harmonize_general_info
-
-        elif message["collection_type"] == 'consumptionInfo':
-            return harmonize_consumption_info
-
-        elif message["collection_type"] == 'distributionInfo':
-            return harmonize_distribution_info
-
-        elif message["collection_type"] == 'energySaved':
-            return harmonize_energy_saved
-
-        elif message["collection_type"] == 'totalAnnualSavings':
-            return harmonize_total_annual_savings
-
-        elif message["collection_type"] == 'measurements':
-            return harmonize_measurements
+        if message["collection_type"] == 'harmonize':
+            return harmonize_data
 
     def get_store_table(self, message):
-        return f"raw_{self.source_name}_static_{message['collection_type']}__{message['user']}"
+        if message['collection_type'] == 'harmonize':
+            return None
+        else:
+            return f"raw_{self.source_name}_static_{message['collection_type']}__{message['user']}"
