@@ -1,4 +1,3 @@
-import rdflib
 from slugify import slugify
 
 from sources.BulgariaSummary.constants import eem_headers, enum_energy_saving_type, \

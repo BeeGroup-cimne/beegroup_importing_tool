@@ -1,6 +1,6 @@
 from sources import SourcePlugin
 from sources.BulgariaDetail.gather import gather
-from sources.BulgariaDetail.harmonizer.mapper import *
+from sources.BulgariaDetail.harmonizer import harmonize_data
 
 
 class Plugin(SourcePlugin):
