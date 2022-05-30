@@ -1,10 +1,15 @@
 import argparse
 import os
+from string import ascii_uppercase
 
+import openpyxl
 import pandas as pd
 
 import utils
 import hashlib
+
+from sources.Bulgaria.gather.gather_details import gather_contacts, gather_building_description, gather_consumption, \
+    gather_savings
 
 EXCEL_COLUMNS = ["municipality", "type_of_building", "gross_floor_area", "epc_date", "epc_energy_class_before",
                  "epc_energy_class_after", "annual_energy_consumption_before_liquid_fuels",
@@ -28,7 +33,7 @@ for j in variables:
 EXCEL_COLUMNS.append("Energy savings")
 
 
-def gather_data(config, settings, args):
+def gather_data_summary(config, settings, args):
     for file in os.listdir(args.file):
         if file.endswith('.xlsx'):
             path = args.file + file
@@ -48,6 +53,61 @@ def gather_data(config, settings, args):
             save_data(data=df.to_dict(orient='records'), data_type="ts",
                       row_keys=["filename", "id"],
                       column_map=[("info", "all")], config=config, settings=settings, args=args)
+
+
+def gather_data_detail(config, settings, args):
+    for file in os.listdir(args.file):
+        if file.endswith('.xlsx'):
+            wb = openpyxl.load_workbook(f"{args.file}/{file}", data_only=True)
+            contracts = gather_contacts(wb['Contacts'])
+            building_description = gather_building_description(wb['Building Description'])
+
+            # General Info
+            general_info = pd.json_normalize({**contracts, **building_description}, sep="_").to_dict(orient="records")
+
+            save_data(data=general_info, data_type="generalInfo",
+                      row_keys=["epc_id"],
+                      column_map=[("info", "all")], config=config, settings=settings, args=args)
+
+            epc_id = contracts['epc']['id']
+
+            # Consumption
+            consumption, distribution = gather_consumption(wb['Consumption'], epc_id)
+
+            save_data(data=consumption, data_type="consumptionInfo",
+                      row_keys=["id", "type"],
+                      column_map=[("info", "all")], config=config, settings=settings, args=args)
+
+            # Distribution
+
+            save_data(data=distribution, data_type="distributionInfo",
+                      row_keys=["id", "type"],
+                      column_map=[("info", "all")], config=config, settings=settings, args=args)
+
+            # Energy Saving
+            energy_saved, total_annual_savings, measurements = gather_savings(wb['Savings 2'], epc_id)
+            save_data(data=energy_saved, data_type="energySaved",
+                      row_keys=["id"],
+                      column_map=[("info", "all")], config=config, settings=settings, args=args)
+
+            # Total Annual Savings
+            save_data(data=total_annual_savings, data_type="totalAnnualSavings",
+                      row_keys=["id", "type"],
+                      column_map=[("info", "all")], config=config, settings=settings, args=args)
+
+            # Measurements
+            save_data(data=measurements, data_type="measurements",
+                      row_keys=["id", "type"],
+                      column_map=[("info", "all")], config=config, settings=settings, args=args)
+
+
+
+def gather_data(config, settings, args):
+    if args.type == 'summary':
+        gather_data_summary(config, settings, args)
+
+    if args.type == 'detail':
+        gather_data_detail(config, settings, args)
 
 
 def save_data(data, data_type, row_keys, column_map, config, settings, args):
@@ -84,6 +144,7 @@ def save_data(data, data_type, row_keys, column_map, config, settings, args):
 def gather(arguments, settings, config):
     ap = argparse.ArgumentParser(description='Gathering data from Prilojenie')
     ap.add_argument("-st", "--store", required=True, help="Where to store the data", choices=["kafka", "hbase"])
+    ap.add_argument("-t", "--type", required=True, help="Type of data", choices=["detail", "summary"])
     ap.add_argument("--user", "-u", help="The user importing the data", required=True)
     ap.add_argument("--namespace", "-n", help="The subjects namespace uri", required=True)
     ap.add_argument("-f", "--file", help="Excel file path to parse", required=True)
