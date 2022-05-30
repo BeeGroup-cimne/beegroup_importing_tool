@@ -1,4 +1,6 @@
+ # RUN in new neo4j
  CREATE CONSTRAINT n10s_unique_uri ON (r:Resource) ASSERT r.uri IS UNIQUE
+ # Create the tags and namesapaces
  CALL n10s.graphconfig.init({ keepLangTag: true, handleMultival:"ARRAY"});
  CALL n10s.nsprefixes.add("bigg","http://bigg-project.eu/ontology#");
  CALL n10s.nsprefixes.add("geo","http://www.geonames.org/ontology#");
@@ -7,17 +9,17 @@
  ###CALL n10s.nsprefixes.add("ttt","http://ttt.cat#");
 
 
+# Create the dictionary of elements
 echo "dict"
 python3 -m set_up.Dictionaries
 
-# set en names to taxonomies.
+# set "en" names to taxonomies.
 Match(n:bigg__BuildingSpaceUseType) set n.rdfs__label=[apoc.text.regreplace(apoc.text.split(apoc.text.split(n.uri,"#")[1],"\.")[-1], "(.)([A-Z])", "$1 $2")+"@en"];
 Match(n:bigg__AreaType) set n.rdfs__label=[apoc.text.regreplace(apoc.text.split(apoc.text.split(n.uri,"#")[1],"\.")[-1], "(.)([A-Z])", "$1 $2")+"@en"];
 Match(n:bigg__EnergyEfficiencyMeasureType) set n.rdfs__label=[apoc.text.regreplace(apoc.text.split(apoc.text.split(n.uri,"#")[1],"\.")[-1], "(.)([A-Z])", "$1 $2")+"@en"]
 
-echo "dict"
-python3 -m set_up.Dictionaries
-### ICAEN
+### ICAEN ORGANIZATION "https://icaen.cat#"
+# SET UP
 echo "org"
 python3 -m set_up.Organizations -f data/Organizations/gencat-organizations.xls -name "Generalitat de Catalunya" -u "icaen" -n "https://icaen.cat#"
 echo "Gemweb source"
@@ -28,6 +30,7 @@ echo "nedgia source"
 python3 -m set_up.DataSources -u "icaen" -n "https://icaen.cat#" -f data/DataSources/nedgia.xls -d NedgiaSource
 echo "weather stations"
 python3 -m set_up.Weather -f data/Weather/cpcat.json -n "https://weather.beegroup-cimne.com#" -c
+# LOAD DATA
 echo "GPG"
 python3 -m harmonizer -so GPG -u "icaen" -n "https://icaen.cat#" -o -c
 echo "Gemweb"
@@ -38,12 +41,16 @@ echo "Datadis static"
 python3 -m harmonizer -so Datadis -n "https://icaen.cat#" -u icaen -t static -c
 echo "Datadis TS"
 python3 -m harmonizer -so Datadis -n "https://icaen.cat#" -u icaen -t ts -c
+echo "Nedgia"
+python3 -m harmonizer -so Nedgia -n "https://icaen.cat#" -u icaen -tz "Europe/Madrid" -c
+
+
 echo "Link WS with Buildings"
 python3 -m set_up.Weather -f data/Weather/cpcat.json -n "https://weather.beegroup-cimne.com#" -u
 echo "Weather ts"
 python3 -m harmonizer -so Weather -n "https://weather.beegroup-cimne.com#" -c
-echo "Nedgia"
-python3 -m harmonizer -so Nedgia -n "https://icaen.cat#" -u icaen -tz "Europe/Madrid" -c
+
+# create Device AGGREGATORS
 echo "DeviceAggregators datadis"
 python3 -m set_up.DeviceAggregator -t "totalElectricityConsumption"
 echo "DeviceAggregators nedgia"
@@ -52,6 +59,6 @@ echo "DeviceAggregators weather"
 python3 -m set_up.DeviceAggregator -t "externalWeather"
 
 
-#INFRAESTRUCTURES
-python3 -m set_up.Organizations -f data/Organizations/infraestructures-organizations.xls -name "Infraestructures.cat" -u "icat" -n "https://icat.cat#"
-python3 -m gather -so BIS -f "data/BIS/BIS-infraestructures.xls" -u "icat" -n "https://icat.cat#" -st kafka
+#INFRAESTRUCTURES ORGANIZATION "https://infraestructures.cat#"
+python3 -m set_up.Organizations -f data/Organizations/infraestructures-organizations.xls -name "Infraestructures.cat" -u "icat" -n "https://infraestructures.cat#"
+python3 -m gather -so BIS -f "data/BIS/BIS-infraestructures.xls" -u "icat" -n "https://infraestructures.cat#" -st kafka

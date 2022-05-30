@@ -45,7 +45,7 @@ def get_device_from_datasource(session, user, device_id, source, ns_mappings):
 def get_all_buildings_id_from_datasource(session, source_id, ns_mappings):
     bigg = ns_mappings['bigg']
     buildings_neo = session.run(f"""
-        MATCH (n:{bigg}__Building)<-[:{bigg}__managesBuilding]-()<-[{bigg}__hasSubOrganization *0..]-
+        MATCH (n:{bigg}__Building)<-[:{bigg}__managesBuilding]-()<-[:{bigg}__hasSubOrganization *0..]-
                 (o:{bigg}__Organization)-[:hasSource]->(s:GemwebSource) 
                     Where id(s)={source_id} 
                     return n.{bigg}__buildingIDFromOrganization""")
