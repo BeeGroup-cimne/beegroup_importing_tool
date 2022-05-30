@@ -9,8 +9,8 @@ from rdflib import Namespace
 from thefuzz import process
 
 import settings
-from sources.BulgariaSummary.constants import enum_energy_efficiency_measurement_type, enum_energy_saving_type
-from sources.BulgariaSummary.harmonizer.Mapper import Mapper
+from sources.Bulgaria.constants import enum_energy_efficiency_measurement_type, enum_energy_saving_type
+from sources.Bulgaria.harmonizer.Mapper import Mapper
 from utils.data_transformations import sensor_subject
 from utils.hbase import save_to_hbase
 from utils.neo4j import create_sensor

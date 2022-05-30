@@ -1,15 +1,13 @@
 import argparse
+import hashlib
 import os
-from string import ascii_uppercase
 
 import openpyxl
 import pandas as pd
 
 import utils
-import hashlib
-
 from sources.Bulgaria.gather.gather_details import gather_contacts, gather_building_description, gather_consumption, \
-    gather_savings
+    gather_savings, transform_data
 
 EXCEL_COLUMNS = ["municipality", "type_of_building", "gross_floor_area", "epc_date", "epc_energy_class_before",
                  "epc_energy_class_after", "annual_energy_consumption_before_liquid_fuels",
@@ -100,6 +98,9 @@ def gather_data_detail(config, settings, args):
                       row_keys=["id", "type"],
                       column_map=[("info", "all")], config=config, settings=settings, args=args)
 
+            transform_data({"general_info": general_info, "epc_id": epc_id, "consumption": consumption,
+                            "distribution": distribution, "energy_saved": energy_saved,
+                            "total_annual_savings": total_annual_savings, "measurements": measurements})
 
 
 def gather_data(config, settings, args):

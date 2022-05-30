@@ -1,6 +1,6 @@
 from slugify import slugify
 
-from sources.BulgariaSummary.constants import eem_headers, enum_energy_saving_type, \
+from sources.Bulgaria.constants import eem_headers, enum_energy_saving_type, \
     enum_energy_efficiency_measurement_type
 from utils.data_transformations import to_object_property
 from utils.rdf_utils.ontology.bigg_classes import Organization, Building, LocationInfo, BuildingSpace, Area, \

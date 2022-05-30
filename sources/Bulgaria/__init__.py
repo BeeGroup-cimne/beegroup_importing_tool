@@ -1,10 +1,10 @@
 from sources import SourcePlugin
-from sources.BulgariaSummary.gather import gather
-from sources.BulgariaSummary.harmonizer import harmonize_ts, harmonize_static
+from sources.Bulgaria.gather import gather
+from sources.Bulgaria.harmonizer import harmonize_ts, harmonize_static
 
 
 class Plugin(SourcePlugin):
-    source_name = "bulgariaSummary"
+    source_name = "bulgaria"
 
     def gather(self, arguments):
         gather(arguments, settings=self.settings, config=self.config)

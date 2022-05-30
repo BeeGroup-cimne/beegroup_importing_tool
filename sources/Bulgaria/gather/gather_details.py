@@ -1,3 +1,6 @@
+from string import ascii_uppercase
+
+
 def gather_contacts(wb):
     var = wb['B2'].value.split('/')
     epc = var[0].strip()  # EnergyPerformanceContract.contractID
@@ -155,5 +158,5 @@ def gather_savings(wb, id):
     return energy_saved, total_annual_savings, measurements
 
 
-def transform():
+def transform_data(data):
     pass
