@@ -159,4 +159,34 @@ def gather_savings(wb, id):
 
 
 def transform_data(data):
-    pass
+    general_info = data['general_info']
+    consumption = data['consumption']
+    distribution = data['distribution']
+    # energy_saved = data['energy_saved']
+    measurements = data['measurements']
+    total_annual_savings = data['total_annual_savings']
+
+    row = {}
+    row.update(**general_info)
+    row.update({"epc_id": data['epc_id']})
+
+    for i in range(len(consumption)):
+        if consumption[i]["kWh"] is not None:
+            row.update({f"consumption_{i}": consumption[i]["kWh"],
+                        f"consumption_{i}_type": consumption[i]["type"]
+                        })
+
+    for i in range(len(distribution)):
+        row.update(
+            {f"distribution_{i}": distribution[i]['Actual Total'], f"distribution_{i}_type": distribution[i]['type']})
+
+    for i in range(len(measurements)):
+        val = measurements[i]['id'].split('~')[1]
+        if measurements[i]['kWh/a.'] is not None:
+            row.update({f"measure_{val}_{len(measurements) % int(val)}": measurements[i]['kWh/a.'],
+                        f"measure_{val}_{len(measurements) % int(val)}_type": measurements[i]['type']})
+
+    for i in range(len(total_annual_savings)):
+        if total_annual_savings[i]['kWh/a.'] is not None:
+            row.update({f"total_annual_savings_{i}": total_annual_savings[i]['kWh/a.'],
+                        f"total_annual_savings_{i}_type": total_annual_savings[i]['type']})

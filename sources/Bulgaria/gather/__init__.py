@@ -56,7 +56,8 @@ def gather_data_summary(config, settings, args):
 def gather_data_detail(config, settings, args):
     for file in os.listdir(args.file):
         if file.endswith('.xlsx'):
-            wb = openpyxl.load_workbook(f"{args.file}/{file}", data_only=True)
+            # wb = openpyxl.load_workbook(f"{args.file}/{file}", data_only=True)
+            wb = openpyxl.load_workbook(f"data/bulgaria/Reziume_ObshtinaEtropole.xlsx", data_only=True)
             contracts = gather_contacts(wb['Contacts'])
             building_description = gather_building_description(wb['Building Description'])
 
@@ -98,7 +99,7 @@ def gather_data_detail(config, settings, args):
                       row_keys=["id", "type"],
                       column_map=[("info", "all")], config=config, settings=settings, args=args)
 
-            transform_data({"general_info": general_info, "epc_id": epc_id, "consumption": consumption,
+            transform_data({"general_info": general_info[0], "epc_id": epc_id, "consumption": consumption,
                             "distribution": distribution, "energy_saved": energy_saved,
                             "total_annual_savings": total_annual_savings, "measurements": measurements})
 
