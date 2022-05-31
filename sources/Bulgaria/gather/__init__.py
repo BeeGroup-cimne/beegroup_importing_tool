@@ -99,9 +99,13 @@ def gather_data_detail(config, settings, args):
                       row_keys=["id", "type"],
                       column_map=[("info", "all")], config=config, settings=settings, args=args)
 
-            transform_data({"general_info": general_info[0], "epc_id": epc_id, "consumption": consumption,
-                            "distribution": distribution, "energy_saved": energy_saved,
-                            "total_annual_savings": total_annual_savings, "measurements": measurements})
+            data = transform_data({"general_info": general_info[0], "epc_id": epc_id, "consumption": consumption,
+                                   "distribution": distribution, "energy_saved": energy_saved,
+                                   "total_annual_savings": total_annual_savings, "measurements": measurements})
+
+            save_data(data=data, data_type="harmonize_detail",
+                      row_keys=["epc_id"],
+                      column_map=[("info", "all")], config=config, settings=settings, args=args)
 
 
 def gather_data(config, settings, args):

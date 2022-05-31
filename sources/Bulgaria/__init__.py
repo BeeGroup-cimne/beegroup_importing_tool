@@ -1,6 +1,6 @@
 from sources import SourcePlugin
 from sources.Bulgaria.gather import gather
-from sources.Bulgaria.harmonizer import harmonize_ts, harmonize_static
+from sources.Bulgaria.harmonizer import harmonize_ts, harmonize_static, harmonize_detail
 
 
 class Plugin(SourcePlugin):
@@ -14,6 +14,8 @@ class Plugin(SourcePlugin):
             return harmonize_static
         elif message["collection_type"] == 'ts':
             return harmonize_ts
+        elif message['collection_type'] == 'harmonize_detail':
+            return harmonize_detail
 
     def get_kwargs(self, message):
         return {
@@ -24,4 +26,6 @@ class Plugin(SourcePlugin):
         }
 
     def get_store_table(self, message):
-        return f"raw_{self.source_name}_static_{message['collection_type']}__{message['user']}"
+        if message['collection_type'] != 'harmonize_detail':
+            return f"raw_{self.source_name}_static_{message['collection_type']}__{message['user']}"
+        return None

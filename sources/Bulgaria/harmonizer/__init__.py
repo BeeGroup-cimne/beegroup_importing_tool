@@ -170,3 +170,7 @@ def harmonize_ts(data, **kwargs):
                 save_to_hbase(reduced_df.to_dict(orient="records"), period_table, hbase_conn2,
                               [("info", ['end', 'isReal']), ("v", ['value'])],
                               row_fields=['bucket', 'start', 'listKey'])
+
+
+def harmonize_detail(data, **kwargs):
+    print(data)

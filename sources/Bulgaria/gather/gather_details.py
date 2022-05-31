@@ -1,5 +1,7 @@
 from string import ascii_uppercase
 
+import pandas as pd
+
 
 def gather_contacts(wb):
     var = wb['B2'].value.split('/')
@@ -162,7 +164,6 @@ def transform_data(data):
     general_info = data['general_info']
     consumption = data['consumption']
     distribution = data['distribution']
-    # energy_saved = data['energy_saved']
     measurements = data['measurements']
     total_annual_savings = data['total_annual_savings']
 
@@ -190,3 +191,5 @@ def transform_data(data):
         if total_annual_savings[i]['kWh/a.'] is not None:
             row.update({f"total_annual_savings_{i}": total_annual_savings[i]['kWh/a.'],
                         f"total_annual_savings_{i}_type": total_annual_savings[i]['type']})
+
+    return [row]
