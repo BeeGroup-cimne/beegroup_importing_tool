@@ -207,15 +207,18 @@ def harmonize_detail(data, **kwargs):
     for i in range(len(enum_energy_efficiency_measurement_type)):
         for j in range(len(eem_headers)):
             if j == 0:
-                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_0"] + df[f"measure_{i}_1"] + df[
-                    f"measure_{i}_2"]
+                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_0"] + df[f"measure_{i}_1"]
+
             if j == 1:
                 df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_3"]
+
             if j == 2:
-                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_4"] + df[f"measure_{i}_5"] + df[
-                    f"measure_{i}_6"] + df[f"measure_{i}_7"]
+                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_4"] + df[f"measure_{i}_5"]
+
             if j == 3:
-                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_8"]
+                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_8"] + df[
+                    f"measure_{i}_2"] + df[
+                                                              f"measure_{i}_6"] + df[f"measure_{i}_7"]
 
             if j == 4:
                 df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_9"]
