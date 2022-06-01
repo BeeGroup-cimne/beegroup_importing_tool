@@ -101,7 +101,7 @@ class Mapper(object):
             "params": {
                 "raw": {
                     "subject": slugify("bulgaria"),
-                    "organizationName": "Bulgaria",
+                    "organizationName": self.source,
                     "organizationDivisionType": "Department"
                 }
             },
@@ -269,12 +269,13 @@ class Mapper(object):
             "params": {
                 "raw": {
                     "buildingSpaceName": "Building",
+                    # TODO: "hasBuildingSpaceUseType": to_object_property("TAXONOMY_TYPE", namespace=bigg_enums)
                 },
                 "mapping": {
                     "subject": {
                         "key": "building_space_subject",
                         "operations": []
-                    }
+                    },
                 }
             },
             "links": {
@@ -282,29 +283,9 @@ class Mapper(object):
                     "type": Bigg.hasArea,
                     "link": "subject"
                 },
-                "building_space_use_type": {
-                    "type": Bigg.hasBuildingSpaceUseType,
-                    "link": "subject"
-                },
                 "element": {
                     "type": Bigg.isAssociatedWithElement,
                     "link": "subject"
-                }
-            }
-        }
-
-        building_space_use_type = {
-            "name": "building_space_use_type",
-            "class": BuildingSpaceUseType,
-            "type": {
-                "origin": "row"
-            },
-            "params": {
-                "mapping": {
-                    "subject": {
-                        "key": "building_space_use_type_subject",
-                        "operations": []
-                    }
                 }
             }
         }
@@ -392,7 +373,7 @@ class Mapper(object):
 
         grouped_modules = {
             "all": [organization, building_organization, buildings, building_space,
-                    building_space_use_type, gross_floor_area, location_info, energy_performance_certificate_before,
+                    gross_floor_area, location_info, energy_performance_certificate_before,
                     energy_performance_certificate_after, element, device
                     ] + energy_saving_list + eem_list,
             "test": energy_saving_list + eem_list

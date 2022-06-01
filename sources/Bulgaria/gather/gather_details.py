@@ -1,7 +1,5 @@
 from string import ascii_uppercase
 
-import pandas as pd
-
 
 def gather_contacts(wb):
     var = wb['B2'].value.split('/')
@@ -31,7 +29,7 @@ def gather_contacts(wb):
     number_of_inhabitants = wb['C33'].value
 
     return {"epc": {"id": epc,
-                    "data": epc_date,
+                    "date": epc_date,
                     "valid_until": valid_until,
                     "energy_class_before": energy_class_before_ee_measures,
                     "energy_class_after": energy_class_after_ee_measures,
@@ -183,9 +181,8 @@ def transform_data(data):
 
     for i in range(len(measurements)):
         val = measurements[i]['id'].split('~')[1]
-        if measurements[i]['kWh/a.'] is not None:
-            row.update({f"measure_{val}_{len(measurements) % int(val)}": measurements[i]['kWh/a.'],
-                        f"measure_{val}_{len(measurements) % int(val)}_type": measurements[i]['type']})
+        row.update({f"measure_{int(val) - 1}_{i % 12}": measurements[i]['kWh/a.'],
+                    f"measure_{int(val) - 1}_{i % 12}_type": measurements[i]['type']})
 
     for i in range(len(total_annual_savings)):
         if total_annual_savings[i]['kWh/a.'] is not None:

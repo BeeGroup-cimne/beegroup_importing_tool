@@ -9,7 +9,7 @@ from rdflib import Namespace
 from thefuzz import process
 
 import settings
-from sources.Bulgaria.constants import enum_energy_efficiency_measurement_type, enum_energy_saving_type
+from sources.Bulgaria.constants import enum_energy_efficiency_measurement_type, enum_energy_saving_type, eem_headers
 from sources.Bulgaria.harmonizer.Mapper import Mapper
 from utils.data_transformations import sensor_subject
 from utils.hbase import save_to_hbase
@@ -173,4 +173,70 @@ def harmonize_ts(data, **kwargs):
 
 
 def harmonize_detail(data, **kwargs):
-    print(data)
+    namespace = kwargs['namespace']
+    n = Namespace(namespace)
+    config = kwargs['config']
+
+    df = pd.DataFrame(data)
+
+    # Transformations
+    df.rename(columns={"location_municipality": "municipality", "area_gross_floor_area": "gross_floor_area"},
+              inplace=True)
+
+    df['epc_date'] = pd.to_datetime(df['epc_date'])
+    df['epc_date_before'] = df['epc_date'] - timedelta(days=365)
+    df['annual_energy_consumption_before_total_consumption'] = df['consumption_11_type']
+
+    # Subjects
+    df['subject'] = df['epc_id']
+    df['organization_subject'] = 'ORGANIZATION-' + df['subject']
+    df['building_subject'] = 'BUILDING-' + df['subject']
+    df['building_name'] = df['subject'] + '-' + df['municipality'] + '-' + df['building_type']
+    df['location_subject'] = 'LOCATION-' + df['subject']
+
+    df['epc_before_subject'] = 'EPC-' + df['subject'] + '-' + df['epc_energy_class_before']
+    df['epc_after_subject'] = 'EPC-' + df['subject'] + '-' + df['epc_energy_class_after']
+
+    df['building_space_subject'] = 'BUILDINGSPACE-' + df['subject']
+    df['gross_floor_area_subject'] = 'AREA-GrossFloorArea-' + config['source'] + '-' + df['subject']
+
+    df['element_subject'] = 'ELEMENT-' + df['subject']
+
+    df['device_subject'] = 'DEVICE-' + config['source'] + '-' + df['subject']
+
+    for i in range(len(enum_energy_efficiency_measurement_type)):
+        for j in range(len(eem_headers)):
+            if j == 0:
+                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_0"] + df[f"measure_{i}_1"] + df[
+                    f"measure_{i}_2"]
+            if j == 1:
+                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_3"]
+            if j == 2:
+                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_4"] + df[f"measure_{i}_5"] + df[
+                    f"measure_{i}_6"] + df[f"measure_{i}_7"]
+            if j == 3:
+                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_8"]
+
+            if j == 4:
+                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_9"]
+
+            if j == 5:
+                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_10"]
+
+            if j == 6:
+                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_11"]
+
+    for i in range(len(enum_energy_efficiency_measurement_type)):
+        df[f"eem_{i}_subject"] = 'EEM-' + df['subject'] + '-' + enum_energy_efficiency_measurement_type[i]
+        df[f"emm_{i}_type"] = enum_energy_efficiency_measurement_type[i]
+
+        for j in range(len(enum_energy_saving_type)):
+            df[f"energy_saving_{i}_{j}_subject"] = 'EnergySaving-' + df['subject'] + '-' + \
+                                                   enum_energy_efficiency_measurement_type[
+                                                       i] + '-' + enum_energy_saving_type[j]
+
+    mapper = Mapper(config['source'], n)
+    g = generate_rdf(mapper.get_mappings("all"), df)
+
+    g.serialize('output.ttl', format="ttl")
+    save_rdf_with_source(g, config['source'], config['neo4j'])
