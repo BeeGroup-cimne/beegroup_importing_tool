@@ -35,6 +35,7 @@ def set_municipality(df, label='municipality', predicates=None,
     if predicates is None:
         predicates = ['ns1:name']
 
+    df[label] = df[label].str.strip()
     unique_municipalities = list(df[label].unique())
 
     dicty = rdflib.Graph()
