@@ -11,7 +11,7 @@ from thefuzz import process
 import settings
 from sources.Bulgaria.constants import enum_energy_efficiency_measurement_type, enum_energy_saving_type, eem_headers
 from sources.Bulgaria.harmonizer.Mapper import Mapper
-from utils.data_transformations import sensor_subject
+from utils.data_transformations import sensor_subject, to_object_property
 from utils.hbase import save_to_hbase
 from utils.neo4j import create_sensor
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums, units
@@ -24,7 +24,7 @@ def set_taxonomy(df):
     tax_df = pd.read_excel("data/tax/TAX_BULGARIA.xlsx", header=None, names=["Source", "Taxonomy"], sheet_name='Hoja1')
     tax_dict = {}
     for i in tax_df.to_dict(orient="records"):
-        tax_dict.update({i['Source']: i['Taxonomy']})
+        tax_dict.update({i['Source']: to_object_property(i['Taxonomy'], namespace=bigg_enums)})
 
     df['type_of_building'] = df['type_of_building'].map(tax_dict)
     return df

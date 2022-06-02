@@ -268,8 +268,8 @@ class Mapper(object):
             },
             "params": {
                 "raw": {
-                    "buildingSpaceName": "Building",
-                    # TODO: "hasBuildingSpaceUseType": to_object_property("TAXONOMY_TYPE", namespace=bigg_enums)
+                    "buildingSpaceName": "Building"
+                    # TODO: "hasBuildingUseType" : to_object_property
                 },
                 "mapping": {
                     "subject": {
@@ -284,6 +284,10 @@ class Mapper(object):
                     "link": "subject"
                 },
                 "element": {
+                    "type": Bigg.isAssociatedWithElement,
+                    "link": "subject"
+                },
+                "hasBuildingSpaceUseType": {
                     "type": Bigg.isAssociatedWithElement,
                     "link": "subject"
                 }
