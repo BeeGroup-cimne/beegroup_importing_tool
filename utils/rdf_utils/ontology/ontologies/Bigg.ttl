@@ -1186,22 +1186,17 @@ bigg:tariffCompany a owl:DatatypeProperty;
   rdfs:domain bigg:Tariff;
   rdfs:range xsd:string .
 
-skos:broader a owl:ObjectProperty .
-
-bigg:Tariff a owl:Class;
-  rdfs:comment "The specifications of a tariff associated with one of the metered commodities." .
-
 bigg:tariffName a owl:DatatypeProperty;
   rdfs:domain bigg:Tariff;
-  rdfs:range xsd:string, xsd:dateTime .
+  rdfs:range xsd:string .
+
+bigg:tariffStartDate a owl:DatatypeProperty;
+  rdfs:domain bigg:Tariff;
+  rdfs:range xsd:dateTime .
 
 bigg:tariffEndDate a owl:DatatypeProperty;
   rdfs:domain bigg:Tariff;
   rdfs:range xsd:dateTime .
-
-bigg:tariffAveragePrice a owl:DatatypeProperty;
-  rdfs:domain bigg:Tariff;
-  rdfs:range xsd:float .
 
 bigg:UtilityPointOfDelivery a owl:Class;
   rdfs:comment "A point on the utility distribution system where the deliverer makes the utility available to a receiver or to serve load" .
@@ -1438,9 +1433,24 @@ bigg:isInWeatherStation a owl:ObjectProperty;
   rdfs:domain bigg:Device;
   rdfs:range bigg:WeatherStation .
 
-bigg:hasTariff a owl:ObjectProperty;
+bigg:hasContractedTariff a owl:ObjectProperty;
   rdfs:domain bigg:UtilityPointOfDelivery;
+  rdfs:range bigg:ContractedTariff .
+
+bigg:ContractedTariff a owl:Class;
+  rdfs:comment "The tariff contracted by a utility supply." .
+
+bigg:hasTariff a owl:ObjectProperty;
+  rdfs:domain bigg:ContractedTariff;
   rdfs:range bigg:Tariff .
+
+bigg:contractStartDate a owl:DatatypeProperty;
+  rdfs:domain bigg:ContractedTariff;
+  rdfs:range xsd:date .
+
+bigg:contractEndDate a owl:DatatypeProperty;
+  rdfs:domain bigg:ContractedTariff;
+  rdfs:range xsd:date .
 
 bigg:includesDevice a owl:ObjectProperty;
   rdfs:domain bigg:DeviceAggregator;

@@ -579,9 +579,10 @@ class Measurement(BIGGObjects):
 class Sensor(BIGGObjects):
     __rdf_type__ = Bigg.Sensor
 
-    def __init__(self, subject, measurementDescription=None,sensorIsCumulative=None,sensorIsOnChange=None,sensorFrequency=None,sensorTimeAggregationFunction=None,sensorProperty=None,sensorStart=None,sensorEnd=None,hasMeasuredProperty=None,hasMeasurementUnit=None,hasSensorReadingType=None,hasSensorEstimationMethod=None,hasOutputSignalType=None,hasOutputProtocol=None,hasMeasurement=None):
+    def __init__(self, subject, measurementDescription=None,sensorIsRegular=None,sensorIsCumulative=None,sensorIsOnChange=None,sensorFrequency=None,sensorTimeAggregationFunction=None,sensorProperty=None,sensorStart=None,sensorEnd=None,hasMeasuredProperty=None,hasMeasurementUnit=None,hasSensorReadingType=None,hasSensorEstimationMethod=None,hasOutputSignalType=None,hasOutputProtocol=None,hasMeasurement=None):
         super().__init__(subject)
         self.measurementDescription = measurementDescription
+        self.sensorIsRegular = sensorIsRegular
         self.sensorIsCumulative = sensorIsCumulative
         self.sensorIsOnChange = sensorIsOnChange
         self.sensorFrequency = sensorFrequency
@@ -653,13 +654,6 @@ class DeviceAggregator(BIGGObjects):
         self.hasResult = hasResult
         self.isInSpace = isInSpace
         self.includesDevice = includesDevice
-        
-        
-class DeviceAggregatorProperty(BIGGObjects):
-    __rdf_type__ = Bigg.DeviceAggregatorProperty
-
-    def __init__(self, subject, ):
-        super().__init__(subject)
         
         
 class NonEnergyBenefit(BIGGObjects):
@@ -869,22 +863,22 @@ class SystemType(BIGGObjects):
 class Tariff(BIGGObjects):
     __rdf_type__ = Bigg.Tariff
 
-    def __init__(self, subject, tariffCompany=None,tariffName=None,tariffEndDate=None,tariffAveragePrice=None):
+    def __init__(self, subject, tariffCompany=None,tariffName=None,tariffStartDate=None,tariffEndDate=None):
         super().__init__(subject)
         self.tariffCompany = tariffCompany
         self.tariffName = tariffName
+        self.tariffStartDate = tariffStartDate
         self.tariffEndDate = tariffEndDate
-        self.tariffAveragePrice = tariffAveragePrice
         
         
 class UtilityPointOfDelivery(BIGGObjects):
     __rdf_type__ = Bigg.UtilityPointOfDelivery
 
-    def __init__(self, subject, pointOfDeliveryIDFromOrganization=None,hasUtilityType=None,hasTariff=None,hasCO2EmissionsFactor=None):
+    def __init__(self, subject, pointOfDeliveryIDFromOrganization=None,hasUtilityType=None,hasContractedTariff=None,hasCO2EmissionsFactor=None):
         super().__init__(subject)
         self.pointOfDeliveryIDFromOrganization = pointOfDeliveryIDFromOrganization
         self.hasUtilityType = hasUtilityType
-        self.hasTariff = hasTariff
+        self.hasContractedTariff = hasContractedTariff
         self.hasCO2EmissionsFactor = hasCO2EmissionsFactor
         
         
@@ -926,4 +920,14 @@ class ZoneType(BIGGObjects):
 
     def __init__(self, subject, ):
         super().__init__(subject)
+        
+        
+class ContractedTariff(BIGGObjects):
+    __rdf_type__ = Bigg.ContractedTariff
+
+    def __init__(self, subject, contractStartDate=None,contractEndDate=None,hasTariff=None):
+        super().__init__(subject)
+        self.contractStartDate = contractStartDate
+        self.contractEndDate = contractEndDate
+        self.hasTariff = hasTariff
         

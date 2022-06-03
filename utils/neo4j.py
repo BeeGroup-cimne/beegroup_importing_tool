@@ -73,7 +73,7 @@ def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estim
         Merge(s)-[:{bigg}__hasMeasurementUnit]->(msu)
         Merge(s)-[:{bigg}__hasMeasuredProperty]->(mp)
         Merge(s)-[:{bigg}__hasSensorEstimationMethod]->(se)        
-        Merge(s)-[:{bigg}__hasMeasurement]->(ms: {bigg}__Measurement{{uri: "{measurement_uri}"}})
+        Merge(s)-[:{bigg}__hasMeasurement]->(ms: {bigg}__Measurement:Resource{{uri: "{measurement_uri}"}})
         SET
             s.{bigg}__sensorIsCumulative= {is_cumulative},
             s.{bigg}__sensorIsRegular= {is_regular},

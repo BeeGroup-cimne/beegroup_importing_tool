@@ -30,7 +30,8 @@ echo "nedgia source"
 python3 -m set_up.DataSources -u "icaen" -n "https://icaen.cat#" -f data/DataSources/nedgia.xls -d NedgiaSource
 echo "weather stations"
 python3 -m set_up.Weather -f data/Weather/cpcat.json -n "https://weather.beegroup-cimne.com#" -c
-# LOAD DATA
+
+# LOAD DATA HBASE
 echo "GPG"
 python3 -m harmonizer -so GPG -u "icaen" -n "https://icaen.cat#" -o -c
 echo "Gemweb"
@@ -44,12 +45,20 @@ python3 -m harmonizer -so Datadis -n "https://icaen.cat#" -u icaen -t ts -c
 echo "Nedgia"
 python3 -m harmonizer -so Nedgia -n "https://icaen.cat#" -u icaen -tz "Europe/Madrid" -c
 
+# LOAD DATA KAFKA
+python3 -m gather -so GPG -f "data/GPG/Llistat immobles alta inventari (13-04-2021).xls" -n "https://icaen.cat#" -st kafka -u icaen
+python3 -m gather -so Gemweb -st kafka
+python3 -m gather -so Genercat -f data/genercat/data2.xls -u icaen -n "https://icaen.cat#" -st kafka
+python3 -m gather -so Datadis
+
 
 echo "Link WS with Buildings"
 python3 -m set_up.Weather -f data/Weather/cpcat.json -n "https://weather.beegroup-cimne.com#" -u
+
 echo "Weather ts"
 python3 -m harmonizer -so Weather -n "https://weather.beegroup-cimne.com#" -c
 
+python3 -m gather -so Weather
 # create Device AGGREGATORS
 echo "DeviceAggregators datadis"
 python3 -m set_up.DeviceAggregator -t "totalElectricityConsumption"

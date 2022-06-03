@@ -42,7 +42,7 @@ if __name__ == "__main__":
         for _, org in df.iterrows():
             uri = f"{args.namespace}{slugify(org.pop('Organization'))}"
             username = org.pop("Username") if "Username" in org.keys() else None
-            new_line="\n"
+            new_line = "\n"
             res = s.run(
                 f"""
                     MATCH (o1:{bigg}__Organization {{userID:"{args.user}"}})-
