@@ -17,14 +17,14 @@ def harmonize_command_line(arguments, config, settings):
     hbase_table = f"ixon_data_infraestructures"
 
     Cache.load_cache()
-
+    dic_list = []
     for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table, batch_size=1000):
-        dic_list = []
+        # dic_list = []
         for key, values in data:
-            item = dict()
+            item = dict({'hbase_key': key.decode()})
             for key1, value1 in values.items():
                 k = re.sub("^info:|^v:", "", key1.decode())
                 item.update({k: value1.decode()})
             dic_list.append(item)
-            harmonize_data(dic_list, namespace=args.namespace, user=args.user,
-                           organizations=args.organizations, config=config)
+            harmonize_data(dic_list, namespace=args.namespace, user=args.user, organizations=args.organizations,
+                           config=config)
