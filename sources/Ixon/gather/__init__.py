@@ -12,6 +12,7 @@ def gather_devices(config, settings, args):
     for file in os.listdir(f"data/{config['source']}"):
         if file.endswith('.xlsx'):
             df = pd.read_excel(f"data/{config['source']}/{file}")
+            df['Object ID'] = df['Object ID'].astype(str)
             save_data(data=df.to_dict(orient="records"), data_type='static',
                       row_keys=['Description', 'BACnet Type', 'Object ID'], column_map=[("info", "all")],
                       config=config, settings=settings, args=args)

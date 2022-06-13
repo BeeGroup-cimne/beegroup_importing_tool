@@ -23,11 +23,11 @@ class Mapper(object):
                         "operations": []
                     },
                     "deviceIDFromOrganization": {
-                        "key": "building_internal_id",
+                        "key": "BACnet Name",
                         "operations": []
                     },
                     "deviceName": {
-                        "key": "device_name",
+                        "key": "BACnet Name",
                         "operations": []
                     }
                 }
