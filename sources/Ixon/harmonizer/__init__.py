@@ -1,30 +1,58 @@
-import argparse
-import re
+from datetime import timedelta
 
-import utils
-from harmonizer.cache import Cache
-from sources.Ixon.harmonizer.mapper_ts import harmonize_data
+import pandas as pd
+from rdflib import Namespace
+
+import settings
+from sources.Ixon.harmonizer.mapper import Mapper
+from utils.data_transformations import decode_hbase
+
+time_to_timedelta = {
+    "PT1H": timedelta(hours=1),
+    "PT15M": timedelta(minutes=15)
+}
 
 
-def harmonize_command_line(arguments, config, settings):
-    ap = argparse.ArgumentParser(description='Mapping of Ixon data to neo4j.')
-    ap.add_argument("-o", "--organizations", help="Import the organization structure")
-    ap.add_argument("--user", "-u", help="The user importing the data", required=True)
-    ap.add_argument("--namespace", "-n", help="The subjects namespace uri", required=True)
-    args = ap.parse_args(arguments)
+def harmonize_devices(data, **kwargs):
+    # TODO: harmonize devices
+    namespace = kwargs['namespace']
+    user = kwargs['user']
+    config = kwargs['config']
+    n = Namespace(namespace)
+    df = pd.DataFrame(data)
 
-    hbase_conn = config['ixon_raw_data']
-    hbase_table = f"ixon_data_infraestructures"
+    # mapper = Mapper(config['source'], n)
+    # g = generate_rdf(mapper.get_mappings("all"), df)
+    #
+    # g.serialize('output.ttl', format="ttl")
 
-    Cache.load_cache()
-    dic_list = []
-    for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table, batch_size=1000):
-        # dic_list = []
-        for key, values in data:
-            item = dict({'hbase_key': key.decode()})
-            for key1, value1 in values.items():
-                k = re.sub("^info:|^v:", "", key1.decode())
-                item.update({k: value1.decode()})
-            dic_list.append(item)
-            harmonize_data(dic_list, namespace=args.namespace, user=args.user, organizations=args.organizations,
-                           config=config)
+    # save_rdf_with_source(g, config['source'], config['neo4j'])
+
+
+def harmonize_ts(data, **kwargs):
+    # match(n:bigg__Organization) where n.uri starts with "https://infraestructures.cat" return n limit 1
+    namespace = kwargs['namespace']
+    user = kwargs['user']
+    config = kwargs['config']
+    freq = 'PT15M'
+
+    neo4j_connection = config['neo4j']
+
+    df = pd.DataFrame(data)
+    df[['MAC', 'device_name', 'timestamp']] = df['hbase_key'].str.split('~', expand=True)
+    df['unique'] = df['building_internal_id'] + '-' + df['type'] + '-' + df['object_id']
+
+    df["ts"] = pd.to_datetime(df['timestamp'].apply(float), unit="s")
+    df["bucket"] = (df['timestamp'].apply(float) // settings.ts_buckets) % settings.buckets
+    df['start'] = df['timestamp'].apply(decode_hbase)
+    df['end'] = (df.ts + time_to_timedelta[freq]).view(int) / 10 ** 9
+    df['value'] = df['value']
+    df['isReal'] = True
+
+    for device_id, data_group in df.groupby("unique"):
+        data_group.set_index("ts", inplace=True)
+        data_group.sort_index(inplace=True)
+
+        # SENSOR
+
+        # HBASE
