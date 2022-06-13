@@ -18,7 +18,7 @@ def gather_ts(config, settings, args):
     Cache.load_cache()
 
     for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table, batch_size=1000):
-        # dic_list = []
+        dic_list = []
         for key, values in data:
             item = dict({'hbase_key': key.decode()})
             for key1, value1 in values.items():

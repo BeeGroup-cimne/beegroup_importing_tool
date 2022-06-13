@@ -1,11 +1,13 @@
 from datetime import timedelta
 
 import pandas as pd
+from neo4j import GraphDatabase
 from rdflib import Namespace
 
 import settings
 from sources.Ixon.harmonizer.mapper import Mapper
 from utils.data_transformations import decode_hbase
+from utils.neo4j import create_sensor, get_device_from_datasource
 
 time_to_timedelta = {
     "PT1H": timedelta(hours=1),
@@ -37,6 +39,7 @@ def harmonize_ts(data, **kwargs):
     freq = 'PT15M'
 
     neo4j_connection = config['neo4j']
+    neo = GraphDatabase.driver(**neo4j_connection)
 
     df = pd.DataFrame(data)
     df[['MAC', 'device_name', 'timestamp']] = df['hbase_key'].str.split('~', expand=True)
@@ -53,6 +56,13 @@ def harmonize_ts(data, **kwargs):
         data_group.set_index("ts", inplace=True)
         data_group.sort_index(inplace=True)
 
+        # Find if device exist
+        with neo.session() as session:
+            device_neo = list(get_device_from_datasource(session, user, device_id, config['source'],
+                                                         settings.namespace_mappings))
+
         # SENSOR
+        for d_neo in device_neo:
+            device_uri = d_neo["d"].get("uri")
 
         # HBASE
