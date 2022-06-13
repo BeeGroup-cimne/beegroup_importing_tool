@@ -1,12 +1,16 @@
 from sources import SourcePlugin
+from sources.Ixon.gather import gather
 from sources.Ixon.harmonizer import harmonize_devices, harmonize_ts
 
 
 class Plugin(SourcePlugin):
     source_name = "Ixon"
 
+    def gather(self, arguments):
+        gather(arguments, settings=self.settings, config=self.config)
+
     def get_mapper(self, message):
-        if message["collection_type"] == 'devices':
+        if message["collection_type"] == 'static':
             return harmonize_devices
         elif message["collection_type"] == 'ts':
             return harmonize_ts
@@ -19,5 +23,6 @@ class Plugin(SourcePlugin):
         }
 
     def get_store_table(self, message):
-        if message["collection_type"] == "ts" or message["collection_type"] == "devices":
-            return None
+        if message["collection_type"] == "static":
+            return f"{self.source_name}_{message['collection_type']}_devices__{message['user']}"
+        return None

@@ -1,14 +1,20 @@
 import argparse
+import os
 import re
+
+import pandas as pd
 
 import utils
 from harmonizer.cache import Cache
 
 
 def gather_devices(config, settings, args):
-    # todo: read excel that contain the devices
-    # todo: save_data raw data
-    pass
+    for file in os.listdir(f"data/{config['source']}"):
+        if file.endswith('.xlsx'):
+            df = pd.read_excel(f"data/{config['source']}/{file}")
+            save_data(data=df.to_dict(orient="records"), data_type='static',
+                      row_keys=['Description', 'BACnet Type', 'Object ID'], column_map=[("info", "all")],
+                      config=config, settings=settings, args=args)
 
 
 def gather_ts(config, settings, args):
@@ -16,7 +22,7 @@ def gather_ts(config, settings, args):
     hbase_table = f"ixon_data_infraestructures"
 
     Cache.load_cache()
-
+    # Gather Raw Data from HBASE
     for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table, batch_size=1000):
         dic_list = []
         for key, values in data:
@@ -25,10 +31,11 @@ def gather_ts(config, settings, args):
                 k = re.sub("^info:|^v:", "", key1.decode())
                 item.update({k: value1.decode()})
             dic_list.append(item)
-        save_data(dic_list, 'ts', '_id', config, settings, args)
+        save_data(data=dic_list, data_type='ts', row_keys='_id', column_map=[("info", "all")],
+                  config=config, settings=settings, args=args)
 
 
-def save_data(data, data_type, row_keys, config, settings, args):
+def save_data(data, data_type, row_keys, column_map, config, settings, args):
     if args.store == "kafka":
         try:
             k_topic = config["kafka"]["topic"]
@@ -38,6 +45,7 @@ def save_data(data, data_type, row_keys, config, settings, args):
                 "collection_type": data_type,
                 "source": config['source'],
                 "row_keys": row_keys,
+                "column_map": column_map,
                 "data": data
             }
             utils.kafka.save_to_kafka(topic=k_topic, info_document=kafka_message,
@@ -45,6 +53,15 @@ def save_data(data, data_type, row_keys, config, settings, args):
 
         except Exception as e:
             utils.utils.log_string(f"error when sending message: {e}")
+    elif args.store == "hbase":
+        try:
+            h_table_name = f"{config['data_sources'][config['source']]['hbase_table']}_{data_type}_{args.type}__{args.user}"
+            utils.hbase.save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
+                                      row_fields=row_keys)
+        except Exception as e:
+            utils.utils.log_string(f"Error saving datadis supplies to HBASE: {e}")
+    else:
+        utils.utils.log_string(f"store {config['store']} is not supported")
 
 
 def gather(arguments, config=None, settings=None):
@@ -54,7 +71,6 @@ def gather(arguments, config=None, settings=None):
     ap.add_argument("--type", "-t", help="Gather data", choices=['devices', 'ts'], required=True)
     ap.add_argument("--namespace", "-n", help="The subjects namespace uri", required=True)
     ap.add_argument("-f", "--file", required=True, help="Excel file path to parse")
-    ap.add_argument("-so", "--source", required=True, help="The source importing the data")
     args = ap.parse_args(arguments)
 
     if args.type == 'devices':
