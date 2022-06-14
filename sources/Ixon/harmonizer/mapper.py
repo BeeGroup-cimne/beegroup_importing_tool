@@ -37,6 +37,10 @@ class Mapper(object):
                     "observesSpace": {
                         "key": "observesSpace",
                         "operations": []
+                    },
+                    "hasSensor": {
+                        "key": "hasSensor",
+                        "operations": []
                     }
                 }
             }

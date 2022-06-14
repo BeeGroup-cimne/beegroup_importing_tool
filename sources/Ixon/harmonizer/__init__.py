@@ -6,9 +6,10 @@ from rdflib import Namespace
 
 import settings
 from sources.Ixon.harmonizer.mapper import Mapper
-from utils.data_transformations import decode_hbase, device_subject, building_space_subject
+from utils.data_transformations import decode_hbase, device_subject, building_space_subject, sensor_subject
 from utils.neo4j import get_device_from_datasource
 from utils.rdf_utils.rdf_functions import generate_rdf
+from utils.rdf_utils.save_rdf import save_rdf_with_source
 
 time_to_timedelta = {
     "PT1H": timedelta(hours=1),
@@ -17,9 +18,7 @@ time_to_timedelta = {
 
 
 def harmonize_devices(data, **kwargs):
-    # TODO: harmonize devices
     namespace = kwargs['namespace']
-    user = kwargs['user']
     config = kwargs['config']
     n = Namespace(namespace)
     df = pd.DataFrame(data)
@@ -27,13 +26,17 @@ def harmonize_devices(data, **kwargs):
     df['unique_val'] = df['Description'] + '-' + df['BACnet Type'] + '-' + df['Object ID'].astype(str)
     df['device_subject'] = df.apply(lambda x: device_subject(x['unique_val'], config['source']), axis=1)
     df['observesSpace'] = df.apply(lambda x: n[building_space_subject(x['Description'].replace('-', '_'))], axis=1)
-    # df['hasSensor'] = df.apply(lambda x: n[sensor_subject()])
+    df['hasSensor'] = df.apply(
+        lambda x: n[sensor_subject(device_source=config['source'], device_key=x['device_subject'],
+                                   measured_property="OtherMeasurement",
+                                   sensor_type="RAW", freq="PT15M")], axis=1)
+
     mapper = Mapper(config['source'], n)
     g = generate_rdf(mapper.get_mappings("all"), df)
 
     g.serialize('output.ttl', format="ttl")
 
-    # save_rdf_with_source(g, config['source'], config['neo4j'])
+    save_rdf_with_source(g, config['source'], config['neo4j'])
 
 
 def harmonize_ts(data, **kwargs):
