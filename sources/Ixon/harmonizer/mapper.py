@@ -1,4 +1,6 @@
+from utils.data_transformations import to_object_property
 from utils.rdf_utils.ontology.bigg_classes import Device
+from utils.rdf_utils.ontology.namespaces_definition import bigg_enums
 
 
 class Mapper(object):
@@ -7,6 +9,7 @@ class Mapper(object):
         Device.set_namespace(namespace)
 
     def get_mappings(self, group):
+        # observesSpace, hasSensor
         devices = {
             "name": "device",
             "class": Device,
@@ -15,7 +18,8 @@ class Mapper(object):
             },
             "params": {
                 "raw": {
-                    # "organizationDivisionType": "Building"
+                    "hasDeviceType": to_object_property("Meter", namespace=bigg_enums),
+                    "deviceNumberOfOutputs": 1,
                 },
                 "mapping": {
                     "subject": {
@@ -23,7 +27,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "deviceIDFromOrganization": {
-                        "key": "BACnet Name",
+                        "key": "Standard Naming Complex",
                         "operations": []
                     },
                     "deviceName": {
