@@ -33,6 +33,10 @@ class Mapper(object):
                     "deviceName": {
                         "key": "BACnet Name",
                         "operations": []
+                    },
+                    "observesSpace": {
+                        "key": "observesSpace",
+                        "operations": []
                     }
                 }
             }

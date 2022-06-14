@@ -6,7 +6,7 @@ from rdflib import Namespace
 
 import settings
 from sources.Ixon.harmonizer.mapper import Mapper
-from utils.data_transformations import decode_hbase, device_subject
+from utils.data_transformations import decode_hbase, device_subject, building_space_subject
 from utils.neo4j import get_device_from_datasource
 from utils.rdf_utils.rdf_functions import generate_rdf
 
@@ -26,7 +26,8 @@ def harmonize_devices(data, **kwargs):
 
     df['unique_val'] = df['Description'] + '-' + df['BACnet Type'] + '-' + df['Object ID'].astype(str)
     df['device_subject'] = df.apply(lambda x: device_subject(x['unique_val'], config['source']), axis=1)
-
+    df['observesSpace'] = df.apply(lambda x: n[building_space_subject(x['Description'].replace('-', '_'))], axis=1)
+    # df['hasSensor'] = df.apply(lambda x: n[sensor_subject()])
     mapper = Mapper(config['source'], n)
     g = generate_rdf(mapper.get_mappings("all"), df)
 
