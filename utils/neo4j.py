@@ -41,8 +41,11 @@ def get_device_from_datasource(session, user, device_id, source, ns_mappings):
     return device_neo
 
 
-def get_device(session, device_id, source, ns_mappings):
-    pass
+def get_device_by_uri(session, uri):
+    query = f"""
+    match(n:bigg__Device) where n.uri = {uri} return n limit 1
+    """
+    return list(session.run(query))
 
 
 def get_all_buildings_id_from_datasource(session, source_id, ns_mappings):

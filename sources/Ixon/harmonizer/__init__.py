@@ -7,7 +7,7 @@ from rdflib import Namespace
 import settings
 from sources.Ixon.harmonizer.mapper import Mapper
 from utils.data_transformations import decode_hbase, device_subject, building_space_subject, sensor_subject
-from utils.neo4j import get_device_from_datasource
+from utils.neo4j import get_device_from_datasource, get_device_by_uri
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.rdf_utils.save_rdf import save_rdf_with_source
 
@@ -69,8 +69,11 @@ def harmonize_ts(data, **kwargs):
 
         # Find if device exist
         with neo.session() as session:
-            device_neo = list(get_device_from_datasource(session, user, device_id, config['source'],
-                                                         settings.namespace_mappings))
+            device_neo = get_device_by_uri(session, device_subject(device_id, config['source']) + '.0')
+
+            if device_neo:
+                pass
+                # create
 
         # SENSOR
         # for d_neo in device_neo:
