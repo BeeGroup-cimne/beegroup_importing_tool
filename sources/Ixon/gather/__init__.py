@@ -19,6 +19,7 @@ def gather_devices(config, settings, args):
 
 
 def gather_ts(config, settings, args):
+    # TODO: set date init and date end
     hbase_conn = config['ixon_raw_data']
     hbase_table = f"ixon_data_infraestructures"
 
