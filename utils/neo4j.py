@@ -1,4 +1,3 @@
-
 def get_cups_id_link(session, user, ns_mappings):
     bigg = ns_mappings['bigg']
     cups_device = session.run(f"""
@@ -42,6 +41,10 @@ def get_device_from_datasource(session, user, device_id, source, ns_mappings):
     return device_neo
 
 
+def get_device(session, device_id, source, ns_mappings):
+    pass
+
+
 def get_all_buildings_id_from_datasource(session, source_id, ns_mappings):
     bigg = ns_mappings['bigg']
     buildings_neo = session.run(f"""
@@ -55,6 +58,7 @@ def get_all_buildings_id_from_datasource(session, source_id, ns_mappings):
 def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estimation_method_uri, measurement_uri,
                   is_regular, is_cumulative, is_on_change, freq, agg_func, dt_ini, dt_end, ns_mappings):
     bigg = ns_mappings['bigg']
+
     def convert(tz):
         if not tz.tz:
             tz = tz.tz_localize("UTC")

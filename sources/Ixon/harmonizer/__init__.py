@@ -12,7 +12,6 @@ from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.rdf_utils.save_rdf import save_rdf_with_source
 
 time_to_timedelta = {
-    "PT1H": timedelta(hours=1),
     "PT15M": timedelta(minutes=15)
 }
 
@@ -52,6 +51,8 @@ def harmonize_ts(data, **kwargs):
     neo = GraphDatabase.driver(**neo4j_connection)
 
     df = pd.DataFrame(data)
+    df = df[df['building_internal_id'].notna()]
+
     df[['MAC', 'device_name', 'timestamp']] = df['hbase_key'].str.split('~', expand=True)
     df['unique'] = df['building_internal_id'] + '-' + df['type'] + '-' + df['object_id']
 
@@ -72,7 +73,6 @@ def harmonize_ts(data, **kwargs):
                                                          settings.namespace_mappings))
 
         # SENSOR
-        # TODO:
         # for d_neo in device_neo:
         #     device_uri = d_neo["d"].get("uri")
         #     sensor_id = sensor_subject(config['source'], device_id, "EnergyConsumptionGridElectricity", "RAW", freq)
