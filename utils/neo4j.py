@@ -43,7 +43,7 @@ def get_device_from_datasource(session, user, device_id, source, ns_mappings):
 
 def get_device_by_uri(session, uri):
     query = f"""
-    match(n:bigg__Device) where n.uri = {uri} return n limit 1
+    match(n:bigg__Device) where n.uri = "{uri}" return n limit 1
     """
     return list(session.run(query))
 
