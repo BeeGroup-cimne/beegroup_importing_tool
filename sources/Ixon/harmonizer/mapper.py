@@ -17,7 +17,6 @@ class Mapper(object):
             },
             "params": {
                 "raw": {
-                    "hasDeviceType": to_object_property("Meter", namespace=bigg_enums),
                     "deviceNumberOfOutputs": 1,
                 },
                 "mapping": {
@@ -39,6 +38,10 @@ class Mapper(object):
                     },
                     "hasSensor": {
                         "key": "hasSensor",
+                        "operations": []
+                    },
+                    "hasDeviceType": {
+                        "key": "hasDeviceType",
                         "operations": []
                     }
                 }

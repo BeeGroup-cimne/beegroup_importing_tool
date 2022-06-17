@@ -6,9 +6,12 @@ from neo4j import GraphDatabase
 from rdflib import Namespace
 
 import settings
+import utils.utils
 from sources.Ixon.harmonizer.mapper import Mapper
-from utils.data_transformations import decode_hbase, device_subject, building_space_subject, sensor_subject
+from utils.data_transformations import decode_hbase, device_subject, building_space_subject, sensor_subject, \
+    to_object_property
 from utils.neo4j import get_device_by_uri
+from utils.rdf_utils.ontology.namespaces_definition import bigg_enums
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.rdf_utils.save_rdf import save_rdf_with_source
 
@@ -17,16 +20,13 @@ time_to_timedelta = {
 }
 
 
-def set_device_type(df):
-    pass
-
-
 def harmonize_devices(data, **kwargs):
-    # TODO: taxonomies device type
     namespace = kwargs['namespace']
     config = kwargs['config']
     n = Namespace(namespace)
     df = pd.DataFrame(data)
+
+    taxonomy = utils.utils.read_config('utils/tax/ixon_tax.json')
 
     df['unique_val'] = df['Description'] + '-' + df['BACnet Type'] + '-' + df['Object ID'].astype(str)
     df['device_subject'] = df.apply(lambda x: device_subject(x['unique_val'], config['source']), axis=1)
@@ -35,6 +35,9 @@ def harmonize_devices(data, **kwargs):
         lambda x: n[sensor_subject(device_source=config['source'], device_key=x['device_subject'],
                                    measured_property="OtherMeasurement",
                                    sensor_type="RAW", freq="PT15M")], axis=1)
+
+    df = utils.utils.set_taxonomy_to_df(df=df, column_name='Tag', taxonomy=taxonomy['deviceType'])
+    df['hasDeviceType'] = df.apply(lambda x: to_object_property(x['Tag'], namespace=bigg_enums), axis=1)
 
     # TODO: Crear sensor amb el mesured property
 

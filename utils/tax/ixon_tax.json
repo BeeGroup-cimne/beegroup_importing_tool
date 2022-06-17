@@ -1,8 +1,8 @@
 {
   "deviceType": {
     "Alarma": "OtherDevice",
-    "EstatHorari": "OtherDevice",
-    "Temperatura": "IfcDistributionControlElement.IfcSensor.TemperatureSensor",
+    "EstatHorari  ": "OtherDevice",
+    "Temperatura ": "IfcDistributionControlElement.IfcSensor.TemperatureSensor",
     "Consigna": "OtherDevice",
     "SelectorOperació": "IfcDistributionControlElement.IfcFlowInstrument",
     "SelectorHorari": "IfcDistributionControlElement.Timer",
