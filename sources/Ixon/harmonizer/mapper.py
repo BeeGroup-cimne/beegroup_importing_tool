@@ -9,7 +9,6 @@ class Mapper(object):
         Device.set_namespace(namespace)
 
     def get_mappings(self, group):
-        # observesSpace, hasSensor
         devices = {
             "name": "device",
             "class": Device,

@@ -1,0 +1,24 @@
+{
+  "deviceType": {
+    "Alarma": "OtherDevice",
+    "EstatHorari": "OtherDevice",
+    "Temperatura": "IfcDistributionControlElement.IfcSensor.TemperatureSensor",
+    "Consigna": "OtherDevice",
+    "SelectorOperació": "IfcDistributionControlElement.IfcFlowInstrument",
+    "SelectorHorari": "IfcDistributionControlElement.Timer",
+    "%V3V": "OtherDevice",
+    "Estat": "OtherDevice",
+    "HoresFuncionament": "OtherDevice",
+    "%VF": "OtherDevice",
+    "MP": "OtherDevice",
+    "%Comporta": "OtherDevice",
+    "Humitat": "Meter",
+    "H_E": "OtherDevice",
+    "EstatLegio": "OtherDevice",
+    "TempsLegio": "OtherDevice",
+    "EstatOcup": "OtherDevice",
+    "SelectorOperacióFC": "OtherDevice",
+    "Electricitat": "Meter.EnergyMeter",
+    "Gas": "Meter.EnergyMeter"
+  }
+}

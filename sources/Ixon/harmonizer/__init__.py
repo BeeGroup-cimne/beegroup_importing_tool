@@ -17,8 +17,12 @@ time_to_timedelta = {
 }
 
 
+def set_device_type(df):
+    pass
+
+
 def harmonize_devices(data, **kwargs):
-    # todo: taxonomies device type
+    # TODO: taxonomies device type
     namespace = kwargs['namespace']
     config = kwargs['config']
     n = Namespace(namespace)
@@ -31,6 +35,8 @@ def harmonize_devices(data, **kwargs):
         lambda x: n[sensor_subject(device_source=config['source'], device_key=x['device_subject'],
                                    measured_property="OtherMeasurement",
                                    sensor_type="RAW", freq="PT15M")], axis=1)
+
+    # TODO: Crear sensor amb el mesured property
 
     mapper = Mapper(config['source'], n)
     g = generate_rdf(mapper.get_mappings("all"), df)
