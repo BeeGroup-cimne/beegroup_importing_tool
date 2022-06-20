@@ -20,5 +20,27 @@
     "SelectorOperacióFC": "OtherDevice",
     "Electricitat": "Meter.EnergyMeter",
     "Gas": "Meter.EnergyMeter"
+  },
+  "measuredProperty": {
+    "Alarma": "OtherMeasure",
+    "EstatHorari  ": "OtherMeasure",
+    "Temperatura ": "Temperature",
+    "Consigna": "OtherMeasure",
+    "SelectorOperació": "OtherMeasure",
+    "SelectorHorari": "OtherMeasure",
+    "%V3V": "OtherMeasure",
+    "Estat": "OtherMeasure",
+    "HoresFuncionament": "OtherMeasure",
+    "%VF": "OtherMeasure",
+    "MP": "OtherMeasure",
+    "%Comporta": "OtherMeasure",
+    "Humitat": "HumidityRatio",
+    "H_E": "OtherMeasure",
+    "EstatLegio": "OtherMeasure",
+    "TempsLegio": "OtherMeasure",
+    "EstatOcup": "OtherMeasure",
+    "SelectorOperacióFC": "OtherMeasure",
+    "Electricitat": "EnergyConsumptionGridElectricity",
+    "Gas": "EnergyConsumptionGas"
   }
 }

@@ -1,6 +1,4 @@
-from utils.data_transformations import to_object_property
-from utils.rdf_utils.ontology.bigg_classes import Device
-from utils.rdf_utils.ontology.namespaces_definition import bigg_enums
+from utils.rdf_utils.ontology.bigg_classes import Device, Sensor
 
 
 class Mapper(object):
@@ -43,6 +41,27 @@ class Mapper(object):
                     "hasDeviceType": {
                         "key": "hasDeviceType",
                         "operations": []
+                    }
+                }
+            }
+        }
+
+        sensors = {
+            "name": "sensors",
+            "class": Sensor,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "raw": {
+                },
+                "mapping": {
+                    "subject": {
+                        "key": "sensor_subject",
+                        "operations": []
+                    },
+                    "hasMeasuredProperty": {
+
                     }
                 }
             }

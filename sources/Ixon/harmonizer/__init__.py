@@ -31,15 +31,20 @@ def harmonize_devices(data, **kwargs):
     df['unique_val'] = df['Description'] + '-' + df['BACnet Type'] + '-' + df['Object ID'].astype(str)
     df['device_subject'] = df.apply(lambda x: device_subject(x['unique_val'], config['source']), axis=1)
     df['observesSpace'] = df.apply(lambda x: n[building_space_subject(x['Description'].replace('-', '_'))], axis=1)
-    df['hasSensor'] = df.apply(
-        lambda x: n[sensor_subject(device_source=config['source'], device_key=x['device_subject'],
-                                   measured_property="OtherMeasurement",
-                                   sensor_type="RAW", freq="PT15M")], axis=1)
+
+    df['Tag_raw'] = df['Tag']
+    df['measuredProperty'] = df['Tag']
 
     df = utils.utils.set_taxonomy_to_df(df=df, column_name='Tag', taxonomy=taxonomy['deviceType'])
-    df['hasDeviceType'] = df.apply(lambda x: to_object_property(x['Tag'], namespace=bigg_enums), axis=1)
+    df = utils.utils.set_taxonomy_to_df(df=df, column_name='measuredProperty', taxonomy=taxonomy['measuredProperty'])
 
-    # TODO: Crear sensor amb el mesured property
+    df['hasDeviceType'] = df.apply(lambda x: to_object_property(x['Tag'], namespace=bigg_enums), axis=1)
+    df['sensor_subject'] = df.apply(lambda x: sensor_subject(device_source=config['source'],
+                                                             device_key=x['device_subject'],
+                                                             measured_property=x['measuredProperty'],
+                                                             sensor_type="RAW", freq="PT15M"), axis=1)
+
+    df['hasSensor'] = df.apply(lambda x: n[x['sensor_subject']], axis=1)
 
     mapper = Mapper(config['source'], n)
     g = generate_rdf(mapper.get_mappings("all"), df)
