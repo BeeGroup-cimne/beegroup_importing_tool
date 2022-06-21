@@ -32,7 +32,7 @@ def harmonize_devices(data, **kwargs):
     df['unique_val'] = df['Description'] + '-' + df['BACnet Type'] + '-' + df['Object ID'].astype(str)
     df['device_subject'] = df.apply(lambda x: device_subject(x['unique_val'], config['source']), axis=1)
 
-    df['observesSpace'] = df.apply(lambda x: n[building_space_subject(x['Description'])], axis=1)
+    df['observesSpace'] = df.apply(lambda x: n[building_space_subject(x['Description'].replace('-', '_'))], axis=1)
 
     df['Tag_raw'] = df['Tag']
     df['measuredProperty'] = df['Tag_raw']
@@ -45,7 +45,7 @@ def harmonize_devices(data, **kwargs):
 
     df['hasDeviceType'] = df.apply(lambda x: to_object_property(x['Tag'], namespace=bigg_enums), axis=1)
     df['sensor_subject'] = df.apply(lambda x: sensor_subject(device_source=config['source'],
-                                                             device_key=x['device_subject'],
+                                                             device_key=x['unique_val'],
                                                              measured_property=x['measuredProperty'],
                                                              sensor_type="RAW", freq="PT15M"), axis=1)
 
