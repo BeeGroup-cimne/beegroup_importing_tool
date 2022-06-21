@@ -11,8 +11,8 @@ import utils.utils
 from sources.Ixon.harmonizer.mapper import Mapper
 from utils.data_transformations import decode_hbase, device_subject, building_space_subject, sensor_subject, \
     to_object_property
-from utils.neo4j import get_device_by_uri
-from utils.rdf_utils.ontology.namespaces_definition import bigg_enums
+from utils.neo4j import get_device_by_uri, create_sensor
+from utils.rdf_utils.ontology.namespaces_definition import bigg_enums, units
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.rdf_utils.save_rdf import save_rdf_with_source
 
@@ -87,23 +87,24 @@ def harmonize_ts(data, **kwargs):
         data_group.set_index("ts", inplace=True)
         data_group.sort_index(inplace=True)
 
-        with neo.session() as session:
-            device_neo = get_device_by_uri(session, device_subject(device_id, config['source']) + '.0')
+        dt_ini = data_group.iloc[0].name.tz_convert("UTC").tz_convert(None)
+        dt_end = data_group.iloc[-1].name.tz_convert("UTC").tz_convert(None)
 
-        # SENSOR
-        for d_neo in device_neo:
-            device_uri = d_neo["n"].get("uri")
-            sensor_id = sensor_subject(device_source=config['source'], device_key=device_id,
-                                       measured_property="EnergyConsumptionGridElectricity", sensor_type="RAW",
-                                       freq=freq)  # TODO: adapt measured_property
-            sensor_uri = str(n[sensor_id])
-            measurement_id = hashlib.sha256(sensor_uri.encode("utf-8"))
+        with neo.session() as session:
+            res = get_device_by_uri(session, device_subject(device_id, config['source']))
+
+        if res:
+            device = res['d']
+            sensor = res['s']
+
+            measurement_id = hashlib.sha256(sensor.get('uri').encode("utf-8"))
             measurement_id = measurement_id.hexdigest()
             measurement_uri = str(n[measurement_id])
-            # with neo.session() as session:
-            #     create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
-            #                   bigg_enums.EnergyConsumptionGridElectricity, bigg_enums.TrustedModel,
-            #                   measurement_uri, True,
-            #                   False, False, freq, "SUM", dt_ini, dt_end, settings.namespace_mappings)
+
+            with neo.session() as session:
+                create_sensor(session, device.get('uri'), sensor.get('uri'), units["KiloW-HR"],
+                              bigg_enums[sensor.get('bigg__hasMeasuredProperty')], bigg_enums.TrustedModel,
+                              measurement_uri, True,
+                              False, False, freq, "SUM", dt_ini, dt_end, settings.namespace_mappings)
 
             # HBASE

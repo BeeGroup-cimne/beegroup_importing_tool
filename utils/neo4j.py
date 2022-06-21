@@ -43,9 +43,10 @@ def get_device_from_datasource(session, user, device_id, source, ns_mappings):
 
 def get_device_by_uri(session, uri):
     query = f"""
-    match(n:bigg__Device) where n.uri = "{uri}" return n limit 1
+    match(d:bigg__Device)-[:bigg__hasSensor]-(s) where d.uri = "{uri}" return d,s
     """
-    return list(session.run(query))
+    value = list(session.run(query))
+    return value[0] if value else None
 
 
 def get_all_buildings_id_from_datasource(session, source_id, ns_mappings):
