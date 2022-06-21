@@ -1297,7 +1297,9 @@ bigg:hasResult a owl:ObjectProperty;
   rdfs:domain bigg:Building, bigg:BuildingSpace, bigg:DeviceAggregator;
   rdfs:range bigg:AnalyticsResults .
 
-bigg:AnalyticsResults rdfs:subClassOf bigg:Baseline, bigg:Benchmarking .
+bigg:Baseline rdfs:subClassOf bigg:AnalyticsResults .
+bigg:Benchmarking rdfs:subClassOf bigg:AnalyticsResults .
+
 
 bigg:hasEPC a owl:ObjectProperty;
   rdfs:domain bigg:Building;
@@ -1355,7 +1357,9 @@ bigg:containsZone a owl:ObjectProperty;
   rdfs:domain bigg:BuildingSpace;
   rdfs:range bigg:Zone .
 
-bigg:Group rdfs:subClassOf bigg:Zone, bigg:System .
+bigg:Zone rdfs:subClassOf bigg:Group .
+bigg:System rdfs:subClassOf bigg:Group .
+
 
 bigg:isContainedInZone a owl:ObjectProperty;
   rdfs:domain bigg:Zone;
@@ -1405,13 +1409,15 @@ bigg:hasSubElement a owl:ObjectProperty;
   rdfs:domain bigg:Element;
   rdfs:range bigg:Element .
 
-bigg:Element rdfs:subClassOf bigg:BuildingElement, bigg:Device .
+bigg:BuildingElement rdfs:subClassOf bigg:Element .
+bigg:Device rdfs:subClassOf bigg:Element .
+bigg:BuildingSystemElement rdfs:subClassOf bigg:BuildingElement .
+bigg:BuildingConstructionElement rdfs:subClassOf bigg:BuildingElement .
+
 
 bigg:hasUtilityPointOfDelivery a owl:ObjectProperty;
   rdfs:domain bigg:Device;
   rdfs:range bigg:UtilityPointOfDelivery .
-
-bigg:BuildingElement rdfs:subClassOf bigg:BuildingSystemElement .
 
 bigg:hasSensor a owl:ObjectProperty;
   rdfs:domain bigg:Device;
@@ -1485,7 +1491,7 @@ bigg:hasObjective a owl:ObjectProperty;
   rdfs:domain bigg:EnergyPerformanceContract;
   rdfs:range bigg:ContractObjective .
 
-bigg:Contract rdfs:subClassOf bigg:EnergyPerformanceContract .
+bigg:EnergyPerformanceContract rdfs:subClassOf bigg:Contract .
 
 bigg:hasCO2EmissionsFactor a owl:ObjectProperty;
   rdfs:domain bigg:UtilityPointOfDelivery;

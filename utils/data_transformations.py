@@ -95,6 +95,9 @@ def cadastral_info_subject(key):
     return f"CADASTRALINFO-{key}"
 
 
+def epc_subject(key):
+    return f"EPC-{key}"
+
 def __area_subject__(key, a_type, a_source):
     return f"AREA-{a_type}-{a_source}-{key}"
 
@@ -102,6 +105,9 @@ def __area_subject__(key, a_type, a_source):
 gross_area_subject = partial(__area_subject__, a_type="GrossFloorArea")
 gross_area_subject_above = partial(__area_subject__, a_type="GrossFloorAreaAboveGround")
 gross_area_subject_under = partial(__area_subject__, a_type="GrossFloorAreaUnderGround")
+net_area_subject = partial(__area_subject__, a_type="NetFloorArea")
+heated_area_subject = partial(__area_subject__, a_type="HeatedFloorArea")
+cooled_area_subject = partial(__area_subject__, a_type="CooledFloorArea")
 
 
 def construction_element_subject(key):
