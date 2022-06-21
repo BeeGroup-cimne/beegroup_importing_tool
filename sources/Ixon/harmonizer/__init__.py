@@ -1,6 +1,7 @@
 import hashlib
 from datetime import timedelta
 
+import numpy as np
 import pandas as pd
 from neo4j import GraphDatabase
 from rdflib import Namespace
@@ -27,16 +28,20 @@ def harmonize_devices(data, **kwargs):
     df = pd.DataFrame(data)
 
     taxonomy = utils.utils.read_config('utils/tax/ixon_tax.json')
-
+    df['Object ID'] = df['Object ID'].fillna(0).astype(np.int64)
     df['unique_val'] = df['Description'] + '-' + df['BACnet Type'] + '-' + df['Object ID'].astype(str)
     df['device_subject'] = df.apply(lambda x: device_subject(x['unique_val'], config['source']), axis=1)
-    df['observesSpace'] = df.apply(lambda x: n[building_space_subject(x['Description'].replace('-', '_'))], axis=1)
+
+    df['observesSpace'] = df.apply(lambda x: n[building_space_subject(x['Description'])], axis=1)
 
     df['Tag_raw'] = df['Tag']
-    df['measuredProperty'] = df['Tag']
+    df['measuredProperty'] = df['Tag_raw']
 
     df = utils.utils.set_taxonomy_to_df(df=df, column_name='Tag', taxonomy=taxonomy['deviceType'])
     df = utils.utils.set_taxonomy_to_df(df=df, column_name='measuredProperty', taxonomy=taxonomy['measuredProperty'])
+
+    df['measuredProperty_link'] = df.apply(lambda x: to_object_property(x['measuredProperty'], namespace=bigg_enums),
+                                           axis=1)  # TODO: Check measuredProperty Others / Unknown property
 
     df['hasDeviceType'] = df.apply(lambda x: to_object_property(x['Tag'], namespace=bigg_enums), axis=1)
     df['sensor_subject'] = df.apply(lambda x: sensor_subject(device_source=config['source'],
