@@ -1,5 +1,5 @@
 from .gather import gather
-#from .harmonizer import harmonize_command_line
+from .harmonizer import harmonize_command_line
 from .harmonizer.mapper_static import harmonize_IdentificacionEdificio as harmonize_building, \
     harmonize_DatosGeneralesyGeometria as harmonize_area,\
     harmonize_CondicionesFuncionamientoyOcupacion as harmonize_spaces
@@ -12,8 +12,8 @@ class Plugin(SourcePlugin):
     def gather(self, arguments):
         gather(arguments, settings=self.settings, config=self.config)
 
-    # def harmonizer_command_line(self, arguments):
-    #     harmonize_command_line(arguments, config=self.config, settings=self.settings)
+    def harmonizer_command_line(self, arguments):
+        harmonize_command_line(arguments, config=self.config, settings=self.settings)
 
     def get_mapper(self, message):
         print(message["collection_type"])
