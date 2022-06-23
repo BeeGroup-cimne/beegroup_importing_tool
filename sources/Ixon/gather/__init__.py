@@ -1,6 +1,7 @@
 import argparse
 import os
 import re
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -24,17 +25,21 @@ def gather_ts(config, settings, args):
     # TODO: set date init and date end
     hbase_conn = config['ixon_raw_data']
     hbase_table = f"ixon_data_infraestructures"
+    stop_date = str(datetime(day=20, month=6, year=2022, hour=0, second=0, minute=0).timestamp())
 
     Cache.load_cache()
     # Gather Raw Data from HBASE
-    for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table, batch_size=1000):
+    for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table, batch_size=1000,
+                                                 row_start='C0:D3:91:31:E9:B1 - 17087108', reverse=True):
+
         dic_list = []
         for key, values in data:
             item = dict({'hbase_key': key.decode()})
             for key1, value1 in values.items():
                 k = re.sub("^info:|^v:", "", key1.decode())
                 item.update({k: value1.decode()})
-            dic_list.append(item)
+                if 'building_internal_id' in item.keys():
+                    dic_list.append(item)
         save_data(data=dic_list, data_type='ts', row_keys='_id', column_map=[("info", "all")],
                   config=config, settings=settings, args=args)
 
