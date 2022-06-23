@@ -1,13 +1,12 @@
 import argparse
 import os
-import re
-from datetime import datetime
 
 import numpy as np
 import pandas as pd
 
 import utils
-from harmonizer.cache import Cache
+from utils.hdfs import generate_input_tsv
+from utils.mongo import mongo_connection
 
 
 def gather_devices(config, settings, args):
@@ -22,26 +21,11 @@ def gather_devices(config, settings, args):
 
 
 def gather_ts(config, settings, args):
-    # TODO: set date init and date end
-    hbase_conn = config['ixon_raw_data']
-    hbase_table = f"ixon_data_infraestructures"
-    stop_date = str(datetime(day=20, month=6, year=2022, hour=0, second=0, minute=0).timestamp())
+    # Connect to MongoDB
+    db_ixon_users = mongo_connection(config['mongo_db'])['ixon_users']
 
-    Cache.load_cache()
-    # Gather Raw Data from HBASE
-    for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table, batch_size=1000,
-                                                 row_start='C0:D3:91:31:E9:B1 - 17087108', reverse=True):
-
-        dic_list = []
-        for key, values in data:
-            item = dict({'hbase_key': key.decode()})
-            for key1, value1 in values.items():
-                k = re.sub("^info:|^v:", "", key1.decode())
-                item.update({k: value1.decode()})
-                if 'building_internal_id' in item.keys():
-                    dic_list.append(item)
-        save_data(data=dic_list, data_type='ts', row_keys='_id', column_map=[("info", "all")],
-                  config=config, settings=settings, args=args)
+    # Generate TSV File
+    generate_input_tsv(db_ixon_users.find({}), ["email", "password", "api_application", "description"])
 
 
 def save_data(data, data_type, row_keys, column_map, config, settings, args):
