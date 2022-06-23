@@ -36,7 +36,7 @@ def set_municipality(df, label='municipality', predicates=None,
         predicates = ['ns1:name']
 
     df[label] = df[label].str.strip()
-    unique_municipalities = list(df[label].unique())
+    unique_municipalities = list(df[label].dropna().unique())
 
     dicty = rdflib.Graph()
     dicty.load(dictionary_ttl_file, format="ttl")
@@ -60,6 +60,7 @@ def harmonize_static(data, **kwargs):
     config = kwargs['config']
 
     df = set_taxonomy(pd.DataFrame().from_records(data))
+    # df.dropna(subset=['municipality'], inplace=True)
     df = set_municipality(df)
 
     df['subject'] = df['filename'] + '-' + df['id'].astype(str)
@@ -70,7 +71,6 @@ def harmonize_static(data, **kwargs):
     df['building_name'] = df['subject'] + '-' + df['municipality'] + '-' + df['type_of_building']
 
     df['location_subject'] = 'LOCATION-' + df['subject']
-
     df['epc_date_before'] = df['epc_date'] - timedelta(days=365)
     df['epc_before_subject'] = 'EPC-' + df['subject'] + '-' + df['epc_energy_class_before']
     df['epc_after_subject'] = 'EPC-' + df['subject'] + '-' + df['epc_energy_class_after']
@@ -183,7 +183,7 @@ def harmonize_detail(data, **kwargs):
     # Transformations
     df.rename(columns={"location_municipality": "municipality", "area_gross_floor_area": "gross_floor_area"},
               inplace=True)
-
+    # TODO: municipality and building_type taxonomy
     df['epc_date'] = pd.to_datetime(df['epc_date'])
     df['epc_date_before'] = df['epc_date'] - timedelta(days=365)
     df['annual_energy_consumption_before_total_consumption'] = df['consumption_11_type']
