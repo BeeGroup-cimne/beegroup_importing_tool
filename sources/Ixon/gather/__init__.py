@@ -5,7 +5,8 @@ import numpy as np
 import pandas as pd
 
 import utils
-from utils.hdfs import generate_input_tsv
+from sources.Ixon.gather.ixon_mrjob import MRIxonJob
+from utils.hdfs import generate_input_tsv, put_file_to_hdfs, remove_file_from_hdfs, remove_file
 from utils.mongo import mongo_connection
 
 
@@ -25,7 +26,38 @@ def gather_ts(config, settings, args):
     db_ixon_users = mongo_connection(config['mongo_db'])['ixon_users']
 
     # Generate TSV File
-    generate_input_tsv(db_ixon_users.find({}), ["email", "password", "api_application", "description"])
+    tmp_path = generate_input_tsv(db_ixon_users.find({}), ["email", "password", "api_application", "description"])
+
+    hdfs_out_path = put_file_to_hdfs(source_file_path=tmp_path, destination_file_path="/tmp/ixon_tmp/")
+
+    # MapReduce Config
+
+    MOUNTS = 'YARN_CONTAINER_RUNTIME_DOCKER_MOUNTS=/dev/net/tun:/dev/net/tun:rw'
+    IMAGE = 'YARN_CONTAINER_RUNTIME_DOCKER_IMAGE=docker.tech.beegroup-cimne.com/mr/mr-ixon:latest'
+    RUNTYPE = 'YARN_CONTAINER_RUNTIME_TYPE=docker'
+
+    mr_job = MRIxonJob(args=[
+        '-r', 'hadoop', 'hdfs://%s' % hdfs_out_path,
+        '--file', 'Ixon.py',
+        '--file', 'utils.py#utils.py',
+        # '--file', 'vpn_files/vpn_template_0.ovpn',
+        # '--file', 'vpn_files/vpn_template_1.ovpn',
+        # '--file', 'vpn_files/vpn_template_2.ovpn',
+        # '--file', 'vpn_files/vpn_template_3.ovpn',
+        '--file', 'vpn_files/vpn_template_4.ovpn',
+        '--file', 'config.json#config.json',
+        '--jobconf', 'mapreduce.map.env={},{},{}'.format(MOUNTS, IMAGE, RUNTYPE),  # PRIVILEGED, DISABLE),
+        '--jobconf', 'mapreduce.reduce.env={},{},{}'.format(MOUNTS, IMAGE, RUNTYPE),  # PRIVILEGED, DISABLE),
+        '--jobconf', 'mapreduce.job.name=ixon_gather',
+        '--jobconf', 'mapreduce.job.reduces=1'
+    ])
+
+    with mr_job.make_runner() as runner:
+        runner.run()
+
+    # Remove generated files
+    remove_file(tmp_path)
+    remove_file_from_hdfs(hdfs_out_path)
 
 
 def save_data(data, data_type, row_keys, column_map, config, settings, args):
