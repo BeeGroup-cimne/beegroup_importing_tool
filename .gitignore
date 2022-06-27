@@ -8,3 +8,4 @@ logs/
 *.pyc
 data/
 .DS_Store
+sources/Ixon/gather/vpn_files/
