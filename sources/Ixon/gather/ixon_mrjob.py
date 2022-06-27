@@ -41,10 +41,9 @@ def save_data(data, data_type, row_keys, column_map, config):
     elif config['store'] == "hbase":
         utils.utils.log_string(f"saving to hbase", mongo=False)
         try:
-            pass
-            # TODO: h_table_name = f"raw_{config['source']}_{type_d}_{data_type}_{credentials['user']}"
-            # utils.hbase.save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
-            #                         row_fields=row_keys)
+            h_table_name = f"raw_{config['source']}_ts_{data_type}_PT15M_{config['user']}"
+            utils.hbase.save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
+                                      row_fields=row_keys)
         except Exception as e:
             utils.utils.log_string(f"Error saving datadis supplies to HBASE: {e}")
     else:
@@ -282,7 +281,8 @@ class MRIxonJob(MRJob):
         return [
             MRStep(mapper=self.mapper_get_available_agents),
             MRStep(mapper_init=self.mapper_init, mapper=self.mapper_generate_network_config),
-            MRStep(reducer_init=self.reducer_init_databases, reducer=self.reducer_generate_vpn)]
+            # MRStep(reducer_init=self.reducer_init_databases, reducer=self.reducer_generate_vpn)
+        ]
 
 
 if __name__ == '__main__':

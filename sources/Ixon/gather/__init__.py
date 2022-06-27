@@ -57,6 +57,7 @@ def gather_ts(config, settings, args):
 
     # Generate TSV File
     tmp_path = generate_input_tsv(list(db_ixon_users.find({})), ["email", "password", "api_application", "description"])
+    print(tmp_path)
 
     hdfs_out_path = put_file_to_hdfs(source_file_path=tmp_path, destination_file_path="/tmp/ixon_tmp/")
 
