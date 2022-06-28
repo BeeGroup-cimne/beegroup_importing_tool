@@ -20,6 +20,8 @@ NETWORK_INTERFACE = 'tap0'
 
 vpn_dict = {'0': '10.187.10.1', '1': '10.187.10.15', '2': '10.187.10.12', '3': '10.187.10.13', '4': '10.187.10.14'}
 
+DEBUG = True
+
 
 def save_data(data, data_type, row_keys, column_map, config):
     if config['store'] == "kafka":
@@ -155,11 +157,12 @@ class MRIxonJob(MRJob):
                         break
 
                 if not connected:
-                    ixon_logs.insert_one(
-                        {'building_id': value['deviceId'], "building_name": building_devices[0]['building_name'],
-                         'building_internal_id': building_devices[0]['building_internal_id'],
-                         "info": "VPN Connection: Time out exceeded.",
-                         "date": datetime.datetime.utcnow(), "successful": False})
+                    if not DEBUG:
+                        ixon_logs.insert_one(
+                            {'building_id': value['deviceId'], "building_name": building_devices[0]['building_name'],
+                             'building_internal_id': building_devices[0]['building_internal_id'],
+                             "info": "VPN Connection: Time out exceeded.",
+                             "date": datetime.datetime.utcnow(), "successful": False})
                     try:
                         subprocess.call(["sudo", "pkill", "openvpn"])
                     except Exception as ex:
@@ -191,22 +194,24 @@ class MRIxonJob(MRJob):
 
                     try:
                         netio = psutil.net_io_counters(pernic=True)
-                        network_usage.insert_one(
-                            {"from": 'infraestructures.cat', "building": value['deviceId'],
-                             'building_internal_id': building_devices[0]['building_internal_id'],
-                             "timestamp": datetime.datetime.utcnow(),
-                             "bytes_sent": netio[NETWORK_INTERFACE].bytes_sent,
-                             "bytes_recv": netio[NETWORK_INTERFACE].bytes_recv})
+                        if not DEBUG:
+                            network_usage.insert_one(
+                                {"from": 'infraestructures.cat', "building": value['deviceId'],
+                                 'building_internal_id': building_devices[0]['building_internal_id'],
+                                 "timestamp": datetime.datetime.utcnow(),
+                                 "bytes_sent": netio[NETWORK_INTERFACE].bytes_sent,
+                                 "bytes_recv": netio[NETWORK_INTERFACE].bytes_recv})
                     except Exception as ex:
                         sys.stderr.write(str(ex))
 
                     subprocess.call(["sudo", "pkill", "openvpn"])
                     bacnet.disconnect()
-                    ixon_logs.insert_one(
-                        {'building_id': value['deviceId'], "building_name": building_devices[0]['building_name'],
-                         'building_internal_id': building_devices[0]['building_internal_id'],
-                         "info": "BACnet Connection: Time out exceeded.",
-                         "date": datetime.datetime.utcnow(), "successful": False})
+                    if not DEBUG:
+                        ixon_logs.insert_one(
+                            {'building_id': value['deviceId'], "building_name": building_devices[0]['building_name'],
+                             'building_internal_id': building_devices[0]['building_internal_id'],
+                             "info": "BACnet Connection: Time out exceeded.",
+                             "date": datetime.datetime.utcnow(), "successful": False})
                     continue
 
                 # Recover data for each device
@@ -233,12 +238,13 @@ class MRIxonJob(MRJob):
 
                 try:
                     netio = psutil.net_io_counters(pernic=True)
-                    network_usage.insert_one(
-                        {"from": 'infraestructures.cat', "building": value['deviceId'],
-                         'building_internal_id': building_devices[0]['building_internal_id'],
-                         "bytes_sent": netio[NETWORK_INTERFACE].bytes_sent,
-                         "timestamp": datetime.datetime.utcnow(),
-                         "bytes_recv": netio[NETWORK_INTERFACE].bytes_recv})
+                    if not DEBUG:
+                        network_usage.insert_one(
+                            {"from": 'infraestructures.cat', "building": value['deviceId'],
+                             'building_internal_id': building_devices[0]['building_internal_id'],
+                             "bytes_sent": netio[NETWORK_INTERFACE].bytes_sent,
+                             "timestamp": datetime.datetime.utcnow(),
+                             "bytes_recv": netio[NETWORK_INTERFACE].bytes_recv})
                 except Exception as ex:
                     sys.stderr.write(str(ex))
 
@@ -246,14 +252,15 @@ class MRIxonJob(MRJob):
                 bacnet.disconnect()
                 subprocess.call(["sudo", "pkill", "openvpn"])
 
-                ixon_logs.insert_one(
-                    {'building_id': value['deviceId'], "building_name": building_devices[0]['building_name'],
-                     'building_internal_id': building_devices[0]['building_internal_id'],
-                     "devices_logs": devices_logs,
-                     "info": "OK",
-                     "date": datetime.datetime.utcnow(), "successful": True})
+                if not DEBUG:
+                    ixon_logs.insert_one(
+                        {'building_id': value['deviceId'], "building_name": building_devices[0]['building_name'],
+                         'building_internal_id': building_devices[0]['building_internal_id'],
+                         "devices_logs": devices_logs,
+                         "info": "OK",
+                         "date": datetime.datetime.utcnow(), "successful": True})
 
-                if results:
+                if results and not DEBUG:
                     try:
                         save_data(data=results, data_type='ts',
                                   row_keys=['building', 'device', 'timestamp'], column_map=[("v", ["value"]),
