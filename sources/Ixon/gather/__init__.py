@@ -1,14 +1,15 @@
 import argparse
 import os
+from tempfile import NamedTemporaryFile
 
 import numpy as np
 import pandas as pd
 
 import utils
-from .ixon_mrjob import MRIxonJob
 from utils.hdfs import generate_input_tsv, put_file_to_hdfs, remove_file_from_hdfs, remove_file
 from utils.mongo import mongo_connection
 from utils.utils import log_string
+from .ixon_mrjob import MRIxonJob
 
 
 def save_devices(data, data_type, row_keys, column_map, config, settings, args):
@@ -52,12 +53,19 @@ def gather_devices(config, settings, args):
 
 
 def gather_ts(config, settings, args):
+    # generate config file
+    job_config = config.copy()
+    job_config.update(**settings)
+    job_config.update({"store": args.store, "user": args.user, "namespace": args.namesapce, "type": args.type})
+    config_file = NamedTemporaryFile(delete=False, prefix='config_job_', suffix='.json')
+    config_file.write(job_config)
+    config_file.close()
+
     # Connect to MongoDB
     db_ixon_users = mongo_connection(config['mongo_db'])['ixon_users']
 
     # Generate TSV File
     tmp_path = generate_input_tsv(list(db_ixon_users.find({})), ["email", "password", "api_application", "description"])
-    print(tmp_path)
 
     hdfs_out_path = put_file_to_hdfs(source_file_path=tmp_path, destination_file_path="/tmp/ixon_tmp/")
 
@@ -77,7 +85,7 @@ def gather_ts(config, settings, args):
         '--file', 'sources/Ixon/gather/vpn_files/vpn_template_4.ovpn',
         # '--file', 'vpn_files/vpn_template_5.ovpn',
         # '--file', 'vpn_files/vpn_template_6.ovpn',
-        '--file', 'config.json#config.json',
+        '--file', f'{config_file.name}#config.json',
         '--jobconf', 'mapreduce.map.env={},{},{}'.format(MOUNTS, IMAGE, RUNTYPE),  # PRIVILEGED, DISABLE),
         '--jobconf', 'mapreduce.reduce.env={},{},{}'.format(MOUNTS, IMAGE, RUNTYPE),  # PRIVILEGED, DISABLE),
         '--jobconf', 'mapreduce.job.name=importing_tool_gather_ixon',

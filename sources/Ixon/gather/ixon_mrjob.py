@@ -45,7 +45,7 @@ def save_data(data, data_type, row_keys, column_map, config):
     elif config['store'] == "hbase":
         log_string(f"saving to hbase", mongo=False)
         try:
-            h_table_name = f"raw_{config['source']}_ts_{data_type}_PT15M_{config['user']}"
+            h_table_name = f"raw_{config['source']}_ts_DeviceMeasurement_PT15M_{config['user']}"
             save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
                           row_fields=row_keys)
         except Exception as e:
@@ -261,7 +261,6 @@ class MRIxonJob(MRJob):
                          "date": datetime.datetime.utcnow(), "successful": True})
 
                 if results and not DEBUG:
-                    sys.stderr.write(str(results))
                     try:
                         save_data(data=results, data_type='ts',
                                   row_keys=['building', 'device', 'timestamp'], column_map=[("v", ["value"]),

@@ -61,6 +61,7 @@ def harmonize_devices(data, **kwargs):
 
 
 def harmonize_ts(data, **kwargs):
+    print(data)
     # match(n:bigg__Organization) where n.uri starts with "https://infraestructures.cat" return n limit 1
     namespace = kwargs['namespace']
     config = kwargs['config']
