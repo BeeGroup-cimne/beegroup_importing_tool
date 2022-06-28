@@ -9,9 +9,11 @@ import requests
 from mrjob.job import MRJob
 from mrjob.step import MRStep
 
-import utils
-from sources.Ixon.gather.Ixon import Ixon
-from utils.mongo import mongo_connection
+from utils.hbase import save_to_hbase
+from utils.ixon import Ixon
+from utils.kafka import save_to_kafka
+from utils.mongo import mongo_connection, mongo_logger
+from utils.utils import log_string, read_config
 
 NUM_VPNS_CONFIG = 4
 NETWORK_INTERFACE = 'tap0'
@@ -21,7 +23,7 @@ vpn_dict = {'0': '10.187.10.1', '1': '10.187.10.15', '2': '10.187.10.12', '3': '
 
 def save_data(data, data_type, row_keys, column_map, config):
     if config['store'] == "kafka":
-        utils.utils.log_string(f"saving to kafka", mongo=False)
+        log_string(f"saving to kafka", mongo=False)
         try:
             k_topic = config["kafka"]["topic"]
             kafka_message = {
@@ -30,24 +32,24 @@ def save_data(data, data_type, row_keys, column_map, config):
                 "source": config['source'],
                 "row_keys": row_keys,
                 "column_map": column_map,
-                "logger": utils.mongo.mongo_logger.export_log(),
+                "logger": mongo_logger.export_log(),
                 "data": data
             }
-            utils.kafka.save_to_kafka(topic=k_topic, info_document=kafka_message,
-                                      config=config['kafka']['connection'], batch=config["kafka_message_size"])
+            save_to_kafka(topic=k_topic, info_document=kafka_message,
+                          config=config['kafka']['connection'], batch=config["kafka_message_size"])
 
         except Exception as e:
-            utils.utils.log_string(f"error when sending message: {e}")
+            log_string(f"error when sending message: {e}")
     elif config['store'] == "hbase":
-        utils.utils.log_string(f"saving to hbase", mongo=False)
+        log_string(f"saving to hbase", mongo=False)
         try:
             h_table_name = f"raw_{config['source']}_ts_{data_type}_PT15M_{config['user']}"
-            utils.hbase.save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
-                                      row_fields=row_keys)
+            save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
+                          row_fields=row_keys)
         except Exception as e:
-            utils.utils.log_string(f"Error saving datadis supplies to HBASE: {e}")
+            log_string(f"Error saving datadis supplies to HBASE: {e}")
     else:
-        utils.utils.log_string(f"store {config['store']} is not supported")
+        log_string(f"store {config['store']} is not supported")
 
 
 class MRIxonJob(MRJob):
@@ -266,7 +268,7 @@ class MRIxonJob(MRJob):
 
     def reducer_init_databases(self):
         # Read and save MongoDB config
-        config = utils.utils.read_config('config.json')
+        config = read_config('config.json')
         self.config = config
         self.connection = config['mongo_db']
         self.hbase = config['hbase']
@@ -274,7 +276,7 @@ class MRIxonJob(MRJob):
 
     def mapper_init(self):
         # Read and save MongoDB config
-        config = utils.utils.read_config('config.json')
+        config = read_config('config.json')
         self.connection = config['mongo_db']
 
     def steps(self):

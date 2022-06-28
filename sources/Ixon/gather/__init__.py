@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 import utils
-from sources.Ixon.gather.ixon_mrjob import MRIxonJob
+from .ixon_mrjob import MRIxonJob
 from utils.hdfs import generate_input_tsv, put_file_to_hdfs, remove_file_from_hdfs, remove_file
 from utils.mongo import mongo_connection
 from utils.utils import log_string
@@ -64,7 +64,7 @@ def gather_ts(config, settings, args):
     # MapReduce Config
 
     MOUNTS = 'YARN_CONTAINER_RUNTIME_DOCKER_MOUNTS=/dev/net/tun:/dev/net/tun:rw'
-    IMAGE = 'YARN_CONTAINER_RUNTIME_DOCKER_IMAGE=docker.tech.beegroup-cimne.com/mr/mr-ixon:latest'
+    IMAGE = 'YARN_CONTAINER_RUNTIME_DOCKER_IMAGE=docker.tech.beegroup-cimne.com/mr/mr-ixon:development'
     RUNTYPE = 'YARN_CONTAINER_RUNTIME_TYPE=docker'
 
     mr_job = MRIxonJob(args=[
@@ -75,13 +75,13 @@ def gather_ts(config, settings, args):
         # '--file', 'vpn_files/vpn_template_1.ovpn',
         # '--file', 'vpn_files/vpn_template_2.ovpn',
         # '--file', 'vpn_files/vpn_template_3.ovpn',
-        '--file', 'vpn_files/vpn_template_4.ovpn',
+        '--file', 'sources/Ixon/gather/vpn_files/vpn_template_4.ovpn',
         # '--file', 'vpn_files/vpn_template_5.ovpn',
         # '--file', 'vpn_files/vpn_template_6.ovpn',
         '--file', 'config.json#config.json',
         '--jobconf', 'mapreduce.map.env={},{},{}'.format(MOUNTS, IMAGE, RUNTYPE),  # PRIVILEGED, DISABLE),
         '--jobconf', 'mapreduce.reduce.env={},{},{}'.format(MOUNTS, IMAGE, RUNTYPE),  # PRIVILEGED, DISABLE),
-        '--jobconf', 'mapreduce.job.name=ixon_gather',
+        '--jobconf', 'mapreduce.job.name=importing_tool_gather_ixon',
         '--jobconf', 'mapreduce.job.reduces=1'
     ])
     try:
