@@ -55,8 +55,8 @@ def gather_devices(config, settings, args):
 def gather_ts(config, settings, args):
     # generate config file
     job_config = config.copy()
-    job_config.update(**settings)
-    job_config.update({"store": args.store, "user": args.user, "namespace": args.namesapce, "type": args.type})
+    job_config.update({"store": args.store, "user": args.user, "namespace": args.namesapce, "type": args.type,
+                       "kafka_message_size": settings.kafka_message_size})
     config_file = NamedTemporaryFile(delete=False, prefix='config_job_', suffix='.json')
     config_file.write(job_config)
     config_file.close()
