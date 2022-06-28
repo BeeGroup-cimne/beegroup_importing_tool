@@ -69,8 +69,8 @@ def gather_ts(config, settings, args):
 
     mr_job = MRIxonJob(args=[
         '-r', 'hadoop', 'hdfs://%s' % hdfs_out_path,
-        '--file', 'Ixon.py',
-        '--file', 'utils.py#utils.py',
+        '--file', 'sources/Ixon/gather/Ixon.py#Ixon.py',
+        '--file', 'utils#utils',
         # '--file', 'vpn_files/vpn_template_0.ovpn',
         # '--file', 'vpn_files/vpn_template_1.ovpn',
         # '--file', 'vpn_files/vpn_template_2.ovpn',

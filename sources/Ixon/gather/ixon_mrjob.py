@@ -9,7 +9,7 @@ import requests
 from mrjob.job import MRJob
 from mrjob.step import MRStep
 
-import utils.utils
+import utils
 from sources.Ixon.gather.Ixon import Ixon
 from utils.mongo import mongo_connection
 
