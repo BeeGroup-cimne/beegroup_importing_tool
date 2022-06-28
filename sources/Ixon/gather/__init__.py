@@ -1,5 +1,6 @@
 import argparse
 import os
+import pickle
 from tempfile import NamedTemporaryFile
 
 import numpy as np
@@ -55,10 +56,10 @@ def gather_devices(config, settings, args):
 def gather_ts(config, settings, args):
     # generate config file
     job_config = config.copy()
-    job_config.update({"store": args.store, "user": args.user, "namespace": args.namesapce, "type": args.type,
+    job_config.update({"store": args.store, "user": args.user, "namespace": args.namespace, "type": args.type,
                        "kafka_message_size": settings.kafka_message_size})
-    config_file = NamedTemporaryFile(delete=False, prefix='config_job_', suffix='.json')
-    config_file.write(job_config)
+    config_file = NamedTemporaryFile(delete=False, prefix='config_job_', suffix='.pickle')
+    config_file.write(pickle.dumps(job_config))
     config_file.close()
 
     # Connect to MongoDB
@@ -85,7 +86,7 @@ def gather_ts(config, settings, args):
         '--file', 'sources/Ixon/gather/vpn_files/vpn_template_4.ovpn',
         # '--file', 'vpn_files/vpn_template_5.ovpn',
         # '--file', 'vpn_files/vpn_template_6.ovpn',
-        '--file', f'{config_file.name}#config.json',
+        '--file', f'{config_file.name}',
         '--jobconf', 'mapreduce.map.env={},{},{}'.format(MOUNTS, IMAGE, RUNTYPE),  # PRIVILEGED, DISABLE),
         '--jobconf', 'mapreduce.reduce.env={},{},{}'.format(MOUNTS, IMAGE, RUNTYPE),  # PRIVILEGED, DISABLE),
         '--jobconf', 'mapreduce.job.name=importing_tool_gather_ixon',
@@ -97,11 +98,13 @@ def gather_ts(config, settings, args):
         # Remove generated files
         remove_file(tmp_path)
         remove_file_from_hdfs(hdfs_out_path)
+        utils.hdfs.remove_file(config_file.name)
     except Exception as ex:
         log_string(f"error in map_reduce: {ex}")
         # Remove generated files
         remove_file(tmp_path)
         remove_file_from_hdfs(hdfs_out_path)
+        utils.hdfs.remove_file(config_file.name)
 
 
 def gather(arguments, config=None, settings=None):

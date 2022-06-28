@@ -1,4 +1,6 @@
 import datetime
+import glob
+import pickle
 import subprocess
 import sys
 import time
@@ -55,6 +57,10 @@ def save_data(data, data_type, row_keys, column_map, config):
 
 
 class MRIxonJob(MRJob):
+    def __read_config__(self):
+        fn = glob.glob('*.pickle')
+        self.config = pickle.load(open(fn[0], 'rb'))
+
     def mapper_get_available_agents(self, _, line):
         # line : email password application_id
         l = line.split('\t')
@@ -275,15 +281,14 @@ class MRIxonJob(MRJob):
 
     def reducer_init_databases(self):
         # Read and save MongoDB config
-        config = read_config('config.json')
-        self.config = config
-        self.connection = config['mongo_db']
-        self.hbase = config['hbase_store_raw_data']
+        self.__read_config__()
+        self.connection = self.config['mongo_db']
+        self.hbase = self.config['hbase_store_raw_data']
 
     def mapper_init(self):
         # Read and save MongoDB config
-        config = read_config('config.json')
-        self.connection = config['mongo_db']
+        self.__read_config__()
+        self.connection = self.config['mongo_db']
 
     def steps(self):
         return [
