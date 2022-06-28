@@ -261,6 +261,7 @@ class MRIxonJob(MRJob):
                          "date": datetime.datetime.utcnow(), "successful": True})
 
                 if results and not DEBUG:
+                    sys.stderr.write(str(results))
                     try:
                         save_data(data=results, data_type='ts',
                                   row_keys=['building', 'device', 'timestamp'], column_map=[("v", ["value"]),
@@ -278,8 +279,7 @@ class MRIxonJob(MRJob):
         config = read_config('config.json')
         self.config = config
         self.connection = config['mongo_db']
-        self.hbase = config['hbase']
-        self.datasources = config['datasources']
+        self.hbase = config['hbase_store_raw_data']
 
     def mapper_init(self):
         # Read and save MongoDB config
@@ -290,7 +290,7 @@ class MRIxonJob(MRJob):
         return [
             MRStep(mapper=self.mapper_get_available_agents),
             MRStep(mapper_init=self.mapper_init, mapper=self.mapper_generate_network_config),
-            # MRStep(reducer_init=self.reducer_init_databases, reducer=self.reducer_generate_vpn)
+            MRStep(reducer_init=self.reducer_init_databases, reducer=self.reducer_generate_vpn)
         ]
 
 
