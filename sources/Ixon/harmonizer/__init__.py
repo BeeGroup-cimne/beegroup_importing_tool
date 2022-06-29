@@ -32,8 +32,7 @@ def harmonize_devices(data, **kwargs):
     df['unique_val'] = df['Description'] + '-' + df['BACnet Type'] + '-' + df['Object ID'].astype(str)
     df['device_subject'] = df.apply(lambda x: device_subject(x['unique_val'], config['source']), axis=1)
 
-    df['observesSpace'] = df.apply(lambda x: n[building_space_subject(x['Description'].replace('-', '_'))],
-                                   axis=1)  # TODO: remove replace
+    df['observesSpace'] = df.apply(lambda x: n[building_space_subject(x['Description'])], axis=1)
 
     df['Tag_raw'] = df['Tag']
     df['measuredProperty'] = df['Tag_raw']
@@ -61,6 +60,10 @@ def harmonize_devices(data, **kwargs):
 
 
 def harmonize_ts(data, **kwargs):
+    # data = [{'building': 'C0:D3:91:32:7A:5B - 17099803', 'device': 'Programes.Moduls_ES.M1_ES.Z1_Impulsio_Temperatura',
+    #          'building_internal_id': 'PNT-02551', 'timestamp': 1656509442.701691, 'value': 34.70246887207031,
+    #          'type': 'analogInput', 'description': None, 'object_id': 0}]
+
     # match(n:bigg__Organization) where n.uri starts with "https://infraestructures.cat" return n limit 1
     namespace = kwargs['namespace']
     config = kwargs['config']
@@ -75,7 +78,6 @@ def harmonize_ts(data, **kwargs):
     if 'building_internal_id' in list(df.columns):
         df = df[df['building_internal_id'].notna()]
 
-        df[['MAC', 'device_name', 'timestamp']] = df['hbase_key'].str.split('~', expand=True)
         df['unique'] = df['building_internal_id'] + '-' + df['type'] + '-' + df['object_id']
 
         df["ts"] = pd.to_datetime(df['timestamp'].apply(float), unit="s")
@@ -110,6 +112,5 @@ def harmonize_ts(data, **kwargs):
                 #               bigg_enums[sensor.get('bigg__hasMeasuredProperty')], bigg_enums.TrustedModel,
                 #               measurement_uri, True,
                 #               False, False, freq, "SUM", dt_ini, dt_end, settings.namespace_mappings)
-                print(dt_ini)
-                print(dt_end)
+
                 # TODO: Save harmonized values to HBASE

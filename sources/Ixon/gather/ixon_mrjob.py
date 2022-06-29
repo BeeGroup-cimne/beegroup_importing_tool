@@ -16,10 +16,11 @@ from utils.kafka import save_to_kafka
 from utils.mongo import mongo_connection
 from utils.utils import log_string
 
-NUM_VPNS_CONFIG = 4
+NUM_VPNS_CONFIG = 5
 NETWORK_INTERFACE = 'tap0'
 
-vpn_dict = {'0': '10.187.10.1', '1': '10.187.10.15', '2': '10.187.10.12', '3': '10.187.10.13', '4': '10.187.10.14'}
+vpn_dict = {'0': '10.187.10.1', '1': '10.187.10.15', '2': '10.187.10.12', '3': '10.187.10.13', '4': '10.187.10.14',
+            '5': '10.187.13.10'}
 
 DEBUG = False
 
@@ -76,8 +77,7 @@ class MRIxonJob(MRJob):
             dict_result = {"token": ixon_conn.token, "api_application": l[2], "company": ixon_conn.companies[0]}
             dict_result.update({"agent": agent['publicId']})
             dict_result.update({"company_label": l[3]})
-            # yield index % NUM_VPNS_CONFIG, dict_result
-            yield 4, dict_result
+            yield index % NUM_VPNS_CONFIG, dict_result
 
     def mapper_generate_network_config(self, key, line):
 
@@ -223,7 +223,7 @@ class MRIxonJob(MRJob):
                     continue
 
                 # Recover data for each device
-                for device in building_devices[:1]:  # TODO: Remove [:1]
+                for device in building_devices:
                     try:
                         device_value = bacnet.read(
                             f"{device['bacnet_device_ip']} {device['type']} {device['object_id']} presentValue")

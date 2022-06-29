@@ -80,18 +80,17 @@ def gather_ts(config, settings, args):
     mr_job = MRIxonJob(args=[
         '-r', 'hadoop', 'hdfs://%s' % hdfs_out_path,
         '--file', 'utils#utils',
-        # '--file', 'vpn_files/vpn_template_0.ovpn',
-        # '--file', 'vpn_files/vpn_template_1.ovpn',
-        # '--file', 'vpn_files/vpn_template_2.ovpn',
-        # '--file', 'vpn_files/vpn_template_3.ovpn',
+        '--file', 'sources/Ixon/gather/vpn_files/vpn_template_0.ovpn',
+        '--file', 'sources/Ixon/gather/vpn_files/vpn_template_1.ovpn',
+        '--file', 'sources/Ixon/gather/vpn_files/vpn_template_2.ovpn',
+        '--file', 'sources/Ixon/gather/vpn_files/vpn_template_3.ovpn',
         '--file', 'sources/Ixon/gather/vpn_files/vpn_template_4.ovpn',
-        # '--file', 'vpn_files/vpn_template_5.ovpn',
-        # '--file', 'vpn_files/vpn_template_6.ovpn',
+        '--file', 'sources/Ixon/gather/vpn_files/vpn_template_5.ovpn',
         '--file', f'{config_file.name}',
         '--jobconf', 'mapreduce.map.env={},{},{}'.format(MOUNTS, IMAGE, RUNTYPE),  # PRIVILEGED, DISABLE),
         '--jobconf', 'mapreduce.reduce.env={},{},{}'.format(MOUNTS, IMAGE, RUNTYPE),  # PRIVILEGED, DISABLE),
         '--jobconf', 'mapreduce.job.name=importing_tool_gather_ixon',
-        '--jobconf', 'mapreduce.job.reduces=1'
+        '--jobconf', 'mapreduce.job.reduces=5'
     ])
     try:
         with mr_job.make_runner() as runner:
