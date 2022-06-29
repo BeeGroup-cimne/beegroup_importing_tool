@@ -15,14 +15,14 @@ from utils.hbase import save_to_hbase
 from utils.ixon import Ixon
 from utils.kafka import save_to_kafka
 from utils.mongo import mongo_connection, mongo_logger
-from utils.utils import log_string, read_config
+from utils.utils import log_string
 
 NUM_VPNS_CONFIG = 4
 NETWORK_INTERFACE = 'tap0'
 
 vpn_dict = {'0': '10.187.10.1', '1': '10.187.10.15', '2': '10.187.10.12', '3': '10.187.10.13', '4': '10.187.10.14'}
 
-DEBUG = True
+DEBUG = False
 
 
 def save_data(data, data_type, row_keys, column_map, config):

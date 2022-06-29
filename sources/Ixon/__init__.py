@@ -25,4 +25,7 @@ class Plugin(SourcePlugin):
     def get_store_table(self, message):
         if message["collection_type"] == "static":
             return f"{self.source_name}_{message['collection_type']}_devices__{message['user']}"
-        return None
+        elif message["collection_type"] == "ts":
+            return f"{self.source_name}_{message['collection_type']}_Measures_PT15M_{message['user']}"
+        else:
+            return None
