@@ -1,14 +1,10 @@
 import argparse
-import os
+import importlib
 import time
 
 import pandas as pd
 
-import argparse
-import os
 import settings
-import importlib
-
 from harmonizer.cache import Cache
 from utils.kafka import read_from_kafka
 from utils.mongo import mongo_logger
@@ -27,6 +23,7 @@ def start_harmonizer():
     Cache.load_cache()
     try:
         for x in consumer:
+            print(x.value)
             start = time.time()
             message = x.value
             df = pd.DataFrame.from_records(message['data'])
@@ -63,6 +60,7 @@ def harmonize_source(g_args):
     source_plugin = load_source_plugin(args.source)
     source = source_plugin.Plugin(settings=settings)
     source.harmonizer_command_line(unknown)
+
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()

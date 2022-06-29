@@ -26,6 +26,6 @@ class Plugin(SourcePlugin):
         if message["collection_type"] == "static":
             return f"{self.source_name}_{message['collection_type']}_devices__{message['user']}"
         elif message["collection_type"] == "ts":
-            return f"{self.source_name}_{message['collection_type']}_Sensor_PT15M_{message['user']}"
+            return f"{self.source_name}_{message['collection_type']}_Meter_PT15M_{message['user']}"
         else:
             return None

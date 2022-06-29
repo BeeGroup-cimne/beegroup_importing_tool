@@ -2,7 +2,6 @@ import datetime
 import glob
 import pickle
 import subprocess
-import sys
 import time
 
 import BAC0
@@ -14,7 +13,7 @@ from mrjob.step import MRStep
 from utils.hbase import save_to_hbase
 from utils.ixon import Ixon
 from utils.kafka import save_to_kafka
-from utils.mongo import mongo_connection, mongo_logger
+from utils.mongo import mongo_connection
 from utils.utils import log_string
 
 NUM_VPNS_CONFIG = 4
@@ -25,10 +24,8 @@ vpn_dict = {'0': '10.187.10.1', '1': '10.187.10.15', '2': '10.187.10.12', '3': '
 DEBUG = False
 
 
+# TODO: Init mongo_logger
 def save_data(data, data_type, row_keys, column_map, config):
-    sys.stderr.write(str(data))
-    sys.stderr.write(str(config))
-
     if config['store'] == "kafka":
         log_string(f"saving to kafka", mongo=False)
         try:
@@ -38,8 +35,10 @@ def save_data(data, data_type, row_keys, column_map, config):
                 "collection_type": data_type,
                 "source": config['source'],
                 "row_keys": row_keys,
+                "user": config['user'],
                 "column_map": column_map,
-                "logger": mongo_logger.export_log(),
+                # "logger": mongo_logger.export_log(),
+                # TODO: kafka topic erroni, agafa la configuracio que no es
                 "data": data
             }
             save_to_kafka(topic=k_topic, info_document=kafka_message,
@@ -50,7 +49,7 @@ def save_data(data, data_type, row_keys, column_map, config):
     elif config['store'] == "hbase":
         log_string(f"saving to hbase", mongo=False)
         try:
-            h_table_name = f"raw_{config['source']}_ts_Sensor_PT15M_{config['user']}"
+            h_table_name = f"raw_{config['source']}_ts_Meter_PT15M_{config['user']}"
             save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
                           row_fields=row_keys)
         except Exception as e:
@@ -133,7 +132,7 @@ class MRIxonJob(MRJob):
             building_devices = list(ixon_devices.find({'building_id': value['deviceId']}, {'_id': 0}))
 
             if building_devices:
-                sys.stderr.write(f"{building_devices[0]['building_name']}\n")
+                log_string(f"{building_devices[0]['building_name']}\n", mongo=False)
 
                 # Generate VPN Config
                 with open(f'vpn_template_{key}.ovpn', 'r') as file:
@@ -148,7 +147,7 @@ class MRIxonJob(MRJob):
                 interfaces = subprocess.run(["hostname", "-I"], stdout=subprocess.PIPE)
                 interfaces_list = interfaces.stdout.decode(encoding="utf-8").split(" ")
 
-                sys.stderr.write(f"{interfaces_list}\n")
+                log_string(f"{interfaces_list}\n", mongo=False)
 
                 # Waiting to VPN connection
                 time_out = 4  # seconds
@@ -175,11 +174,11 @@ class MRIxonJob(MRJob):
                     try:
                         subprocess.call(["sudo", "pkill", "openvpn"])
                     except Exception as ex:
-                        sys.stderr.write(str(ex))
+                        log_string(ex, mongo=False)
                     continue
 
                 vpn_ip = vpn_dict[str(key)]
-                sys.stderr.write(str(vpn_ip))
+                log_string(str(vpn_ip), mongo=False)
 
                 # Recover Data
                 # Open BACnet Connection
@@ -190,13 +189,13 @@ class MRIxonJob(MRJob):
 
                 while not aux and time.time() - current_time < 3:
                     try:
-                        sys.stderr.write(f"{vpn_ip},{value['ip_vpn']}\n")
+                        log_string(f"{vpn_ip},{value['ip_vpn']}\n", mongo=False)
                         bacnet = BAC0.lite(ip=vpn_ip + '/16', bbmdAddress=value['ip_vpn'] + ':47808', bbmdTTL=900)
                         aux = True
                     except Exception as ex:
                         bacnet.disconnect()
-                        sys.stderr.write(str(ex))
-                        sys.stderr.write("%s " % str(building_devices[0]['building_name']) + "\n")
+                        log_string(ex, mongo=False)
+                        log_string("%s " % str(building_devices[0]['building_name']) + "\n", mongo=False)
                         time.sleep(0.2)
 
                 if not aux:
@@ -211,7 +210,7 @@ class MRIxonJob(MRJob):
                                  "bytes_sent": netio[NETWORK_INTERFACE].bytes_sent,
                                  "bytes_recv": netio[NETWORK_INTERFACE].bytes_recv})
                     except Exception as ex:
-                        sys.stderr.write(str(ex))
+                        log_string(ex, mongo=False)
 
                     subprocess.call(["sudo", "pkill", "openvpn"])
                     bacnet.disconnect()
@@ -255,7 +254,7 @@ class MRIxonJob(MRJob):
                              "timestamp": datetime.datetime.utcnow(),
                              "bytes_recv": netio[NETWORK_INTERFACE].bytes_recv})
                 except Exception as ex:
-                    sys.stderr.write(str(ex))
+                    log_string(ex, mongo=False)
 
                 # End Connections (Bacnet and VPN)
                 bacnet.disconnect()
@@ -280,7 +279,7 @@ class MRIxonJob(MRJob):
                                   config=self.config)
 
                     except Exception as ex:
-                        sys.stderr.write(str(ex))
+                        log_string(ex, mongo=False)
 
     def reducer_init_databases(self):
         # Read and save MongoDB config

@@ -6,8 +6,9 @@ from tempfile import NamedTemporaryFile
 import numpy as np
 import pandas as pd
 
-import utils
+from utils.hbase import save_to_hbase
 from utils.hdfs import generate_input_tsv, put_file_to_hdfs, remove_file_from_hdfs, remove_file
+from utils.kafka import save_to_kafka
 from utils.mongo import mongo_connection
 from utils.utils import log_string
 from .ixon_mrjob import MRIxonJob
@@ -26,20 +27,20 @@ def save_devices(data, data_type, row_keys, column_map, config, settings, args):
                 "column_map": column_map,
                 "data": data
             }
-            utils.kafka.save_to_kafka(topic=k_topic, info_document=kafka_message,
-                                      config=config['kafka']['connection'], batch=settings.kafka_message_size)
+            save_to_kafka(topic=k_topic, info_document=kafka_message,
+                          config=config['kafka']['connection'], batch=settings.kafka_message_size)
 
         except Exception as e:
-            utils.utils.log_string(f"error when sending message: {e}")
+            log_string(f"error when sending message: {e}")
     elif args.store == "hbase":
         try:
             h_table_name = f"{config['data_sources'][config['source']]['hbase_table']}_{data_type}_{args.type}__{args.user}"
-            utils.hbase.save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
-                                      row_fields=row_keys)
+            save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
+                          row_fields=row_keys)
         except Exception as e:
-            utils.utils.log_string(f"Error saving datadis supplies to HBASE: {e}")
+            log_string(f"Error saving datadis supplies to HBASE: {e}")
     else:
-        utils.utils.log_string(f"store {config['store']} is not supported")
+        log_string(f"store {config['store']} is not supported")
 
 
 def gather_devices(config, settings, args):
@@ -98,13 +99,13 @@ def gather_ts(config, settings, args):
         # Remove generated files
         remove_file(tmp_path)
         remove_file_from_hdfs(hdfs_out_path)
-        utils.hdfs.remove_file(config_file.name)
+        remove_file(config_file.name)
     except Exception as ex:
         log_string(f"error in map_reduce: {ex}")
         # Remove generated files
         remove_file(tmp_path)
         remove_file_from_hdfs(hdfs_out_path)
-        utils.hdfs.remove_file(config_file.name)
+        remove_file(config_file.name)
 
 
 def gather(arguments, config=None, settings=None):
