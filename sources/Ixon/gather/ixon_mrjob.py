@@ -26,6 +26,9 @@ DEBUG = False
 
 
 def save_data(data, data_type, row_keys, column_map, config):
+    sys.stderr.write(str(data))
+    sys.stderr.write(str(config))
+
     if config['store'] == "kafka":
         log_string(f"saving to kafka", mongo=False)
         try:
@@ -221,7 +224,7 @@ class MRIxonJob(MRJob):
                     continue
 
                 # Recover data for each device
-                for device in building_devices:
+                for device in building_devices[:1]:  # TODO: Remove [:1]
                     try:
                         device_value = bacnet.read(
                             f"{device['bacnet_device_ip']} {device['type']} {device['object_id']} presentValue")
