@@ -47,7 +47,7 @@ def save_data(data, data_type, row_keys, column_map, config):
     elif config['store'] == "hbase":
         log_string(f"saving to hbase", mongo=False)
         try:
-            h_table_name = f"raw_{config['source']}_ts_DeviceMeasurement_PT15M_{config['user']}"
+            h_table_name = f"raw_{config['source']}_ts_Sensor_PT15M_{config['user']}"
             save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
                           row_fields=row_keys)
         except Exception as e:
