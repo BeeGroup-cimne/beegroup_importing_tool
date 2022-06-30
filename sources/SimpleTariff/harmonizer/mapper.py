@@ -6,11 +6,12 @@ from neo4j import GraphDatabase
 from rdflib import Namespace
 
 import settings
-from utils.data_transformations import decode_hbase, sensor_subject, device_subject
+from utils.data_transformations import *
 from utils.hbase import save_to_hbase
-from utils.neo4j import get_device_from_datasource, create_sensor
+from utils.neo4j import get_tariff_from_datasource, create_tariffPrice
 from utils.rdf_utils.ontology.namespaces_definition import units, bigg_enums
 from slugify import slugify
+
 
 def create_tariff(data, **kwargs):
     namespace = kwargs['namespace']
@@ -21,16 +22,16 @@ def create_tariff(data, **kwargs):
     tariff_name_uri = slugify(tariff_name)
     bigg = settings.namespace_mappings['bigg']
     n = Namespace(namespace)
-    device_uri = device_subject(f"{user}-{tariff_name_uri}", "SimpleTariffSource")
+    device_uri = tariff_subject(f"{user}-{tariff_name_uri}", "SimpleTariffSource")
     neo4j_connection = config['neo4j']
     neo = GraphDatabase.driver(**neo4j_connection)
     with neo.session() as session:
         session.run(f"""
                     MATCH ({bigg}__Organization{{userID:'{user}'}})-[:{bigg}__hasSubOrganization*0..]->(o:{bigg}__Organization)-
                     [:hasSource]->(s) where id(s) = {data_source}
-                    MERGE (s)<-[:importedFromSource]-(d:{bigg}__Tariff:{bigg}__Device:Resource{{uri:"{n[device_uri]}"}})
+                    MERGE (s)<-[:importedFromSource]-(d:{bigg}__Tariff:Resource{{uri:"{n[device_uri]}"}})
                     SET d.source="SimpleTariffSource",
-                        d.{bigg}__deviceName = ["{tariff_name}"] return d
+                        d.{bigg}__tariffName = ["{tariff_name}"] return d
                     """)
 
 def harmonize_data_ts(data, **kwargs):
@@ -76,21 +77,21 @@ def harmonize_data_ts(data, **kwargs):
 
     with neo.session() as session:
         n = Namespace(namespace)
-        devices_neo = list(get_device_from_datasource(session, user, tariff_name, "SimpleTariffSource",
+        devices_neo = list(get_tariff_from_datasource(session, user, tariff_name, "SimpleTariffSource",
                                                           settings.namespace_mappings))
     for device in devices_neo:
         print(device)
         device_uri = device['d'].get("uri")
-        sensor_id = sensor_subject("simpletariff", tariff_name_uri, "EnergyPriceGridElectricity", "RAW", "")
+        sensor_id = tariff_subject("simpletariff", tariff_name_uri, "EnergyPriceGridElectricity", "RAW", "")
         sensor_uri = str(n[sensor_id])
         measurement_id = hashlib.sha256(sensor_uri.encode("utf-8"))
         measurement_id = measurement_id.hexdigest()
         measurement_uri = str(n[measurement_id])
         with neo.session() as session:
-            create_sensor(session, device_uri, sensor_uri, units["Euro"],
-                          bigg_enums["Price.EnergyPriceGridElectricity"], bigg_enums.TrustedModel,
-                          measurement_uri, True,
-                          False, False, "PT1H", "SUM", dt_ini, dt_end, settings.namespace_mappings)
+            create_tariffPrice(session, device_uri, sensor_uri, units["Euro"],
+                               bigg_enums["Price.EnergyPriceGridElectricity"],
+                               measurement_uri, True,
+                               False, False, "PT1H", "SUM", dt_ini, dt_end, settings.namespace_mappings)
 
         tariff_df['listKey'] = measurement_id
         device_table = f"harmonized_online_EnergyPriceGridElectricity_100_SUM_PT1H_{user}"

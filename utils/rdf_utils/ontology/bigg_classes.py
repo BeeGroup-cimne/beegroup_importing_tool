@@ -17,7 +17,8 @@ class BIGGObjects(object):
 
     def get_graph(self):
         g = Graph()
-        g.add((self.subject, RDF.type, self.__rdf_type__))
+        for tt in self.__rdf_type__:
+            g.add((self.subject, RDF.type, tt))
         for k, v in vars(self).items():
             if k != "subject" and v:
                 if isinstance(v, URIRef):
@@ -28,7 +29,7 @@ class BIGGObjects(object):
     
         
 class AddressCity(BIGGObjects):
-    __rdf_type__ = Bigg.AddressCity
+    __rdf_type__ = ['AddressCity', 'Feature', 'Thing']
 
     def __init__(self, subject, name=None,comment=None,label=None):
         super().__init__(subject)
@@ -38,7 +39,7 @@ class AddressCity(BIGGObjects):
         
         
 class AddressCountry(BIGGObjects):
-    __rdf_type__ = Bigg.AddressCountry
+    __rdf_type__ = ['AddressCountry', 'Feature', 'Thing']
 
     def __init__(self, subject, name=None,comment=None,label=None):
         super().__init__(subject)
@@ -48,7 +49,7 @@ class AddressCountry(BIGGObjects):
         
         
 class AddressProvince(BIGGObjects):
-    __rdf_type__ = Bigg.AddressProvince
+    __rdf_type__ = ['AddressProvince', 'Feature', 'Thing']
 
     def __init__(self, subject, name=None,comment=None,label=None):
         super().__init__(subject)
@@ -58,7 +59,7 @@ class AddressProvince(BIGGObjects):
         
         
 class EnergyPerformanceContract(BIGGObjects):
-    __rdf_type__ = Bigg.EnergyPerformanceContract
+    __rdf_type__ = ['EnergyPerformanceContract', 'Contract', 'Thing']
 
     def __init__(self, subject, contractEndDate=None,contractName=None,contractPerimeter=None,contractStartDate=None,comment=None,label=None,hasObjective=None,providesContract=None):
         super().__init__(subject)
@@ -73,7 +74,7 @@ class EnergyPerformanceContract(BIGGObjects):
         
         
 class Element(BIGGObjects):
-    __rdf_type__ = Bigg.Element
+    __rdf_type__ = ['Element', 'ObservableItem', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,isObservedByDevice=None,hasSubElement=None,isAffectedByMeasure=None,isAssociatedWithSpace=None,isContainedInSpace=None,maintainsElement=None,containsSystem=None):
         super().__init__(subject)
@@ -89,7 +90,7 @@ class Element(BIGGObjects):
         
         
 class Measurement(BIGGObjects):
-    __rdf_type__ = Bigg.Measurement
+    __rdf_type__ = ['Measurement', 'TimeseriesPoint', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,end=None,isReal=None,start=None,value=None):
         super().__init__(subject)
@@ -102,7 +103,7 @@ class Measurement(BIGGObjects):
         
         
 class StatePoint(BIGGObjects):
-    __rdf_type__ = Bigg.StatePoint
+    __rdf_type__ = ['StatePoint', 'TimeseriesPoint', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,end=None,isReal=None,start=None,value=None):
         super().__init__(subject)
@@ -115,23 +116,12 @@ class StatePoint(BIGGObjects):
         
         
 class WeatherStation(BIGGObjects):
-    __rdf_type__ = Bigg.WeatherStation
+    __rdf_type__ = ['WeatherStation', 'DataProvider', 'Thing']
 
-    def __init__(self, subject, comment=None,label=None,deviceIDFromOrganization=None,deviceInstallationDate=None,deviceLicenceVersionNumber=None,deviceManufacturer=None,deviceModel=None,deviceName=None,deviceNumberOfOutputs=None,deviceOperatingSystem=None,deviceRemovalDate=None,deviceSerialNumber=None,deviceThresholdValue=None,latitude=None,longitude=None,hasDeviceInputProtocol=None,hasDeviceInputSignalType=None,hasDeviceType=None,hasHistory=None,hasSensor=None,hasState=None,hasUtilityPointofDelivery=None,isPartOfDeviceAggregator=None,observes=None):
+    def __init__(self, subject, comment=None,label=None,latitude=None,longitude=None,hasDeviceInputProtocol=None,hasDeviceInputSignalType=None,hasDeviceType=None,hasHistory=None,hasSensor=None,hasState=None,hasUtilityPointofDelivery=None,isPartOfDeviceAggregator=None,observes=None):
         super().__init__(subject)
         self.comment = comment
         self.label = label
-        self.deviceIDFromOrganization = deviceIDFromOrganization
-        self.deviceInstallationDate = deviceInstallationDate
-        self.deviceLicenceVersionNumber = deviceLicenceVersionNumber
-        self.deviceManufacturer = deviceManufacturer
-        self.deviceModel = deviceModel
-        self.deviceName = deviceName
-        self.deviceNumberOfOutputs = deviceNumberOfOutputs
-        self.deviceOperatingSystem = deviceOperatingSystem
-        self.deviceRemovalDate = deviceRemovalDate
-        self.deviceSerialNumber = deviceSerialNumber
-        self.deviceThresholdValue = deviceThresholdValue
         self.latitude = latitude
         self.longitude = longitude
         self.hasDeviceInputProtocol = hasDeviceInputProtocol
@@ -146,19 +136,19 @@ class WeatherStation(BIGGObjects):
         
         
 class State(BIGGObjects):
-    __rdf_type__ = Bigg.State
+    __rdf_type__ = ['State', 'TimeseriesList', 'Thing']
 
-    def __init__(self, subject, comment=None,label=None,TimeSeriesEnd=None,TimeSeriesFrequency=None,TimeSeriesIsCumulative=None,TimeSeriesIsOnChange=None,TimeSeriesIsRegular=None,TimeSeriesStart=None,TimeSeriesTimeAggregationFunction=None,hasMeasuredProperty=None,hasStatePoint=None,hasStateType=None,hasStateUnit=None):
+    def __init__(self, subject, comment=None,label=None,timeSeriesEnd=None,timeSeriesFrequency=None,timeSeriesIsCumulative=None,timeSeriesIsOnChange=None,timeSeriesIsRegular=None,timeSeriesStart=None,timeSeriesTimeAggregationFunction=None,hasMeasuredProperty=None,hasStatePoint=None,hasStateType=None,hasStateUnit=None):
         super().__init__(subject)
         self.comment = comment
         self.label = label
-        self.TimeSeriesEnd = TimeSeriesEnd
-        self.TimeSeriesFrequency = TimeSeriesFrequency
-        self.TimeSeriesIsCumulative = TimeSeriesIsCumulative
-        self.TimeSeriesIsOnChange = TimeSeriesIsOnChange
-        self.TimeSeriesIsRegular = TimeSeriesIsRegular
-        self.TimeSeriesStart = TimeSeriesStart
-        self.TimeSeriesTimeAggregationFunction = TimeSeriesTimeAggregationFunction
+        self.timeSeriesEnd = timeSeriesEnd
+        self.timeSeriesFrequency = timeSeriesFrequency
+        self.timeSeriesIsCumulative = timeSeriesIsCumulative
+        self.timeSeriesIsOnChange = timeSeriesIsOnChange
+        self.timeSeriesIsRegular = timeSeriesIsRegular
+        self.timeSeriesStart = timeSeriesStart
+        self.timeSeriesTimeAggregationFunction = timeSeriesTimeAggregationFunction
         self.hasMeasuredProperty = hasMeasuredProperty
         self.hasStatePoint = hasStatePoint
         self.hasStateType = hasStateType
@@ -166,7 +156,7 @@ class State(BIGGObjects):
         
         
 class BuildingSpace(BIGGObjects):
-    __rdf_type__ = Bigg.BuildingSpace
+    __rdf_type__ = ['BuildingSpace', 'ObservableItem', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,buildingSpaceIDFromOrganization=None,buildingSpaceName=None,hasDeviceAggregator=None,hasSubSpace=None,isObservedByDevice=None,containsElement=None,hasArea=None,hasBuildingSpaceUseType=None,hasIndoorQualityPerception=None,hasOccupancyProfile=None,isAssociatedWithElement=None,containsZone=None):
         super().__init__(subject)
@@ -187,19 +177,19 @@ class BuildingSpace(BIGGObjects):
         
         
 class Sensor(BIGGObjects):
-    __rdf_type__ = Bigg.Sensor
+    __rdf_type__ = ['Sensor', 'TimeseriesList', 'Thing']
 
-    def __init__(self, subject, comment=None,label=None,TimeSeriesEnd=None,TimeSeriesFrequency=None,TimeSeriesIsCumulative=None,TimeSeriesIsOnChange=None,TimeSeriesIsRegular=None,TimeSeriesStart=None,TimeSeriesTimeAggregationFunction=None,hasMeasuredProperty=None,hasMeasurement=None,hasMeasurementUnit=None,hasOutputProtocol=None,hasOutputSignalType=None,hasSensorEstimationMethod=None,hasSensorReadingType=None):
+    def __init__(self, subject, comment=None,label=None,timeSeriesEnd=None,timeSeriesFrequency=None,timeSeriesIsCumulative=None,timeSeriesIsOnChange=None,timeSeriesIsRegular=None,timeSeriesStart=None,timeSeriesTimeAggregationFunction=None,hasMeasuredProperty=None,hasMeasurement=None,hasMeasurementUnit=None,hasOutputProtocol=None,hasOutputSignalType=None,hasSensorEstimationMethod=None,hasSensorReadingType=None):
         super().__init__(subject)
         self.comment = comment
         self.label = label
-        self.TimeSeriesEnd = TimeSeriesEnd
-        self.TimeSeriesFrequency = TimeSeriesFrequency
-        self.TimeSeriesIsCumulative = TimeSeriesIsCumulative
-        self.TimeSeriesIsOnChange = TimeSeriesIsOnChange
-        self.TimeSeriesIsRegular = TimeSeriesIsRegular
-        self.TimeSeriesStart = TimeSeriesStart
-        self.TimeSeriesTimeAggregationFunction = TimeSeriesTimeAggregationFunction
+        self.timeSeriesEnd = timeSeriesEnd
+        self.timeSeriesFrequency = timeSeriesFrequency
+        self.timeSeriesIsCumulative = timeSeriesIsCumulative
+        self.timeSeriesIsOnChange = timeSeriesIsOnChange
+        self.timeSeriesIsRegular = timeSeriesIsRegular
+        self.timeSeriesStart = timeSeriesStart
+        self.timeSeriesTimeAggregationFunction = timeSeriesTimeAggregationFunction
         self.hasMeasuredProperty = hasMeasuredProperty
         self.hasMeasurement = hasMeasurement
         self.hasMeasurementUnit = hasMeasurementUnit
@@ -210,7 +200,7 @@ class Sensor(BIGGObjects):
         
         
 class Device(BIGGObjects):
-    __rdf_type__ = Bigg.Device
+    __rdf_type__ = ['Device', 'DataProvider', 'Element', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,deviceIDFromOrganization=None,deviceInstallationDate=None,deviceLicenceVersionNumber=None,deviceManufacturer=None,deviceModel=None,deviceName=None,deviceNumberOfOutputs=None,deviceOperatingSystem=None,deviceRemovalDate=None,deviceSerialNumber=None,deviceThresholdValue=None,hasDeviceInputProtocol=None,hasDeviceInputSignalType=None,hasDeviceType=None,hasHistory=None,hasSensor=None,hasState=None,hasUtilityPointofDelivery=None,isPartOfDeviceAggregator=None,observes=None,hasSubElement=None,isAffectedByMeasure=None,isAssociatedWithSpace=None,isContainedInSpace=None,maintainsElement=None,containsSystem=None):
         super().__init__(subject)
@@ -245,7 +235,7 @@ class Device(BIGGObjects):
         
         
 class BuildingConstructionElement(BIGGObjects):
-    __rdf_type__ = Bigg.BuildingConstructionElement
+    __rdf_type__ = ['BuildingConstructionElement', 'BuildingElement', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,buildingElementBrand=None,buildingElementIdFromOrganizationstring=None,buildingElementInstallationDate=None,buildingElementManufactureDatestring=None,buildingElementManufacturer=None,buildingElementModelstring=None,buildingElementPurchaseDate=None,buildingElementSerialNumber=None,buildingElementState=None,hasBuildingConstructionElementType=None):
         super().__init__(subject)
@@ -264,7 +254,7 @@ class BuildingConstructionElement(BIGGObjects):
         
         
 class BuildingSystemElement(BIGGObjects):
-    __rdf_type__ = Bigg.BuildingSystemElement
+    __rdf_type__ = ['BuildingSystemElement', 'BuildingElement', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,buildingElementBrand=None,buildingElementIdFromOrganizationstring=None,buildingElementInstallationDate=None,buildingElementManufactureDatestring=None,buildingElementManufacturer=None,buildingElementModelstring=None,buildingElementPurchaseDate=None,buildingElementSerialNumber=None,buildingElementState=None,buildingSystemElementEfficiency=None,buildingSystemElementMaxOutput=None,buildingSystemElementMinOutput=None,hasBuildingSystemElementType=None):
         super().__init__(subject)
@@ -286,7 +276,7 @@ class BuildingSystemElement(BIGGObjects):
         
         
 class BuildingElement(BIGGObjects):
-    __rdf_type__ = Bigg.BuildingElement
+    __rdf_type__ = ['BuildingElement', 'Element', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,buildingElementBrand=None,buildingElementIdFromOrganizationstring=None,buildingElementInstallationDate=None,buildingElementManufactureDatestring=None,buildingElementManufacturer=None,buildingElementModelstring=None,buildingElementPurchaseDate=None,buildingElementSerialNumber=None,buildingElementState=None,hasSubElement=None,isAffectedByMeasure=None,isAssociatedWithSpace=None,isContainedInSpace=None,maintainsElement=None,containsSystem=None):
         super().__init__(subject)
@@ -310,7 +300,7 @@ class BuildingElement(BIGGObjects):
         
         
 class EnergyEfficiencyMeasure(BIGGObjects):
-    __rdf_type__ = Bigg.EnergyEfficiencyMeasure
+    __rdf_type__ = ['EnergyEfficiencyMeasure', 'NonEnergyBenefitProducingItem', 'SavingProducingItem', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,EneergyEfficiencyMeasureCurrencyExhangeRate=None,EneergyEfficiencyMeasureFinancialSavings=None,EneergyEfficiencyMeasureOperationalDate=None,EneergyEfficiencyMeasureSavingsToInvestmenRatio=None,energyEfficiencyMeasureCO2Reduction=None,energyEfficiencyMeasureDescription=None,energyEfficiencyMeasureInvestment=None,energyEfficiencyMeasureLifetime=None,energySourcePriceEscalationRate=None,shareOfAffectedElement=None,affectsElement=None,hasEnergyEfficiencyMeasureInvestmentCurrency=None,hasEnergyEfficiencyMeasureType=None,producesNonEnergyBenefit=None,producesSaving=None):
         super().__init__(subject)
@@ -334,7 +324,7 @@ class EnergyEfficiencyMeasure(BIGGObjects):
         
         
 class System(BIGGObjects):
-    __rdf_type__ = Bigg.System
+    __rdf_type__ = ['System', 'Group', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,groupName=None,hasSystemType=None,isContainedInSystem=None,servesZone=None):
         super().__init__(subject)
@@ -347,7 +337,7 @@ class System(BIGGObjects):
         
         
 class Zone(BIGGObjects):
-    __rdf_type__ = Bigg.Zone
+    __rdf_type__ = ['Zone', 'Group', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,groupName=None,hasZoneType=None,isContainedInZone=None):
         super().__init__(subject)
@@ -359,7 +349,7 @@ class Zone(BIGGObjects):
         
         
 class RenovationProject(BIGGObjects):
-    __rdf_type__ = Bigg.RenovationProject
+    __rdf_type__ = ['RenovationProject', 'Project', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,geometrySRID=None,projectCurrencyExchangeRate=None,projectDescription=None,projectDiscountRate=None,projectGrantsShareOfCosts=None,projectIDFromOrganization=None,projectIncludedConfortmeterSurvey=None,projectIncludedNonEnergyBenefitsEstimate=None,projectInterestRate=None,projectInternalRateOfReturn=None,projectInventivesShareOfRevenues=None,projectInvestment=None,projectName=None,projectNetPresentValue=None,projectOperationalDate=None,projectReceivedGrantFounding=None,projectSavingsToInvestmentRatio=None,projectSimplePaybackTime=None,projectStartDate=None,projectUsesIncentives=None,affectsBuilding=None,hasProjectInvestmentCurrency=None,hasProjectMotivation=None,hasSubProject=None):
         super().__init__(subject)
@@ -392,7 +382,7 @@ class RenovationProject(BIGGObjects):
         
         
 class RetrofitProject(BIGGObjects):
-    __rdf_type__ = Bigg.RetrofitProject
+    __rdf_type__ = ['RetrofitProject', 'Project', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,geometrySRID=None,projectCO2Reduction=None,projectCurrencyExchangeRate=None,projectDescription=None,projectDiscountRate=None,projectGrantsShareOfCosts=None,projectIDFromOrganization=None,projectIncludedConfortmeterSurvey=None,projectIncludedNonEnergyBenefitsEstimate=None,projectInterestRate=None,projectInternalRateOfReturn=None,projectInventivesShareOfRevenues=None,projectInvestment=None,projectName=None,projectNetPresentValue=None,projectOperationalDate=None,projectReceivedGrantFounding=None,projectSavingsToInvestmentRatio=None,projectSimplePaybackTime=None,projectStartDate=None,projectUsesIncentives=None,affectsBuilding=None,hasProjectInvestmentCurrency=None,hasProjectMotivation=None,hasSubProject=None,includesMeasure=None):
         super().__init__(subject)
@@ -427,7 +417,7 @@ class RetrofitProject(BIGGObjects):
         
         
 class Project(BIGGObjects):
-    __rdf_type__ = Bigg.Project
+    __rdf_type__ = ['Project', 'NonEnergyBenefitProducingItem', 'SavingProducingItem', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,geometrySRID=None,projectCurrencyExchangeRate=None,projectDescription=None,projectDiscountRate=None,projectGrantsShareOfCosts=None,projectIDFromOrganization=None,projectIncludedConfortmeterSurvey=None,projectIncludedNonEnergyBenefitsEstimate=None,projectInterestRate=None,projectInternalRateOfReturn=None,projectInventivesShareOfRevenues=None,projectInvestment=None,projectName=None,projectNetPresentValue=None,projectOperationalDate=None,projectReceivedGrantFounding=None,projectSavingsToInvestmentRatio=None,projectSimplePaybackTime=None,projectStartDate=None,projectUsesIncentives=None,affectsBuilding=None,hasProjectInvestmentCurrency=None,hasProjectMotivation=None,hasSubProject=None,producesNonEnergyBenefit=None,producesSaving=None):
         super().__init__(subject)
@@ -462,7 +452,7 @@ class Project(BIGGObjects):
         
         
 class CO2EmissionsPoint(BIGGObjects):
-    __rdf_type__ = Bigg.CO2EmissionsPoint
+    __rdf_type__ = ['CO2EmissionsPoint', 'TimeseriesPoint', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,end=None,isReal=None,start=None,value=None):
         super().__init__(subject)
@@ -475,7 +465,7 @@ class CO2EmissionsPoint(BIGGObjects):
         
         
 class TariffPoint(BIGGObjects):
-    __rdf_type__ = Bigg.TariffPoint
+    __rdf_type__ = ['TariffPoint', 'TimeseriesPoint', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,end=None,isReal=None,start=None,value=None):
         super().__init__(subject)
@@ -487,50 +477,57 @@ class TariffPoint(BIGGObjects):
         self.value = value
         
         
-class CO2EmissionsFactor(BIGGObjects):
-    __rdf_type__ = Bigg.CO2EmissionsFactor
+class CO2EmissionsFactorList(BIGGObjects):
+    __rdf_type__ = ['CO2EmissionsFactorList', 'TimeseriesList', 'Thing']
 
-    def __init__(self, subject, comment=None,label=None,TimeSeriesEnd=None,TimeSeriesFrequency=None,TimeSeriesIsCumulative=None,TimeSeriesIsOnChange=None,TimeSeriesIsRegular=None,TimeSeriesStart=None,TimeSeriesTimeAggregationFunction=None,hasMeasuredProperty=None,hasCO2EmsissionsPoint=None):
+    def __init__(self, subject, comment=None,label=None,timeSeriesEnd=None,timeSeriesFrequency=None,timeSeriesIsCumulative=None,timeSeriesIsOnChange=None,timeSeriesIsRegular=None,timeSeriesStart=None,timeSeriesTimeAggregationFunction=None,hasMeasuredProperty=None,hasCO2EmissionsFactorValue=None):
         super().__init__(subject)
         self.comment = comment
         self.label = label
-        self.TimeSeriesEnd = TimeSeriesEnd
-        self.TimeSeriesFrequency = TimeSeriesFrequency
-        self.TimeSeriesIsCumulative = TimeSeriesIsCumulative
-        self.TimeSeriesIsOnChange = TimeSeriesIsOnChange
-        self.TimeSeriesIsRegular = TimeSeriesIsRegular
-        self.TimeSeriesStart = TimeSeriesStart
-        self.TimeSeriesTimeAggregationFunction = TimeSeriesTimeAggregationFunction
+        self.timeSeriesEnd = timeSeriesEnd
+        self.timeSeriesFrequency = timeSeriesFrequency
+        self.timeSeriesIsCumulative = timeSeriesIsCumulative
+        self.timeSeriesIsOnChange = timeSeriesIsOnChange
+        self.timeSeriesIsRegular = timeSeriesIsRegular
+        self.timeSeriesStart = timeSeriesStart
+        self.timeSeriesTimeAggregationFunction = timeSeriesTimeAggregationFunction
         self.hasMeasuredProperty = hasMeasuredProperty
-        self.hasCO2EmsissionsPoint = hasCO2EmsissionsPoint
+        self.hasCO2EmissionsFactorValue = hasCO2EmissionsFactorValue
         
         
-class Tariff(BIGGObjects):
-    __rdf_type__ = Bigg.Tariff
+class ContractedTariff(BIGGObjects):
+    __rdf_type__ = ['ContractedTariff', 'Contract', 'Thing']
 
-    def __init__(self, subject, contractEndDate=None,contractName=None,contractStartDate=None,comment=None,label=None,TimeSeriesEnd=None,TimeSeriesFrequency=None,TimeSeriesIsCumulative=None,TimeSeriesIsOnChange=None,TimeSeriesIsRegular=None,TimeSeriesStart=None,TimeSeriesTimeAggregationFunction=None,tariffCompany=None,tariffName=None,hasMeasuredProperty=None,hasTariffPoint=None,tariffCurrencyUnit=None):
+    def __init__(self, subject, contractEndDate=None,contractName=None,contractStartDate=None,comment=None,label=None,hasTariff=None):
         super().__init__(subject)
         self.contractEndDate = contractEndDate
         self.contractName = contractName
         self.contractStartDate = contractStartDate
         self.comment = comment
         self.label = label
-        self.TimeSeriesEnd = TimeSeriesEnd
-        self.TimeSeriesFrequency = TimeSeriesFrequency
-        self.TimeSeriesIsCumulative = TimeSeriesIsCumulative
-        self.TimeSeriesIsOnChange = TimeSeriesIsOnChange
-        self.TimeSeriesIsRegular = TimeSeriesIsRegular
-        self.TimeSeriesStart = TimeSeriesStart
-        self.TimeSeriesTimeAggregationFunction = TimeSeriesTimeAggregationFunction
-        self.tariffCompany = tariffCompany
-        self.tariffName = tariffName
+        self.hasTariff = hasTariff
+        
+        
+class TariffPrice(BIGGObjects):
+    __rdf_type__ = ['TariffPrice', 'TimeseriesList', 'Thing']
+
+    def __init__(self, subject, comment=None,label=None,timeSeriesEnd=None,timeSeriesFrequency=None,timeSeriesIsCumulative=None,timeSeriesIsOnChange=None,timeSeriesIsRegular=None,timeSeriesStart=None,timeSeriesTimeAggregationFunction=None,hasMeasuredProperty=None,hasTariffValues=None):
+        super().__init__(subject)
+        self.comment = comment
+        self.label = label
+        self.timeSeriesEnd = timeSeriesEnd
+        self.timeSeriesFrequency = timeSeriesFrequency
+        self.timeSeriesIsCumulative = timeSeriesIsCumulative
+        self.timeSeriesIsOnChange = timeSeriesIsOnChange
+        self.timeSeriesIsRegular = timeSeriesIsRegular
+        self.timeSeriesStart = timeSeriesStart
+        self.timeSeriesTimeAggregationFunction = timeSeriesTimeAggregationFunction
         self.hasMeasuredProperty = hasMeasuredProperty
-        self.hasTariffPoint = hasTariffPoint
-        self.tariffCurrencyUnit = tariffCurrencyUnit
+        self.hasTariffValues = hasTariffValues
         
         
 class AddressClimateZone(BIGGObjects):
-    __rdf_type__ = Bigg.AddressClimateZone
+    __rdf_type__ = ['AddressClimateZone', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -539,7 +536,7 @@ class AddressClimateZone(BIGGObjects):
         
         
 class BuildingConstructionType(BIGGObjects):
-    __rdf_type__ = Bigg.BuildingConstructionType
+    __rdf_type__ = ['BuildingConstructionType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -548,7 +545,7 @@ class BuildingConstructionType(BIGGObjects):
         
         
 class BuildingOwnership(BIGGObjects):
-    __rdf_type__ = Bigg.BuildingOwnership
+    __rdf_type__ = ['BuildingOwnership', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -557,7 +554,7 @@ class BuildingOwnership(BIGGObjects):
         
         
 class LandType(BIGGObjects):
-    __rdf_type__ = Bigg.LandType
+    __rdf_type__ = ['LandType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -566,7 +563,7 @@ class LandType(BIGGObjects):
         
         
 class ObjectiveTargetType(BIGGObjects):
-    __rdf_type__ = Bigg.ObjectiveTargetType
+    __rdf_type__ = ['ObjectiveTargetType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -575,7 +572,7 @@ class ObjectiveTargetType(BIGGObjects):
         
         
 class ObjectiveTargetUnit(BIGGObjects):
-    __rdf_type__ = Bigg.ObjectiveTargetUnit
+    __rdf_type__ = ['ObjectiveTargetUnit', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -584,7 +581,7 @@ class ObjectiveTargetUnit(BIGGObjects):
         
         
 class OrganiationType(BIGGObjects):
-    __rdf_type__ = Bigg.OrganiationType
+    __rdf_type__ = ['OrganiationType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -593,7 +590,7 @@ class OrganiationType(BIGGObjects):
         
         
 class Contract(BIGGObjects):
-    __rdf_type__ = Bigg.Contract
+    __rdf_type__ = ['Contract', 'Thing']
 
     def __init__(self, subject, contractEndDate=None,contractName=None,contractStartDate=None,comment=None,label=None):
         super().__init__(subject)
@@ -605,7 +602,7 @@ class Contract(BIGGObjects):
         
         
 class Feature(BIGGObjects):
-    __rdf_type__ = Bigg.Feature
+    __rdf_type__ = ['Feature', 'Thing']
 
     def __init__(self, subject, name=None,comment=None,label=None):
         super().__init__(subject)
@@ -615,7 +612,7 @@ class Feature(BIGGObjects):
         
         
 class CadastralInfo(BIGGObjects):
-    __rdf_type__ = Bigg.CadastralInfo
+    __rdf_type__ = ['CadastralInfo', 'Thing']
 
     def __init__(self, subject, landArea=None,landCadastralReference=None,landGeometry=None,landGraphicalArea=None,propertyClass=None,comment=None,label=None,hasLandType=None):
         super().__init__(subject)
@@ -630,7 +627,7 @@ class CadastralInfo(BIGGObjects):
         
         
 class EnergyPerformanceContractObjective(BIGGObjects):
-    __rdf_type__ = Bigg.EnergyPerformanceContractObjective
+    __rdf_type__ = ['EnergyPerformanceContractObjective', 'Thing']
 
     def __init__(self, subject, objectiveDeadline=None,objectiveDescription=None,objectiveName=None,objectiveTargetValue=None,comment=None,label=None,hasObjectiveTargetType=None,hasObjectiveTargetUnit=None,IsConnectedToEnergySaving=None):
         super().__init__(subject)
@@ -646,7 +643,7 @@ class EnergyPerformanceContractObjective(BIGGObjects):
         
         
 class Person(BIGGObjects):
-    __rdf_type__ = Bigg.Person
+    __rdf_type__ = ['Person', 'Thing']
 
     def __init__(self, subject, email=None,lastName=None,name=None,userName=None,comment=None,label=None,managesOrganization=None):
         super().__init__(subject)
@@ -660,7 +657,7 @@ class Person(BIGGObjects):
         
         
 class Building(BIGGObjects):
-    __rdf_type__ = Bigg.Building
+    __rdf_type__ = ['Building', 'Thing']
 
     def __init__(self, subject, buildingClosingHour=None,buildingConstructionYear=None,buildingIDFromOrganization=None,buildingName=None,buildingOpeningHour=None,comment=None,label=None,hasBuildingConstructionType=None,hasBuildingOwnership=None,hasCadastralInfo=None,hasLocationInfo=None,pertainsToOrganization=None,hasSpace=None,hasEPC=None,hasProject=None):
         super().__init__(subject)
@@ -682,7 +679,7 @@ class Building(BIGGObjects):
         
         
 class LocationInfo(BIGGObjects):
-    __rdf_type__ = Bigg.LocationInfo
+    __rdf_type__ = ['LocationInfo', 'Thing']
 
     def __init__(self, subject, addressAltitude=None,addressLatitude=None,addressLongitude=None,addressPostalCode=None,addressStreetName=None,addressStreetNumber=None,comment=None,label=None,hasAddressCity=None,hasAddressClimateZone=None,hasAddressCountry=None,hasAddressProvince=None):
         super().__init__(subject)
@@ -701,7 +698,7 @@ class LocationInfo(BIGGObjects):
         
         
 class Organization(BIGGObjects):
-    __rdf_type__ = Bigg.Organization
+    __rdf_type__ = ['Organization', 'Thing']
 
     def __init__(self, subject, organizationDivisionType=None,organizationEmail=None,organizationLocalVAT=None,organizationName=None,organizationTelephoneNumber=None,comment=None,label=None,buysContract=None,hasOrganizationType=None,hasSubOrganization=None,isManagedByPerson=None,managesBuilding=None,organizationContactPerson=None):
         super().__init__(subject)
@@ -720,8 +717,17 @@ class Organization(BIGGObjects):
         self.organizationContactPerson = organizationContactPerson
         
         
+class ObservableDataProvider(BIGGObjects):
+    __rdf_type__ = ['ObservableDataProvider', 'Thing']
+
+    def __init__(self, subject, comment=None,label=None):
+        super().__init__(subject)
+        self.comment = comment
+        self.label = label
+        
+        
 class DeviceInputProtocol(BIGGObjects):
-    __rdf_type__ = Bigg.DeviceInputProtocol
+    __rdf_type__ = ['DeviceInputProtocol', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -730,7 +736,7 @@ class DeviceInputProtocol(BIGGObjects):
         
         
 class DeviceInputSignalType(BIGGObjects):
-    __rdf_type__ = Bigg.DeviceInputSignalType
+    __rdf_type__ = ['DeviceInputSignalType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -739,7 +745,7 @@ class DeviceInputSignalType(BIGGObjects):
         
         
 class DeviceType(BIGGObjects):
-    __rdf_type__ = Bigg.DeviceType
+    __rdf_type__ = ['DeviceType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -748,7 +754,7 @@ class DeviceType(BIGGObjects):
         
         
 class OutputProtocol(BIGGObjects):
-    __rdf_type__ = Bigg.OutputProtocol
+    __rdf_type__ = ['OutputProtocol', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -757,7 +763,7 @@ class OutputProtocol(BIGGObjects):
         
         
 class OutputSignalType(BIGGObjects):
-    __rdf_type__ = Bigg.OutputSignalType
+    __rdf_type__ = ['OutputSignalType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -766,7 +772,7 @@ class OutputSignalType(BIGGObjects):
         
         
 class SensorEstimationMethod(BIGGObjects):
-    __rdf_type__ = Bigg.SensorEstimationMethod
+    __rdf_type__ = ['SensorEstimationMethod', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -775,7 +781,7 @@ class SensorEstimationMethod(BIGGObjects):
         
         
 class SensorReadingType(BIGGObjects):
-    __rdf_type__ = Bigg.SensorReadingType
+    __rdf_type__ = ['SensorReadingType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -784,7 +790,7 @@ class SensorReadingType(BIGGObjects):
         
         
 class StateType(BIGGObjects):
-    __rdf_type__ = Bigg.StateType
+    __rdf_type__ = ['StateType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -793,7 +799,7 @@ class StateType(BIGGObjects):
         
         
 class UtilityType(BIGGObjects):
-    __rdf_type__ = Bigg.UtilityType
+    __rdf_type__ = ['UtilityType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -802,7 +808,7 @@ class UtilityType(BIGGObjects):
         
         
 class DeviceHistory(BIGGObjects):
-    __rdf_type__ = Bigg.DeviceHistory
+    __rdf_type__ = ['DeviceHistory', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,containsHistoryDevices=None):
         super().__init__(subject)
@@ -812,7 +818,7 @@ class DeviceHistory(BIGGObjects):
         
         
 class MeasuredProperty(BIGGObjects):
-    __rdf_type__ = Bigg.MeasuredProperty
+    __rdf_type__ = ['MeasuredProperty', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -821,7 +827,7 @@ class MeasuredProperty(BIGGObjects):
         
         
 class MeasurementUnit(BIGGObjects):
-    __rdf_type__ = Bigg.MeasurementUnit
+    __rdf_type__ = ['MeasurementUnit', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -830,7 +836,7 @@ class MeasurementUnit(BIGGObjects):
         
         
 class UtilityPointOfDelivery(BIGGObjects):
-    __rdf_type__ = Bigg.UtilityPointOfDelivery
+    __rdf_type__ = ['UtilityPointOfDelivery', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,pointOfDeliveryIDFromOrganization=None,hasUtilityType=None,hasCO2EmissionsFactor=None,hasContractedTariff=None):
         super().__init__(subject)
@@ -843,7 +849,7 @@ class UtilityPointOfDelivery(BIGGObjects):
         
         
 class ObservableItem(BIGGObjects):
-    __rdf_type__ = Bigg.ObservableItem
+    __rdf_type__ = ['ObservableItem', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,isObservedByDevice=None):
         super().__init__(subject)
@@ -853,7 +859,7 @@ class ObservableItem(BIGGObjects):
         
         
 class TimeseriesPoint(BIGGObjects):
-    __rdf_type__ = Bigg.TimeseriesPoint
+    __rdf_type__ = ['TimeseriesPoint', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,end=None,isReal=None,start=None,value=None):
         super().__init__(subject)
@@ -866,7 +872,7 @@ class TimeseriesPoint(BIGGObjects):
         
         
 class DeviceAggregator(BIGGObjects):
-    __rdf_type__ = Bigg.DeviceAggregator
+    __rdf_type__ = ['DeviceAggregator', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,deviceAggregatorFormula=None,deviceAggregatorFrequency=None,deviceAggregatorName=None,deviceAggregatorTimeAggregationFunction=None,aggregatesSpace=None,hasDeviceAggregatorProperty=None,includesDevice=None):
         super().__init__(subject)
@@ -882,24 +888,42 @@ class DeviceAggregator(BIGGObjects):
         
         
 class TimeseriesList(BIGGObjects):
-    __rdf_type__ = Bigg.TimeseriesList
+    __rdf_type__ = ['TimeseriesList', 'Thing']
 
-    def __init__(self, subject, comment=None,label=None,TimeSeriesEnd=None,TimeSeriesFrequency=None,TimeSeriesIsCumulative=None,TimeSeriesIsOnChange=None,TimeSeriesIsRegular=None,TimeSeriesStart=None,TimeSeriesTimeAggregationFunction=None,hasMeasuredProperty=None):
+    def __init__(self, subject, comment=None,label=None,timeSeriesEnd=None,timeSeriesFrequency=None,timeSeriesIsCumulative=None,timeSeriesIsOnChange=None,timeSeriesIsRegular=None,timeSeriesStart=None,timeSeriesTimeAggregationFunction=None,hasMeasuredProperty=None):
         super().__init__(subject)
         self.comment = comment
         self.label = label
-        self.TimeSeriesEnd = TimeSeriesEnd
-        self.TimeSeriesFrequency = TimeSeriesFrequency
-        self.TimeSeriesIsCumulative = TimeSeriesIsCumulative
-        self.TimeSeriesIsOnChange = TimeSeriesIsOnChange
-        self.TimeSeriesIsRegular = TimeSeriesIsRegular
-        self.TimeSeriesStart = TimeSeriesStart
-        self.TimeSeriesTimeAggregationFunction = TimeSeriesTimeAggregationFunction
+        self.timeSeriesEnd = timeSeriesEnd
+        self.timeSeriesFrequency = timeSeriesFrequency
+        self.timeSeriesIsCumulative = timeSeriesIsCumulative
+        self.timeSeriesIsOnChange = timeSeriesIsOnChange
+        self.timeSeriesIsRegular = timeSeriesIsRegular
+        self.timeSeriesStart = timeSeriesStart
+        self.timeSeriesTimeAggregationFunction = timeSeriesTimeAggregationFunction
         self.hasMeasuredProperty = hasMeasuredProperty
         
         
+class DataProvider(BIGGObjects):
+    __rdf_type__ = ['DataProvider', 'Thing']
+
+    def __init__(self, subject, comment=None,label=None,hasDeviceInputProtocol=None,hasDeviceInputSignalType=None,hasDeviceType=None,hasHistory=None,hasSensor=None,hasState=None,hasUtilityPointofDelivery=None,isPartOfDeviceAggregator=None,observes=None):
+        super().__init__(subject)
+        self.comment = comment
+        self.label = label
+        self.hasDeviceInputProtocol = hasDeviceInputProtocol
+        self.hasDeviceInputSignalType = hasDeviceInputSignalType
+        self.hasDeviceType = hasDeviceType
+        self.hasHistory = hasHistory
+        self.hasSensor = hasSensor
+        self.hasState = hasState
+        self.hasUtilityPointofDelivery = hasUtilityPointofDelivery
+        self.isPartOfDeviceAggregator = isPartOfDeviceAggregator
+        self.observes = observes
+        
+        
 class AreaType(BIGGObjects):
-    __rdf_type__ = Bigg.AreaType
+    __rdf_type__ = ['AreaType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -908,7 +932,7 @@ class AreaType(BIGGObjects):
         
         
 class AreaUnitOfMeasurement(BIGGObjects):
-    __rdf_type__ = Bigg.AreaUnitOfMeasurement
+    __rdf_type__ = ['AreaUnitOfMeasurement', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -917,7 +941,7 @@ class AreaUnitOfMeasurement(BIGGObjects):
         
         
 class BuildingConstructionElementType(BIGGObjects):
-    __rdf_type__ = Bigg.BuildingConstructionElementType
+    __rdf_type__ = ['BuildingConstructionElementType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -926,7 +950,7 @@ class BuildingConstructionElementType(BIGGObjects):
         
         
 class BuildingSpaceUseType(BIGGObjects):
-    __rdf_type__ = Bigg.BuildingSpaceUseType
+    __rdf_type__ = ['BuildingSpaceUseType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -935,7 +959,7 @@ class BuildingSpaceUseType(BIGGObjects):
         
         
 class BuildingSystemElementType(BIGGObjects):
-    __rdf_type__ = Bigg.BuildingSystemElementType
+    __rdf_type__ = ['BuildingSystemElementType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -944,7 +968,7 @@ class BuildingSystemElementType(BIGGObjects):
         
         
 class EnergyEfficiencyMeasureInvestmentCurrency(BIGGObjects):
-    __rdf_type__ = Bigg.EnergyEfficiencyMeasureInvestmentCurrency
+    __rdf_type__ = ['EnergyEfficiencyMeasureInvestmentCurrency', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -953,7 +977,7 @@ class EnergyEfficiencyMeasureInvestmentCurrency(BIGGObjects):
         
         
 class EnergyEfficiencyMeasureType(BIGGObjects):
-    __rdf_type__ = Bigg.EnergyEfficiencyMeasureType
+    __rdf_type__ = ['EnergyEfficiencyMeasureType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -962,7 +986,7 @@ class EnergyEfficiencyMeasureType(BIGGObjects):
         
         
 class IndoorQualityUserPerception(BIGGObjects):
-    __rdf_type__ = Bigg.IndoorQualityUserPerception
+    __rdf_type__ = ['IndoorQualityUserPerception', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -971,7 +995,7 @@ class IndoorQualityUserPerception(BIGGObjects):
         
         
 class MaintenanceActionType(BIGGObjects):
-    __rdf_type__ = Bigg.MaintenanceActionType
+    __rdf_type__ = ['MaintenanceActionType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -980,7 +1004,7 @@ class MaintenanceActionType(BIGGObjects):
         
         
 class Area(BIGGObjects):
-    __rdf_type__ = Bigg.Area
+    __rdf_type__ = ['Area', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,areaValue=None,hasAreaType=None,hasAreaUnitOfMeasurement=None):
         super().__init__(subject)
@@ -992,7 +1016,7 @@ class Area(BIGGObjects):
         
         
 class IndoorQualityPerception(BIGGObjects):
-    __rdf_type__ = Bigg.IndoorQualityPerception
+    __rdf_type__ = ['IndoorQualityPerception', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,indoorQualityValidityEndDate=None,indoorQualityValidityStartDate=None,hasIndoorQualityUserPerception=None):
         super().__init__(subject)
@@ -1004,7 +1028,7 @@ class IndoorQualityPerception(BIGGObjects):
         
         
 class OccupancyProfile(BIGGObjects):
-    __rdf_type__ = Bigg.OccupancyProfile
+    __rdf_type__ = ['OccupancyProfile', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,occupancyNumberOfOccupants=None,occupancyProfileValidityEndDate=None,occupancyProfileValidityStartDate=None,occupancyVacationDates=None):
         super().__init__(subject)
@@ -1017,7 +1041,7 @@ class OccupancyProfile(BIGGObjects):
         
         
 class MaintenanceAction(BIGGObjects):
-    __rdf_type__ = Bigg.MaintenanceAction
+    __rdf_type__ = ['MaintenanceAction', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,maintenanceActionDate=None,maintenanceActionDescription=None,maintenanceActionFrequency=None,maintenanceActionIsPeriodic=None,maintenanceActionName=None,hasMaintenanceActionType=None,isSubjectToMaintenance=None):
         super().__init__(subject)
@@ -1033,7 +1057,7 @@ class MaintenanceAction(BIGGObjects):
         
         
 class EnergyPerformanceCertificateAdditionalInfo(BIGGObjects):
-    __rdf_type__ = Bigg.EnergyPerformanceCertificateAdditionalInfo
+    __rdf_type__ = ['EnergyPerformanceCertificateAdditionalInfo', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,averageFacadeTransmittance=None,averageWindowsTransmittance=None,biomassSystemPresence=None,buildingTechnicalInspectionCode=None,constructionRegulation=None,districtHeatingOrCoolingConnection=None,electricVehicleChargerPresence=None,geothermalSystemPresence=None,regulationValueForFacadeTransmittance=None,regulationValueForWindowsTransmittance=None,solarPVSystemPresence=None,solarThermalSystemPresence=None):
         super().__init__(subject)
@@ -1054,21 +1078,29 @@ class EnergyPerformanceCertificateAdditionalInfo(BIGGObjects):
         
         
 class EnergyPerformanceCertificate(BIGGObjects):
-    __rdf_type__ = Bigg.EnergyPerformanceCertificate
+    __rdf_type__ = ['EnergyPerformanceCertificate', 'Thing']
 
-    def __init__(self, subject, comment=None,label=None,C02EmissionsClass=None,annualC02Emissions=None,annualEnergyCost=None,annualFinalEnergyConsumption=None,annualHeatingCO2Emissions=None,annualHeatingEnergyDemand=None,annualHeatingPrimaryEnergyConsumption=None,annualLightingCO2Emissions=None,annualPrimaryEnergyConsumption=None,energyPerformanceCertificateReferenceNumber=None,energyPerformanceCertificationMotivation=None,energyPerformanceCertificationTool=None,energyPerformanceClass=None,energyPerformanceDateOfAssessment=None,energyPerformanceDateOfCertification=None,energyPerformanceProcedureType=None,heatingCO2EmissionsClass=None,heatingPrimaryEnergyClass=None,lightingCO2EmissionsClass=None,lightingPrimaryEnergyClass=None,lightingPrimaryEnergyConsumption=None,hasAdditionalInfo=None):
+    def __init__(self, subject, comment=None,label=None,C02EmissionsClass=None,annualC02Emissions=None,annualCoolingCO2Emissions=None,annualCoolingEnergyDemand=None,annualCoolingPrimaryEnergyConsumption=None,annualEnergyCost=None,annualFinalEnergyConsumption=None,annualHeatingCO2Emissions=None,annualHeatingEnergyDemand=None,annualHeatingPrimaryEnergyConsumption=None,annualHotWaterCO2Emissions=None,annualHotWaterPrimaryEnergyConsumption=None,annualLightingCO2Emissions=None,annualPrimaryEnergyConsumption=None,coolingCO2EmissionsClass=None,coolingEnergyDemandClass=None,coolingPrimaryEnergyClass=None,energyPerformanceCertificateReferenceNumber=None,energyPerformanceCertificationMotivation=None,energyPerformanceCertificationTool=None,energyPerformanceClass=None,energyPerformanceDateOfAssessment=None,energyPerformanceDateOfCertification=None,energyPerformanceProcedureType=None,heatingCO2EmissionsClass=None,heatingEnergyDemandClass=None,heatingPrimaryEnergyClass=None,hotWaterCO2EmissionsClass=None,hotWaterPrimaryEnergyClass=None,lightingCO2EmissionsClass=None,lightingPrimaryEnergyClass=None,lightingPrimaryEnergyConsumption=None,hasAdditionalInfo=None):
         super().__init__(subject)
         self.comment = comment
         self.label = label
         self.C02EmissionsClass = C02EmissionsClass
         self.annualC02Emissions = annualC02Emissions
+        self.annualCoolingCO2Emissions = annualCoolingCO2Emissions
+        self.annualCoolingEnergyDemand = annualCoolingEnergyDemand
+        self.annualCoolingPrimaryEnergyConsumption = annualCoolingPrimaryEnergyConsumption
         self.annualEnergyCost = annualEnergyCost
         self.annualFinalEnergyConsumption = annualFinalEnergyConsumption
         self.annualHeatingCO2Emissions = annualHeatingCO2Emissions
         self.annualHeatingEnergyDemand = annualHeatingEnergyDemand
         self.annualHeatingPrimaryEnergyConsumption = annualHeatingPrimaryEnergyConsumption
+        self.annualHotWaterCO2Emissions = annualHotWaterCO2Emissions
+        self.annualHotWaterPrimaryEnergyConsumption = annualHotWaterPrimaryEnergyConsumption
         self.annualLightingCO2Emissions = annualLightingCO2Emissions
         self.annualPrimaryEnergyConsumption = annualPrimaryEnergyConsumption
+        self.coolingCO2EmissionsClass = coolingCO2EmissionsClass
+        self.coolingEnergyDemandClass = coolingEnergyDemandClass
+        self.coolingPrimaryEnergyClass = coolingPrimaryEnergyClass
         self.energyPerformanceCertificateReferenceNumber = energyPerformanceCertificateReferenceNumber
         self.energyPerformanceCertificationMotivation = energyPerformanceCertificationMotivation
         self.energyPerformanceCertificationTool = energyPerformanceCertificationTool
@@ -1077,7 +1109,10 @@ class EnergyPerformanceCertificate(BIGGObjects):
         self.energyPerformanceDateOfCertification = energyPerformanceDateOfCertification
         self.energyPerformanceProcedureType = energyPerformanceProcedureType
         self.heatingCO2EmissionsClass = heatingCO2EmissionsClass
+        self.heatingEnergyDemandClass = heatingEnergyDemandClass
         self.heatingPrimaryEnergyClass = heatingPrimaryEnergyClass
+        self.hotWaterCO2EmissionsClass = hotWaterCO2EmissionsClass
+        self.hotWaterPrimaryEnergyClass = hotWaterPrimaryEnergyClass
         self.lightingCO2EmissionsClass = lightingCO2EmissionsClass
         self.lightingPrimaryEnergyClass = lightingPrimaryEnergyClass
         self.lightingPrimaryEnergyConsumption = lightingPrimaryEnergyConsumption
@@ -1085,7 +1120,7 @@ class EnergyPerformanceCertificate(BIGGObjects):
         
         
 class SystemType(BIGGObjects):
-    __rdf_type__ = Bigg.SystemType
+    __rdf_type__ = ['SystemType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -1094,7 +1129,7 @@ class SystemType(BIGGObjects):
         
         
 class ZoneType(BIGGObjects):
-    __rdf_type__ = Bigg.ZoneType
+    __rdf_type__ = ['ZoneType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -1103,7 +1138,7 @@ class ZoneType(BIGGObjects):
         
         
 class Group(BIGGObjects):
-    __rdf_type__ = Bigg.Group
+    __rdf_type__ = ['Group', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,groupName=None):
         super().__init__(subject)
@@ -1113,7 +1148,7 @@ class Group(BIGGObjects):
         
         
 class EnergySavingType(BIGGObjects):
-    __rdf_type__ = Bigg.EnergySavingType
+    __rdf_type__ = ['EnergySavingType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -1122,7 +1157,7 @@ class EnergySavingType(BIGGObjects):
         
         
 class EnergySavingVerificationSource(BIGGObjects):
-    __rdf_type__ = Bigg.EnergySavingVerificationSource
+    __rdf_type__ = ['EnergySavingVerificationSource', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -1131,7 +1166,7 @@ class EnergySavingVerificationSource(BIGGObjects):
         
         
 class NonEnergyBenefitImpactEvaluation(BIGGObjects):
-    __rdf_type__ = Bigg.NonEnergyBenefitImpactEvaluation
+    __rdf_type__ = ['NonEnergyBenefitImpactEvaluation', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -1140,7 +1175,7 @@ class NonEnergyBenefitImpactEvaluation(BIGGObjects):
         
         
 class NonEnergyBenefitImpactValueUnit(BIGGObjects):
-    __rdf_type__ = Bigg.NonEnergyBenefitImpactValueUnit
+    __rdf_type__ = ['NonEnergyBenefitImpactValueUnit', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -1149,7 +1184,7 @@ class NonEnergyBenefitImpactValueUnit(BIGGObjects):
         
         
 class NonEnergyBenefitType(BIGGObjects):
-    __rdf_type__ = Bigg.NonEnergyBenefitType
+    __rdf_type__ = ['NonEnergyBenefitType', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -1158,7 +1193,7 @@ class NonEnergyBenefitType(BIGGObjects):
         
         
 class ProjectInvestmentCurrency(BIGGObjects):
-    __rdf_type__ = Bigg.ProjectInvestmentCurrency
+    __rdf_type__ = ['ProjectInvestmentCurrency', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -1167,7 +1202,7 @@ class ProjectInvestmentCurrency(BIGGObjects):
         
         
 class ProjectMotivation(BIGGObjects):
-    __rdf_type__ = Bigg.ProjectMotivation
+    __rdf_type__ = ['ProjectMotivation', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -1176,7 +1211,7 @@ class ProjectMotivation(BIGGObjects):
         
         
 class NonEnergyBenefitProducingItem(BIGGObjects):
-    __rdf_type__ = Bigg.NonEnergyBenefitProducingItem
+    __rdf_type__ = ['NonEnergyBenefitProducingItem', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,producesNonEnergyBenefit=None):
         super().__init__(subject)
@@ -1186,7 +1221,7 @@ class NonEnergyBenefitProducingItem(BIGGObjects):
         
         
 class SavingProducingItem(BIGGObjects):
-    __rdf_type__ = Bigg.SavingProducingItem
+    __rdf_type__ = ['SavingProducingItem', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,producesSaving=None):
         super().__init__(subject)
@@ -1196,7 +1231,7 @@ class SavingProducingItem(BIGGObjects):
         
         
 class NonEnergyBenefit(BIGGObjects):
-    __rdf_type__ = Bigg.NonEnergyBenefit
+    __rdf_type__ = ['NonEnergyBenefit', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,nonEnergyBenefitImpactValue=None,nonEnergyBenefitImpactValueDescription=None,nonEnergyBenefitImpactValueVerifiedAndMeasured=None,nonEnergyBenefitImpactVerificationMethod=None,hasNonEnergyBenefitImpactEvaluation=None,hasNonEnergyBenefitImpactValueUnit=None,hasNonEnergyBenefitType=None):
         super().__init__(subject)
@@ -1212,7 +1247,7 @@ class NonEnergyBenefit(BIGGObjects):
         
         
 class EnergySaving(BIGGObjects):
-    __rdf_type__ = Bigg.EnergySaving
+    __rdf_type__ = ['EnergySaving', 'Thing']
 
     def __init__(self, subject, comment=None,label=None,energySavingEndDate=None,energySavingIndependentlyVerified=None,energySavingStartDate=None,energySavingValue=None,hasEnergySavingType=None,hasEnergySavingVerificationSource=None,influencesObjective=None):
         super().__init__(subject)
@@ -1228,7 +1263,7 @@ class EnergySaving(BIGGObjects):
         
         
 class TariffCurrency(BIGGObjects):
-    __rdf_type__ = Bigg.TariffCurrency
+    __rdf_type__ = ['TariffCurrency', 'Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -1236,12 +1271,25 @@ class TariffCurrency(BIGGObjects):
         self.label = label
         
         
-class ContractedTariff(BIGGObjects):
-    __rdf_type__ = Bigg.ContractedTariff
+class CO2EmissionsFactor(BIGGObjects):
+    __rdf_type__ = ['CO2EmissionsFactor', 'Thing']
 
-    def __init__(self, subject, comment=None,label=None,hasTariff=None):
+    def __init__(self, subject, comment=None,label=None,hasCO2EmissionsFactor=None):
         super().__init__(subject)
         self.comment = comment
         self.label = label
-        self.hasTariff = hasTariff
+        self.hasCO2EmissionsFactor = hasCO2EmissionsFactor
+        
+        
+class Tariff(BIGGObjects):
+    __rdf_type__ = ['Tariff', 'Thing']
+
+    def __init__(self, subject, comment=None,label=None,tariffCompany=None,tariffName=None,hasTariffPrice=None,tariffCurrencyUnit=None):
+        super().__init__(subject)
+        self.comment = comment
+        self.label = label
+        self.tariffCompany = tariffCompany
+        self.tariffName = tariffName
+        self.hasTariffPrice = hasTariffPrice
+        self.tariffCurrencyUnit = tariffCurrencyUnit
         

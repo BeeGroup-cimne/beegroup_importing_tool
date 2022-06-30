@@ -28,7 +28,7 @@ def create_ws(driver, stations):
             subject = f"{args.namespace}{float(s.latitude):.3f}~{float(s.longitude):.3f}"
             session.run(
                 f"""
-                       MERGE (ws:{bigg}__WeatherStation:{bigg}__Device:{wgs}__SpatialThing:Resource{{uri:"{subject}"}})
+                       MERGE (ws:{bigg}__WeatherStation:{wgs}__SpatialThing:Resource{{uri:"{subject}"}})
                        SET ws.{wgs}__lat="{float(s.latitude):.3f}", ws.{wgs}__long="{float(s.longitude):.3f}",
                            ws.source="Darksky"
                        RETURN ws

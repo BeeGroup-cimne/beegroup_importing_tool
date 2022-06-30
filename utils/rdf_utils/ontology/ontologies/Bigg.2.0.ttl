@@ -369,46 +369,15 @@ bigg:LocationInfo a owl:Class ;
 bigg:Organization a owl:Class ;
     rdfs:label "Organization" .
 
+
 #building-device
 
 bigg:Element a owl:Class ;
     rdfs:label "Element" ;
     rdfs:subClassOf bigg:ObservableItem .
 
-bigg:TimeSeriesEnd a owl:DatatypeProperty ;
-    rdfs:label "time series end" ;
-    rdfs:domain bigg:TimeseriesList ;
-    rdfs:range xsd:date .
-
-bigg:TimeSeriesFrequency a owl:DatatypeProperty ;
-    rdfs:label "time series frequency" ;
-    rdfs:domain bigg:TimeseriesList ;
-    rdfs:range xsd:duration .
-
-bigg:TimeSeriesIsCumulative a owl:DatatypeProperty ;
-    rdfs:label "time series is cumulative" ;
-    rdfs:domain bigg:TimeseriesList ;
-    rdfs:range xsd:boolean .
-
-bigg:TimeSeriesIsOnChange a owl:DatatypeProperty ;
-    rdfs:label "time series is on change" ;
-    rdfs:domain bigg:TimeseriesList ;
-    rdfs:range xsd:boolean .
-
-bigg:TimeSeriesIsRegular a owl:DatatypeProperty ;
-    rdfs:label "time series is regular" ;
-    rdfs:domain bigg:TimeseriesList ;
-    rdfs:range xsd:boolean .
-
-bigg:TimeSeriesStart a owl:DatatypeProperty ;
-    rdfs:label "time series start" ;
-    rdfs:domain bigg:TimeseriesList ;
-    rdfs:range xsd:date .
-
-bigg:TimeSeriesTimeAggregationFunction a owl:DatatypeProperty ;
-    rdfs:label "time series time aggregation function" ;
-    rdfs:domain bigg:TimeseriesList ;
-    rdfs:range xsd:string .
+bigg:ObservableDataProvider a owl:Class ;
+    rdfs:label "Observable Data Provider" .
 
 bigg:aggregatesSpace a owl:ObjectProperty ;
     rdfs:label "aggregates space" ;
@@ -453,7 +422,7 @@ bigg:buildingSpaceName a owl:DatatypeProperty ;
 bigg:containsHistoryDevices a owl:ObjectProperty ;
     rdfs:label "contains history devices" ;
     rdfs:domain bigg:DeviceHistory ;
-    rdfs:range bigg:Device .
+    rdfs:range bigg:DataProvider .
 
 bigg:deviceAggregatorFormula a owl:DatatypeProperty ;
     rdfs:label "device aggregator formula" ;
@@ -547,22 +516,22 @@ bigg:hasDeviceAggregatorProperty a owl:ObjectProperty ;
 
 bigg:hasDeviceInputProtocol a owl:ObjectProperty ;
     rdfs:label "has device input protocol" ;
-    rdfs:domain bigg:Device ;
+    rdfs:domain bigg:DataProvider ;
     rdfs:range bigg:DeviceInputProtocol .
 
 bigg:hasDeviceInputSignalType a owl:ObjectProperty ;
     rdfs:label "has device input signal type" ;
-    rdfs:domain bigg:Device ;
+    rdfs:domain bigg:DataProvider ;
     rdfs:range bigg:DeviceInputSignalType .
 
 bigg:hasDeviceType a owl:ObjectProperty ;
     rdfs:label "has device type" ;
-    rdfs:domain bigg:Device ;
+    rdfs:domain bigg:DataProvider ;
     rdfs:range bigg:DeviceType .
 
 bigg:hasHistory a owl:ObjectProperty ;
     rdfs:label "has history" ;
-    rdfs:domain bigg:Device ;
+    rdfs:domain bigg:DataProvider ;
     rdfs:range bigg:DeviceHistory .
 
 bigg:hasMeasuredProperty a owl:ObjectProperty ;
@@ -592,7 +561,7 @@ bigg:hasOutputSignalType a owl:ObjectProperty ;
 
 bigg:hasSensor a owl:ObjectProperty ;
     rdfs:label "has sensor" ;
-    rdfs:domain bigg:Device ;
+    rdfs:domain bigg:DataProvider ;
     rdfs:range bigg:Sensor .
 
 bigg:hasSensorEstimationMethod a owl:ObjectProperty ;
@@ -612,7 +581,7 @@ bigg:hasSpace a owl:ObjectProperty ;
 
 bigg:hasState a owl:ObjectProperty ;
     rdfs:label "has state" ;
-    rdfs:domain bigg:Device ;
+    rdfs:domain bigg:DataProvider ;
     rdfs:range bigg:State .
 
 bigg:hasStatePoint a owl:ObjectProperty ;
@@ -637,7 +606,7 @@ bigg:hasSubSpace a owl:ObjectProperty ;
 
 bigg:hasUtilityPointofDelivery a owl:ObjectProperty ;
     rdfs:label "has utility pointof delivery" ;
-    rdfs:domain bigg:Device ;
+    rdfs:domain bigg:DataProvider ;
     rdfs:range bigg:UtilityPointOfDelivery .
 
 bigg:hasUtilityType a owl:ObjectProperty ;
@@ -648,16 +617,16 @@ bigg:hasUtilityType a owl:ObjectProperty ;
 bigg:includesDevice a owl:ObjectProperty ;
     rdfs:label "includes device" ;
     rdfs:domain bigg:DeviceAggregator ;
-    rdfs:range bigg:Device .
+    rdfs:range bigg:DataProvider .
 
 bigg:isObservedByDevice a owl:ObjectProperty ;
     rdfs:label "is observed by device" ;
     rdfs:domain bigg:ObservableItem ;
-    rdfs:range bigg:Device .
+    rdfs:range bigg:DataProvider .
 
 bigg:isPartOfDeviceAggregator a owl:ObjectProperty ;
     rdfs:label "is part of device aggregator" ;
-    rdfs:domain bigg:Device ;
+    rdfs:domain bigg:DataProvider ;
     rdfs:range bigg:DeviceAggregator .
 
 bigg:isReal a owl:DatatypeProperty ;
@@ -667,7 +636,7 @@ bigg:isReal a owl:DatatypeProperty ;
 
 bigg:observes a owl:ObjectProperty ;
     rdfs:label "observes" ;
-    rdfs:domain bigg:Device ;
+    rdfs:domain bigg:DataProvider ;
     rdfs:range bigg:ObservableItem .
 
 bigg:pointOfDeliveryIDFromOrganization a owl:DatatypeProperty ;
@@ -679,6 +648,41 @@ bigg:start a owl:DatatypeProperty ;
     rdfs:label "start" ;
     rdfs:domain bigg:TimeseriesPoint ;
     rdfs:range xsd:dateTime .
+
+bigg:timeSeriesEnd a owl:DatatypeProperty ;
+    rdfs:label "time series end" ;
+    rdfs:domain bigg:TimeseriesList ;
+    rdfs:range xsd:date .
+
+bigg:timeSeriesFrequency a owl:DatatypeProperty ;
+    rdfs:label "time series frequency" ;
+    rdfs:domain bigg:TimeseriesList ;
+    rdfs:range xsd:duration .
+
+bigg:timeSeriesIsCumulative a owl:DatatypeProperty ;
+    rdfs:label "time series is cumulative" ;
+    rdfs:domain bigg:TimeseriesList ;
+    rdfs:range xsd:boolean .
+
+bigg:timeSeriesIsOnChange a owl:DatatypeProperty ;
+    rdfs:label "time series is on change" ;
+    rdfs:domain bigg:TimeseriesList ;
+    rdfs:range xsd:boolean .
+
+bigg:timeSeriesIsRegular a owl:DatatypeProperty ;
+    rdfs:label "time series is regular" ;
+    rdfs:domain bigg:TimeseriesList ;
+    rdfs:range xsd:boolean .
+
+bigg:timeSeriesStart a owl:DatatypeProperty ;
+    rdfs:label "time series start" ;
+    rdfs:domain bigg:TimeseriesList ;
+    rdfs:range xsd:date .
+
+bigg:timeSeriesTimeAggregationFunction a owl:DatatypeProperty ;
+    rdfs:label "time series time aggregation function" ;
+    rdfs:domain bigg:TimeseriesList ;
+    rdfs:range xsd:string .
 
 bigg:value a owl:DatatypeProperty ;
     rdfs:label "value" ;
@@ -750,7 +754,7 @@ bigg:MeasurementUnit a owl:Class ;
 
 bigg:WeatherStation a owl:Class ;
     rdfs:label "Weather Station" ;
-    rdfs:subClassOf bigg:Device .
+    rdfs:subClassOf bigg:DataProvider .
 
 owl:Thing a owl:Class ;
     rdfs:label "Thing" .
@@ -786,7 +790,12 @@ bigg:TimeseriesList a owl:Class ;
     rdfs:label "Timeseries List" .
 
 bigg:Device a owl:Class ;
-    rdfs:label "Device" .
+    rdfs:label "Device" ;
+    rdfs:subClassOf bigg:DataProvider .
+
+bigg:DataProvider a owl:Class ;
+    rdfs:label "Data Provider" .
+
 
 #building-element
 
@@ -1227,6 +1236,7 @@ bigg:Element a owl:Class ;
 bigg:EnergyEfficiencyMeasure a owl:Class ;
     rdfs:label "Energy Efficiency Measure" .
 
+
 #extensions-epc
 
 bigg:C02EmissionsClass a owl:DatatypeProperty ;
@@ -1236,6 +1246,21 @@ bigg:C02EmissionsClass a owl:DatatypeProperty ;
 
 bigg:annualC02Emissions a owl:DatatypeProperty ;
     rdfs:label "annual c02 emissions" ;
+    rdfs:domain bigg:EnergyPerformanceCertificate ;
+    rdfs:range xsd:float .
+
+bigg:annualCoolingCO2Emissions a owl:DatatypeProperty ;
+    rdfs:label "annual cooling c o2 emissions" ;
+    rdfs:domain bigg:EnergyPerformanceCertificate ;
+    rdfs:range xsd:float .
+
+bigg:annualCoolingEnergyDemand a owl:DatatypeProperty ;
+    rdfs:label "annual cooling energy demand" ;
+    rdfs:domain bigg:EnergyPerformanceCertificate ;
+    rdfs:range xsd:float .
+
+bigg:annualCoolingPrimaryEnergyConsumption a owl:DatatypeProperty ;
+    rdfs:label "annual cooling primary energy consumption" ;
     rdfs:domain bigg:EnergyPerformanceCertificate ;
     rdfs:range xsd:float .
 
@@ -1261,6 +1286,16 @@ bigg:annualHeatingEnergyDemand a owl:DatatypeProperty ;
 
 bigg:annualHeatingPrimaryEnergyConsumption a owl:DatatypeProperty ;
     rdfs:label "annual heating primary energy consumption" ;
+    rdfs:domain bigg:EnergyPerformanceCertificate ;
+    rdfs:range xsd:float .
+
+bigg:annualHotWaterCO2Emissions a owl:DatatypeProperty ;
+    rdfs:label "annual hot water c o2 emissions" ;
+    rdfs:domain bigg:EnergyPerformanceCertificate ;
+    rdfs:range xsd:float .
+
+bigg:annualHotWaterPrimaryEnergyConsumption a owl:DatatypeProperty ;
+    rdfs:label "annual hot water primary energy consumption" ;
     rdfs:domain bigg:EnergyPerformanceCertificate ;
     rdfs:range xsd:float .
 
@@ -1322,6 +1357,21 @@ bigg:buildingTechnicalInspectionCode a owl:DatatypeProperty ;
 bigg:constructionRegulation a owl:DatatypeProperty ;
     rdfs:label "construction regulation" ;
     rdfs:domain bigg:EnergyPerformanceCertificateAdditionalInfo ;
+    rdfs:range xsd:string .
+
+bigg:coolingCO2EmissionsClass a owl:DatatypeProperty ;
+    rdfs:label "cooling c o2 emissions class" ;
+    rdfs:domain bigg:EnergyPerformanceCertificate ;
+    rdfs:range xsd:string .
+
+bigg:coolingEnergyDemandClass a owl:DatatypeProperty ;
+    rdfs:label "cooling energy demand class" ;
+    rdfs:domain bigg:EnergyPerformanceCertificate ;
+    rdfs:range xsd:string .
+
+bigg:coolingPrimaryEnergyClass a owl:DatatypeProperty ;
+    rdfs:label "cooling primary energy class" ;
+    rdfs:domain bigg:EnergyPerformanceCertificate ;
     rdfs:range xsd:string .
 
 bigg:districtHeatingOrCoolingConnection a owl:DatatypeProperty ;
@@ -1389,8 +1439,23 @@ bigg:heatingCO2EmissionsClass a owl:DatatypeProperty ;
     rdfs:domain bigg:EnergyPerformanceCertificate ;
     rdfs:range xsd:string .
 
+bigg:heatingEnergyDemandClass a owl:DatatypeProperty ;
+    rdfs:label "heating energy demand class" ;
+    rdfs:domain bigg:EnergyPerformanceCertificate ;
+    rdfs:range xsd:string .
+
 bigg:heatingPrimaryEnergyClass a owl:DatatypeProperty ;
     rdfs:label "heating primary energy class" ;
+    rdfs:domain bigg:EnergyPerformanceCertificate ;
+    rdfs:range xsd:string .
+
+bigg:hotWaterCO2EmissionsClass a owl:DatatypeProperty ;
+    rdfs:label "hot water c o2 emissions class" ;
+    rdfs:domain bigg:EnergyPerformanceCertificate ;
+    rdfs:range xsd:string .
+
+bigg:hotWaterPrimaryEnergyClass a owl:DatatypeProperty ;
+    rdfs:label "hot water primary energy class" ;
     rdfs:domain bigg:EnergyPerformanceCertificate ;
     rdfs:range xsd:string .
 
@@ -1439,7 +1504,6 @@ bigg:EnergyPerformanceCertificate a owl:Class ;
     rdfs:label "Energy Performance Certificate" .
 
 #extensions-IFC
-
 bigg:buildingSpaceIDFromOrganization a owl:DatatypeProperty ;
     rdfs:label "building space i d from organization" ;
     rdfs:domain bigg:BuildingSpace ;
@@ -1525,6 +1589,7 @@ bigg:System a owl:Class ;
 bigg:Zone a owl:Class ;
     rdfs:label "Zone" ;
     rdfs:subClassOf bigg:Group .
+
 
 #extension-project
 
@@ -1899,43 +1964,8 @@ bigg:Project a owl:Class ;
     rdfs:subClassOf bigg:NonEnergyBenefitProducingItem,
         bigg:SavingProducingItem .
 
+
 # extension Tariff
-
-
-bigg:TimeSeriesEnd a owl:DatatypeProperty ;
-    rdfs:label "time series end" ;
-    rdfs:domain bigg:TimeseriesList ;
-    rdfs:range xsd:date .
-
-bigg:TimeSeriesFrequency a owl:DatatypeProperty ;
-    rdfs:label "time series frequency" ;
-    rdfs:domain bigg:TimeseriesList ;
-    rdfs:range xsd:duration .
-
-bigg:TimeSeriesIsCumulative a owl:DatatypeProperty ;
-    rdfs:label "time series is cumulative" ;
-    rdfs:domain bigg:TimeseriesList ;
-    rdfs:range xsd:boolean .
-
-bigg:TimeSeriesIsOnChange a owl:DatatypeProperty ;
-    rdfs:label "time series is on change" ;
-    rdfs:domain bigg:TimeseriesList ;
-    rdfs:range xsd:boolean .
-
-bigg:TimeSeriesIsRegular a owl:DatatypeProperty ;
-    rdfs:label "time series is regular" ;
-    rdfs:domain bigg:TimeseriesList ;
-    rdfs:range xsd:boolean .
-
-bigg:TimeSeriesStart a owl:DatatypeProperty ;
-    rdfs:label "time series start" ;
-    rdfs:domain bigg:TimeseriesList ;
-    rdfs:range xsd:date .
-
-bigg:TimeSeriesTimeAggregationFunction a owl:DatatypeProperty ;
-    rdfs:label "time series time aggregation function" ;
-    rdfs:domain bigg:TimeseriesList ;
-    rdfs:range xsd:string .
 
 bigg:contractEndDate a owl:DatatypeProperty ;
     rdfs:label "contract end date" ;
@@ -1958,12 +1988,14 @@ bigg:end a owl:DatatypeProperty ;
 
 bigg:hasCO2EmissionsFactor a owl:ObjectProperty ;
     rdfs:label "has c o2 emissions factor" ;
-    rdfs:domain bigg:UtilityPointOfDelivery ;
-    rdfs:range bigg:CO2EmissionsFactor .
+    rdfs:domain bigg:CO2EmissionsFactor,
+        bigg:UtilityPointOfDelivery ;
+    rdfs:range bigg:CO2EmissionsFactor,
+        bigg:CO2EmissionsFactorList .
 
-bigg:hasCO2EmsissionsPoint a owl:ObjectProperty ;
-    rdfs:label "has c o2 emsissions point" ;
-    rdfs:domain bigg:CO2EmissionsFactor ;
+bigg:hasCO2EmissionsFactorValue a owl:ObjectProperty ;
+    rdfs:label "has c o2 emissions factor value" ;
+    rdfs:domain bigg:CO2EmissionsFactorList ;
     rdfs:range bigg:CO2EmissionsPoint .
 
 bigg:hasContractedTariff a owl:ObjectProperty ;
@@ -1971,19 +2003,19 @@ bigg:hasContractedTariff a owl:ObjectProperty ;
     rdfs:domain bigg:UtilityPointOfDelivery ;
     rdfs:range bigg:ContractedTariff .
 
-bigg:hasMeasuredProperty a owl:ObjectProperty ;
-    rdfs:label "has measured property" ;
-    rdfs:domain bigg:TimeseriesList ;
-    rdfs:range bigg:MeasuredProperty .
-
 bigg:hasTariff a owl:ObjectProperty ;
     rdfs:label "has tariff" ;
     rdfs:domain bigg:ContractedTariff ;
     rdfs:range bigg:Tariff .
 
-bigg:hasTariffPoint a owl:ObjectProperty ;
-    rdfs:label "has tariff point" ;
+bigg:hasTariffPrice a owl:ObjectProperty ;
+    rdfs:label "has tariff price" ;
     rdfs:domain bigg:Tariff ;
+    rdfs:range bigg:TariffPrice .
+
+bigg:hasTariffValues a owl:ObjectProperty ;
+    rdfs:label "has tariff values" ;
+    rdfs:domain bigg:TariffPrice ;
     rdfs:range bigg:TariffPoint .
 
 bigg:isReal a owl:DatatypeProperty ;
@@ -2016,6 +2048,41 @@ bigg:tariffName a owl:DatatypeProperty ;
     rdfs:domain bigg:Tariff ;
     rdfs:range xsd:string .
 
+bigg:timeSeriesEnd a owl:DatatypeProperty ;
+    rdfs:label "time series end" ;
+    rdfs:domain bigg:TimeseriesList ;
+    rdfs:range xsd:date .
+
+bigg:timeSeriesFrequency a owl:DatatypeProperty ;
+    rdfs:label "time series frequency" ;
+    rdfs:domain bigg:TimeseriesList ;
+    rdfs:range xsd:duration .
+
+bigg:timeSeriesIsCumulative a owl:DatatypeProperty ;
+    rdfs:label "time series is cumulative" ;
+    rdfs:domain bigg:TimeseriesList ;
+    rdfs:range xsd:boolean .
+
+bigg:timeSeriesIsOnChange a owl:DatatypeProperty ;
+    rdfs:label "time series is on change" ;
+    rdfs:domain bigg:TimeseriesList ;
+    rdfs:range xsd:boolean .
+
+bigg:timeSeriesIsRegular a owl:DatatypeProperty ;
+    rdfs:label "time series is regular" ;
+    rdfs:domain bigg:TimeseriesList ;
+    rdfs:range xsd:boolean .
+
+bigg:timeSeriesStart a owl:DatatypeProperty ;
+    rdfs:label "time series start" ;
+    rdfs:domain bigg:TimeseriesList ;
+    rdfs:range xsd:date .
+
+bigg:timeSeriesTimeAggregationFunction a owl:DatatypeProperty ;
+    rdfs:label "time series time aggregation function" ;
+    rdfs:domain bigg:TimeseriesList ;
+    rdfs:range xsd:string .
+
 bigg:value a owl:DatatypeProperty ;
     rdfs:label "value" ;
     rdfs:domain bigg:TimeseriesPoint .
@@ -2034,9 +2101,6 @@ bigg:CO2EmissionsPoint a owl:Class ;
     rdfs:label "C O2 Emissions Point" ;
     rdfs:subClassOf bigg:TimeseriesPoint .
 
-bigg:MeasuredProperty a owl:Class ;
-    rdfs:label "Measured Property" .
-
 bigg:TariffCurrency a owl:Class ;
     rdfs:label "Tariff Currency" .
 
@@ -2045,11 +2109,19 @@ bigg:TariffPoint a owl:Class ;
     rdfs:subClassOf bigg:TimeseriesPoint .
 
 bigg:CO2EmissionsFactor a owl:Class ;
-    rdfs:label "C O2 Emissions Factor" ;
+    rdfs:label "C O2 Emissions Factor" .
+
+bigg:CO2EmissionsFactorList a owl:Class ;
+    rdfs:label "C O2 Emissions Factor List" ;
     rdfs:subClassOf bigg:TimeseriesList .
 
 bigg:ContractedTariff a owl:Class ;
-    rdfs:label "Contracted Tariff" .
+    rdfs:label "Contracted Tariff" ;
+    rdfs:subClassOf bigg:Contract .
+
+bigg:TariffPrice a owl:Class ;
+    rdfs:label "Tariff Price" ;
+    rdfs:subClassOf bigg:TimeseriesList .
 
 owl:Thing a owl:Class ;
     rdfs:label "Thing" .
@@ -2061,14 +2133,11 @@ bigg:UtilityPointOfDelivery a owl:Class ;
     rdfs:label "Utility Point Of Delivery" .
 
 bigg:Tariff a owl:Class ;
-    rdfs:label "Tariff" ;
-    rdfs:subClassOf bigg:Contract,
-        bigg:TimeseriesList .
+    rdfs:label "Tariff" .
 
 bigg:TimeseriesPoint a owl:Class ;
     rdfs:label "Timeseries Point" .
 
 bigg:TimeseriesList a owl:Class ;
     rdfs:label "Timeseries List" .
-
 

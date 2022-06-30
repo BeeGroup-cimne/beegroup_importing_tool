@@ -122,8 +122,16 @@ def device_subject(key, source):
     return f"DEVICE-{source}-{key}"
 
 
+def tariff_subject(key, source):
+    return f"TARIFF-{source}-{key}"
+
+
 def sensor_subject(device_source, device_key, measured_property, sensor_type, freq):
     return f"SENSOR-{device_source}-{device_key}-{measured_property}-{sensor_type}-{freq}"
+
+
+def tariff_subject(device_source, device_key, measured_property, sensor_type, freq):
+    return f"TARIFF-{device_source}-{device_key}-{measured_property}-{sensor_type}-{freq}"
 
 
 def delivery_subject(key):

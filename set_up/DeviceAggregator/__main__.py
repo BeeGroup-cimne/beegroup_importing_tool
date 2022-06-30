@@ -18,7 +18,7 @@ def create_dev_agg(measured_property, device_query, freq, agg_name, required, ag
     }}
     MATCH (bs:{bigg}__BuildingSpace)-[:{bigg}__isObservedByDevice]->(d:{device_query})-
         [:{bigg}__hasSensor]->(s:{bigg}__Sensor)-[:{bigg}__hasMeasurement]->(ts:{bigg}__Measurement) 
-    WHERE s.{bigg}__sensorFrequency="{freq}" 
+    WHERE s.{bigg}__timeSeriesFrequency="{freq}" 
           AND EXISTS((s)-[:{bigg}__hasMeasuredProperty]->(prop))
     WITH bs, d, prop, ts, split(bs.uri, "-")[0]+"-AGGREGATOR-{id_prop}-TOTAL-"+split(bs.uri, "-")[1] as uri
     MERGE (da:{bigg}__DeviceAggregator:Resource{{uri:uri}})
