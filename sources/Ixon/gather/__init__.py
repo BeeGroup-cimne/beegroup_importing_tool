@@ -108,7 +108,7 @@ def gather_ts(config, settings, args):
 
 
 def gather(arguments, config=None, settings=None):
-    ap = argparse.ArgumentParser(description='Gathering data from Nedgia')
+    ap = argparse.ArgumentParser(description='Gathering data from Ixon')
     ap.add_argument("-st", "--store", required=True, help="Where to store the data", choices=["kafka", "hbase"])
     ap.add_argument("--user", "-u", help="The user importing the data", required=True)
     ap.add_argument("--type", "-t", help="Gather data", choices=['devices', 'ts'], required=True)
