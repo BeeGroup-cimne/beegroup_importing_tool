@@ -3,6 +3,7 @@ __pycache__/
 config*.json
 config_files
 .env
+*.docseloi
 logs/
 *.ovpn
 *.pyc
