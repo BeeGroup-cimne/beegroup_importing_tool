@@ -11,7 +11,9 @@ import utils.utils
 from sources.Ixon.harmonizer.mapper import Mapper
 from utils.data_transformations import decode_hbase, device_subject, building_space_subject, sensor_subject, \
     to_object_property
-from utils.neo4j import get_device_by_uri
+from utils.hbase import save_to_hbase
+from utils.neo4j import get_device_by_uri, create_sensor, create_simple_sensor
+from utils.nomenclature import harmonized_nomenclature
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.rdf_utils.save_rdf import save_rdf_with_source
@@ -60,13 +62,10 @@ def harmonize_devices(data, **kwargs):
 
 
 def harmonize_ts(data, **kwargs):
-    # data = [{'building': 'C0:D3:91:32:7A:5B - 17099803', 'device': 'Programes.Moduls_ES.M1_ES.Z1_Impulsio_Temperatura',
-    #          'building_internal_id': 'PNT-02551', 'timestamp': 1656509442.701691, 'value': 34.70246887207031,
-    #          'type': 'analogInput', 'description': None, 'object_id': 0}]
-
     # match(n:bigg__Organization) where n.uri starts with "https://infraestructures.cat" return n limit 1
     namespace = kwargs['namespace']
     config = kwargs['config']
+    user = kwargs['user']
     freq = 'PT15M'
 
     n = Namespace(namespace)
@@ -74,10 +73,12 @@ def harmonize_ts(data, **kwargs):
     neo4j_connection = config['neo4j']
     neo = GraphDatabase.driver(**neo4j_connection)
 
+    hbase_conn = config['hbase_store_harmonized_data']
+
     df = pd.DataFrame(data)
     if 'building_internal_id' in list(df.columns):
         df = df[df['building_internal_id'].notna()]
-
+        df['object_id'] = df['object_id'].astype(str)
         df['unique'] = df['building_internal_id'] + '-' + df['type'] + '-' + df['object_id']
 
         df["ts"] = pd.to_datetime(df['timestamp'].apply(float), unit="s")
@@ -105,12 +106,24 @@ def harmonize_ts(data, **kwargs):
                 measurement_id = measurement_id.hexdigest()
                 measurement_uri = str(n[measurement_id])
 
-                # TODO: Update sensor
+                with neo.session() as session:
+                    create_simple_sensor(session, device.get('uri'), sensor.get('uri'), bigg_enums.TrustedModel,
+                                         measurement_uri, True,
+                                         False, False, freq, "SUM", dt_ini, dt_end, settings.namespace_mappings)
 
-                # with neo.session() as session:
-                # create_sensor(session, device.get('uri'), sensor.get('uri'), units["KiloW-HR"],
-                #               bigg_enums[sensor.get('bigg__hasMeasuredProperty')], bigg_enums.TrustedModel,
-                #               measurement_uri, True,
-                #               False, False, freq, "SUM", dt_ini, dt_end, settings.namespace_mappings)
+                data_group['listKey'] = measurement_id
 
-                # TODO: Save harmonized values to HBASE
+                device_table = harmonized_nomenclature(mode='online', data_type='Meter', R=True, C=True, O=True,
+                                                       aggregation_function='SUM',
+                                                       freq=freq, user=user)
+
+                save_to_hbase(data_group.to_dict(orient="records"), device_table, hbase_conn,
+                              [("info", ['end', 'isReal']), ("v", ['value'])],
+                              row_fields=['bucket', 'listKey', 'start'])
+
+                period_table = harmonized_nomenclature(mode='batch', data_type='Meter', R=True, C=True, O=True,
+                                                       aggregation_function='SUM', freq=freq, user=user)
+
+                save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn,
+                              [("info", ['end', 'isReal']), ("v", ['value'])],
+                              row_fields=['bucket', 'start', 'listKey'])
