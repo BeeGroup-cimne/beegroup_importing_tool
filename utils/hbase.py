@@ -15,6 +15,16 @@ def __get_h_table__(hbase, table_name, cf=None):
     return hbase.table(table_name)
 
 
+def connection_hbase(config):
+    if 'db' in config and config['db'] != "":
+        hbase = happybase.Connection(config['host'], config['port'], table_prefix=config['db'],
+                                     table_prefix_separator=":")
+    else:
+        hbase = happybase.Connection(config['host'], config['port'])
+    hbase.open()
+    return hbase
+
+
 def save_to_hbase(documents, h_table_name, hbase_connection, cf_mapping, row_fields=None, batch_size=1000):
     hbase = happybase.Connection(**hbase_connection)
     table = __get_h_table__(hbase, h_table_name, {cf: {} for cf, _ in cf_mapping})
@@ -43,10 +53,9 @@ def save_to_hbase(documents, h_table_name, hbase_connection, cf_mapping, row_fie
 def get_hbase_data_batch(hbase_conf, hbase_table, row_start=None, row_stop=None, row_prefix=None, columns=None,
                          _filter=None, timestamp=None, include_timestamp=False, batch_size=100000,
                          scan_batching=None, limit=None, sorted_columns=False, reverse=False):
-
     if row_prefix:
         row_start = row_prefix
-        row_stop = row_prefix[:-1]+chr(row_prefix[-1]+1).encode("utf-8")
+        row_stop = row_prefix[:-1] + chr(row_prefix[-1] + 1).encode("utf-8")
 
     if limit:
         if limit > batch_size:
@@ -80,11 +89,10 @@ def get_hbase_data_batch(hbase_conf, hbase_table, row_start=None, row_stop=None,
 def get_hbase_data_batch_bucket(hbase_conf, hbase_table, row_start=None, row_stop=None, row_prefix=None, columns=None,
                                 _filter=None, timestamp=None, include_timestamp=False, batch_size=100000,
                                 scan_batching=None, limit=None, sorted_columns=False, reverse=False, buckets=20):
-
     for buck in range(buckets):
         if row_prefix:
             row_start = "~".join([str(buck), row_prefix.decode()]).encode()
-            row_stop = row_start[:-1]+chr(row_start[-1]+1).encode("utf-8")
+            row_stop = row_start[:-1] + chr(row_start[-1] + 1).encode("utf-8")
 
         if limit:
             if limit > batch_size:
