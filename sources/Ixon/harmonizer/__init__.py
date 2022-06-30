@@ -12,7 +12,7 @@ from sources.Ixon.harmonizer.mapper import Mapper
 from utils.data_transformations import decode_hbase, device_subject, building_space_subject, sensor_subject, \
     to_object_property
 from utils.hbase import save_to_hbase
-from utils.neo4j import get_device_by_uri, create_sensor, create_simple_sensor
+from utils.neo4j import get_device_by_uri, create_simple_sensor
 from utils.nomenclature import harmonized_nomenclature
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums
 from utils.rdf_utils.rdf_functions import generate_rdf
@@ -113,17 +113,17 @@ def harmonize_ts(data, **kwargs):
 
                 data_group['listKey'] = measurement_id
 
-                device_table = harmonized_nomenclature(mode='online', data_type='Meter', R=True, C=True, O=True,
-                                                       aggregation_function='SUM',
-                                                       freq=freq, user=user)
+            device_table = harmonized_nomenclature(mode='online', data_type='Meter', R=True, C=True, O=True,
+                                                   aggregation_function='SUM',
+                                                   freq=freq, user=user)
 
-                save_to_hbase(data_group.to_dict(orient="records"), device_table, hbase_conn,
-                              [("info", ['end', 'isReal']), ("v", ['value'])],
-                              row_fields=['bucket', 'listKey', 'start'])
+            save_to_hbase(data_group.to_dict(orient="records"), device_table, hbase_conn,
+                          [("info", ['end', 'isReal']), ("v", ['value'])],
+                          row_fields=['bucket', 'listKey', 'start'])
 
-                period_table = harmonized_nomenclature(mode='batch', data_type='Meter', R=True, C=True, O=True,
-                                                       aggregation_function='SUM', freq=freq, user=user)
+            period_table = harmonized_nomenclature(mode='batch', data_type='Meter', R=True, C=True, O=True,
+                                                   aggregation_function='SUM', freq=freq, user=user)
 
-                save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn,
-                              [("info", ['end', 'isReal']), ("v", ['value'])],
-                              row_fields=['bucket', 'start', 'listKey'])
+            save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn,
+                          [("info", ['end', 'isReal']), ("v", ['value'])],
+                          row_fields=['bucket', 'start', 'listKey'])
