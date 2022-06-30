@@ -3,6 +3,7 @@ import json
 import pkgutil
 from .mongo import mongo_logger
 import logging
+
 logging.basicConfig(level=logging.INFO)
 
 
@@ -30,3 +31,8 @@ def log_string(text, mongo=True):
         except Exception as e:
             logging.info(f"Error with mongo: {e}")
     logging.error(text)
+
+
+def set_taxonomy_to_df(df, column_name, taxonomy):
+    df[column_name] = df[column_name].map(taxonomy)
+    return df
