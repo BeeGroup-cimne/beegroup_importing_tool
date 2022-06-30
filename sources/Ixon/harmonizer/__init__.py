@@ -113,17 +113,17 @@ def harmonize_ts(data, **kwargs):
 
                 data_group['listKey'] = measurement_id
 
-            device_table = harmonized_nomenclature(mode='online', data_type='Meter', R=True, C=True, O=True,
-                                                   aggregation_function='SUM',
-                                                   freq=freq, user=user)
+                device_table = harmonized_nomenclature(mode='online', data_type='Meter', R=True, C=True, O=True,
+                                                       aggregation_function='SUM',
+                                                       freq=freq, user=user)
 
-            save_to_hbase(data_group.to_dict(orient="records"), device_table, hbase_conn,
-                          [("info", ['end', 'isReal']), ("v", ['value'])],
-                          row_fields=['bucket', 'listKey', 'start'])
+                save_to_hbase(data_group.to_dict(orient="records"), device_table, hbase_conn,
+                              [("info", ['end', 'isReal']), ("v", ['value'])],
+                              row_fields=['bucket', 'listKey', 'start'])
 
-            period_table = harmonized_nomenclature(mode='batch', data_type='Meter', R=True, C=True, O=True,
-                                                   aggregation_function='SUM', freq=freq, user=user)
+                period_table = harmonized_nomenclature(mode='batch', data_type='Meter', R=True, C=True, O=True,
+                                                       aggregation_function='SUM', freq=freq, user=user)
 
-            save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn,
-                          [("info", ['end', 'isReal']), ("v", ['value'])],
-                          row_fields=['bucket', 'start', 'listKey'])
+                save_to_hbase(data_group.to_dict(orient="records"), period_table, hbase_conn,
+                              [("info", ['end', 'isReal']), ("v", ['value'])],
+                              row_fields=['bucket', 'start', 'listKey'])
