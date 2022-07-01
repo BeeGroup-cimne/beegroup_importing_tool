@@ -1,4 +1,5 @@
 import json
+from typing import List
 
 import requests
 
@@ -48,7 +49,7 @@ class GMAO:
     def get_full_zone(self, id: str, get_criticalities: bool = True, get_managed_scopes: bool = True,
                       get_operations: bool = True,
                       get_features: bool = True,
-                      services: bool = None):
+                      services: List[str] = None):
 
         if services is None:
             services = ['Maintenance', 'Cleaning', 'Gardening']
@@ -86,7 +87,8 @@ class GMAO:
         assert res.status_code == 200
         return res.json()
 
-    def find_indicator_values(self, service: list, searchtext: str = None, fromdate: str = None, todate: str = None,
+    def find_indicator_values(self, service: List[str], searchtext: str = None, fromdate: str = None,
+                              todate: str = None,
                               indicatorid=None,
                               managedscopeid=None, zoneid=None, zonepath=None, pagesize: int = 100, pageindex: int = 0):
 
@@ -115,7 +117,7 @@ class GMAO:
     def find_work_orders(self, service: str, modifiedfromdate: str = None, fromorderdate: str = None,
                          searchtext: str = None, toorderdate: str = None,
                          zoneid: str = None, zonepath: str = None, pagesize: int = 100, pageindex: int = 0,
-                         statusids: str = None, worktypes: str = None):
+                         statusids: List[str] = None, worktypes: List[str] = None):
 
         body = json.dumps({
             "service": service,
