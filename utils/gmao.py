@@ -15,7 +15,7 @@ class GMAO:
                         "x-manttest-loginid": self.session_id}
 
     @staticmethod
-    def authenticate(username, password, project):
+    def authenticate(username: str, password: str, project: str):
         headers = {"Content-Type": "application/json"}
         body = json.dumps({"username": username, "password": password, "project": project})
         res = requests.post(url=f"{API_URL}/api/loginservice/loginuser", headers=headers, data=body)
@@ -33,29 +33,28 @@ class GMAO:
         self.session_id = ""
         self.headers = {"Content-Type": "application/json"}
 
-    def find_zones(self, modified_from_date, page_size=100, page_index=0, zone_path=None):
-        body = {"pagesize": page_size,
-                "pageindex": page_index,
-                "modifiedfromdate": modified_from_date,
-                }
+    def find_zones(self, modified_from_date: str = None, zone_path: str = None, page_size: int = 100,
+                   page_index: int = 0):
+        body = json.dumps({"pagesize": page_size,
+                           "pageindex": page_index,
+                           "modifiedfromdate": modified_from_date,
+                           "zonepath": zone_path
+                           })
 
-        if zone_path is not None:
-            body.update({"zonepath": zone_path})
-
-        body = json.dumps(body)
         res = requests.post(url=f"{API_URL}/api/zone/apifindzones", headers=self.headers, data=body)
         assert res.status_code == 200
         return res.json()
 
-    def get_full_zone(self, _id, get_criticalities=True, get_managed_scopes=True, get_operations=True,
-                      get_features=True,
-                      services=None):
+    def get_full_zone(self, id: str, get_criticalities: bool = True, get_managed_scopes: bool = True,
+                      get_operations: bool = True,
+                      get_features: bool = True,
+                      services: bool = None):
 
         if services is None:
             services = ['Maintenance', 'Cleaning', 'Gardening']
 
         body = json.dumps({
-            "id": _id,
+            "id": id,
             "getcriticalities": get_criticalities,
             "getmanagedscopes": get_managed_scopes,
             "getoperations": get_operations,
@@ -67,62 +66,45 @@ class GMAO:
         assert res.status_code == 200
         return res.json()
 
-    def find_assets(self, modified_from_date, page_size=100, page_index=0, zone_path=""):
+    def find_assets(self, modified_from_date: str = None, zone_path: str = None, page_size: int = 100,
+                    page_index: int = 0):
         body = {"pagesize": page_size,
                 "pageindex": page_index,
                 "modifiedfromdate": modified_from_date,
+                "zonepath": zone_path
                 }
-
-        if zone_path != "":
-            body.update({"zonepath": zone_path})
 
         body = json.dumps(body)
         res = requests.post(url=f"{API_URL}/api/inventory/apifindassets", headers=self.headers, data=body)
         assert res.status_code == 200
         return res.json()
 
-    def get_full_asset(self, _id, get_feature=True):
-        body = json.dumps({"id": _id, "getfeatures": get_feature})
+    def get_full_asset(self, id: int, get_feature: str = True):
+        body = json.dumps({"id": id, "getfeatures": get_feature})
 
         res = requests.post(url=f"{API_URL}/api/inventory/apigetfullasset", headers=self.headers, data=body)
         assert res.status_code == 200
         return res.json()
 
-    def find_indicator_values(self, service, fromdate, searchtext=None, todate=None, indicatorid=None,
-                              managedscopeid=None, zoneid=None, zonepath=None, pagesize=100, pageindex=0):
-        body = {}
+    def find_indicator_values(self, service: list, searchtext: str = None, fromdate: str = None, todate: str = None,
+                              indicatorid=None,
+                              managedscopeid=None, zoneid=None, zonepath=None, pagesize: int = 100, pageindex: int = 0):
+
         if service is None:
             service = ['Maintenance', 'Cleaning', 'Gardening']
 
-        if searchtext is not None:
-            body.update({"searchtext": searchtext})
-
-        if todate is not None:
-            body.update({"todate": todate})
-
-        if fromdate is not None:
-            body.update({"fromdate": fromdate})
-
-        if indicatorid is not None:
-            body.update({"indicatorid": indicatorid})
-
-        if managedscopeid is not None:
-            body.update({"managedscopeid": managedscopeid})
-
-        if zoneid is not None:
-            body.update({"zoneid": zoneid})
-
-        if zonepath is not None:
-            body.update({"zonepath": zonepath})
-
-        if zonepath is not None:
-            body.update({"zonepath": zonepath})
-
-        body.update(
+        body = json.dumps(
             {
                 "service": service,
+                "searchtext": searchtext,
                 "pagesize": pagesize,
                 "pageindex": pageindex,
+                "fromdate": fromdate,
+                "todate": todate,
+                "indicatorid": indicatorid,
+                "managedscopedid": managedscopeid,
+                "zoneid": zoneid,
+                "zonepath": zonepath
             })
 
         body = json.dumps(body)
@@ -130,50 +112,33 @@ class GMAO:
         assert res.status_code == 200
         return res.json()
 
-    def find_work_orders(self, service, modifiedfromdate=None, fromorderdate=None, searchtext=None, toorderdate=None,
-                         indicatorid=None,
-                         zoneid=None, zonepath=None, pagesize=100, pageindex=0,
-                         statusids=None, worktypes=None):
-        body = {}
+    def find_work_orders(self, service: str, modifiedfromdate: str = None, fromorderdate: str = None,
+                         searchtext: str = None, toorderdate: str = None,
+                         zoneid: str = None, zonepath: str = None, pagesize: int = 100, pageindex: int = 0,
+                         statusids: str = None, worktypes: str = None):
 
-        if modifiedfromdate is not None:
-            body.update({"modifiedfromdate": modifiedfromdate})
-
-        if fromorderdate is not None:
-            body.update({"fromorderdate": fromorderdate})
-
-        if searchtext is not None:
-            body.update({"searchtext": searchtext})
-
-        if toorderdate is not None:
-            body.update({"toorderdate": toorderdate})
-
-        if indicatorid is not None:
-            body.update({"indicatorid": indicatorid})
-
-        if zoneid is not None:
-            body.update({"zoneid": zoneid})
-
-        if zonepath is not None:
-            body.update({"zonepath": zonepath})
-
-        if statusids is not None:
-            body.update({"statusids": statusids})
-
-        if worktypes is not None:
-            body.update({"worktypes": worktypes})
-
-        body.update({"pagesize": pagesize, "pageindex": pageindex, "service": service})
-
-        body = json.dumps(body)
+        body = json.dumps({
+            "service": service,
+            "searchtext": searchtext,
+            "pagesize": pagesize,
+            "pageindex": pageindex,
+            "modifiedfromdate": modifiedfromdate,
+            "fromorderdate": fromorderdate,
+            "toorderdate": toorderdate,
+            "zoneid": zoneid,
+            "zonepath": zonepath,
+            "statusids": statusids,
+            "worktypes": worktypes
+        })
 
         res = requests.post(url=f"{API_URL}/api/workorder/apifindworkorders", headers=self.headers, data=body)
         assert res.status_code == 200
         return res.json()
 
-    def get_full_work_order(self, _id, getelementlist=True, gettrasklist=True, gettimelist=True, getfeatures=True):
+    def get_full_work_order(self, id: str, getelementlist: bool = True, gettrasklist: bool = True,
+                            gettimelist: bool = True, getfeatures: bool = True):
         body = json.dumps(
-            {"id": _id, "getfeatures": getfeatures, "getelementlist": getelementlist, "gettrasklist": gettrasklist,
+            {"id": id, "getfeatures": getfeatures, "getelementlist": getelementlist, "gettrasklist": gettrasklist,
              "gettimelist": gettimelist})
 
         res = requests.post(url=f"{API_URL}/api/workorder/apigetfullworkorder", headers=self.headers, data=body)
