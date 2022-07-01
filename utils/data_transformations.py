@@ -1,5 +1,3 @@
-import ast
-import os
 import re
 from collections import defaultdict
 from functools import partial
@@ -29,24 +27,17 @@ def fuzz_params(dicty, fields, filter_query=None):
             dicty.add(triple)
     query = f"""SELECT ?s ?obj WHERE{{ {" UNION ".join([f"{{ ?s {p} ?obj }}" for p in fields])} }}"""
     obj = dicty.query(query)
-    return {o[1]: o[0] for o in obj}
 
-
-def fuzzy_dictionary_match(text, map_dict, default):
-    if not map_dict:
-        return default
-    match, score = process.extractOne(text, list(map_dict.keys()))
-    if score > 90:
-        return map_dict[match]
-    else:
-        return default
+    map_dict = {o[1]: o[0] for o in obj}
+    match, score = process.extractOne(text, list(map_dict.keys()), score_cutoff=90)
+    return map_dict[match]
 
 
 def get_taxonomy_mapping(taxonomy_file, default):
     # Transformation function
-    taxonomy_dict = \
-        pd.read_excel(taxonomy_file,  index_col="SOURCE").to_dict()["TAXONOMY"]
+    taxonomy_dict = pd.read_excel(taxonomy_file,  index_col="SOURCE").to_dict()["TAXONOMY"]
     return defaultdict(lambda: default, taxonomy_dict)
+
 
 
 def to_object_property(text, namespace):
@@ -149,6 +140,9 @@ def validate_ref_cadastral(value):
     return ";".join(valid_ref)
 
 
+def epc_subject(key):
+    return f"EPC-{key}"
 
 
-
+def building_space_use_type_subject(key):
+    return f"BUILDING-SPACE-USE-TYPE-{key}"
