@@ -26,5 +26,5 @@ def save_to_kafka(topic, info_document, config, batch=1000):
 def read_from_kafka(topic, group_id, config):
     kafka_servers = [f"{host}:{port}" for host, port in zip(config['hosts'], config['ports'])]
     consumer = KafkaConsumer(topic, bootstrap_servers=kafka_servers, group_id=group_id,
-                             value_deserializer=lambda v: pickle.loads(v), max_poll_records=50)
+                             value_deserializer=lambda v: pickle.loads(v), max_poll_records=10)
     return consumer

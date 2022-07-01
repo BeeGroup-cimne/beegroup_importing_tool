@@ -44,7 +44,7 @@ spec:
           volumeMounts:
           - name: biggsecrets
             mountPath: /home/ubuntu/beegroup_importing_tool/config.json
-            subPath: config_development.json
+            subPath: config.json
 
           - name: biggsecrets
             mountPath: /home/ubuntu/beegroup_importing_tool/sources/Datadis/config.json
@@ -67,6 +67,14 @@ spec:
             subPath: config_weather.json
 
           - name: biggsecrets
+            mountPath: /home/ubuntu/beegroup_importing_tool/sources/Nedgia/config.json
+            subPath: config_nedgia.json
+
+          - name: biggsecrets
+            mountPath: /home/ubuntu/beegroup_importing_tool/sources/BIS/config.json
+            subPath: config_bis.json
+
+          - name: biggsecrets
             mountPath: /home/ubuntu/beegroup_importing_tool/.env
             subPath: .env
 
@@ -78,8 +86,8 @@ spec:
           secret:
             secretName: main
             items:
-            - key: config_development.json
-              path: config_development.json
+            - key: config.json
+              path: config.json
             - key: config_datadis.json
               path: config_datadis.json
             - key: config_gemweb.json
@@ -90,5 +98,9 @@ spec:
               path: config_gpg.json
             - key: config_weather.json
               path: config_weather.json
+            - key: config_nedgia.json
+              path: config_nedgia.json
+            - key: config_bis.json
+              path: config_bis.json
             - key: .env
               path: .env

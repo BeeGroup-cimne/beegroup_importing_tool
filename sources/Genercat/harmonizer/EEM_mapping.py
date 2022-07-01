@@ -3,8 +3,6 @@ from utils.rdf_utils.ontology.namespaces_definition import Bigg, units, bigg_enu
 from utils.rdf_utils.ontology.bigg_classes import BuildingConstructionElement, EnergyEfficiencyMeasure
 from utils.data_transformations import *
 
-eem_type_taxonomy = partial(taxonomy_mapping, taxonomy_file="sources/Genercat/harmonizer/EEMTypeTaxonomy.xls",
-                            default="Other")
 
 class Mapper(object):
 

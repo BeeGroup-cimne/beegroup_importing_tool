@@ -43,3 +43,7 @@ typing_extensions==4.1.1
 urllib3==1.26.8
 xlrd==2.0.1
 zipp==3.7.0
+thefuzz~=0.19.0
+python-Levenshtein==0.12.2
+BAC0==21.2.25
+psutil==5.9.0

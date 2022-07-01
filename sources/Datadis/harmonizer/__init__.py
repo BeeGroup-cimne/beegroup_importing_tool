@@ -3,7 +3,11 @@ import re
 
 import happybase
 
+import utils
+from harmonizer.cache import Cache
+
 from utils.hbase import get_hbase_data_batch
+from utils.utils import log_string
 from .mapper_static import harmonize_data as harmonize_static_data
 from .mapper_ts import harmonize_data as harmonize_ts_data
 
@@ -16,9 +20,10 @@ def harmonize_command_line(arguments, config=None, settings=None):
     args = ap.parse_args(arguments)
     hbase_conn = config['hbase_store_raw_data']
     i = 0
+    Cache.load_cache()
     if args.type == "static":
         supplies_table = f"raw_Datadis_static_supplies__{args.user}"
-        for data in get_hbase_data_batch(hbase_conn, supplies_table, batch_size=100):
+        for data in get_hbase_data_batch(hbase_conn, supplies_table, batch_size=1000):
             supplies = []
             for cups, data1 in data:
                 item = dict()
@@ -30,7 +35,7 @@ def harmonize_command_line(arguments, config=None, settings=None):
             if len(supplies) <= 0:
                 continue
             i += len(supplies)
-            print(i)
+            log_string(i, mongo=False)
             harmonize_static_data(supplies, namespace=args.namespace,
                                   user=args.user, source="datadis", config=config)
     elif args.type == "ts":
@@ -39,7 +44,7 @@ def harmonize_command_line(arguments, config=None, settings=None):
         for h_table_name in ts_tables:
             i = 0
             freq = h_table_name.decode().split("_")[4]
-            for data in get_hbase_data_batch(hbase_conn, h_table_name, batch_size=1000000):
+            for data in get_hbase_data_batch(hbase_conn, h_table_name, batch_size=100000):
                 data_list = []
                 for key, row in data:
                     item = dict()
@@ -54,7 +59,7 @@ def harmonize_command_line(arguments, config=None, settings=None):
                 if len(data_list) <= 0:
                     continue
                 i += len(data_list)
-                print(f"{freq}: {i}")
+                log_string(f"{freq}: {i}", mongo=False)
                 harmonize_ts_data(data_list, freq=freq, namespace=args.namespace, user=args.user, config=config)
     else:
         raise (NotImplementedError("invalid type: [static, ts]"))

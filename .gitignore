@@ -1,9 +1,12 @@
 .idea/
 __pycache__/
 config*.json
+config_files
 .env
+*.docseloi
 logs/
 *.ovpn
 *.pyc
 data/
 .DS_Store
+sources/Ixon/gather/vpn_files/

@@ -12,9 +12,6 @@ from utils.data_transformations import *
 
 bigg = settings.namespace_mappings['bigg']
 
-eem_type_taxonomy = partial(taxonomy_mapping, taxonomy_file="sources/Genercat/harmonizer/EEMTypeTaxonomy.xls",
-                            default="Other")
-
 
 def create_measurement(x):
     return ".".join([x1 for x1 in [
@@ -28,7 +25,10 @@ def create_measurement(x):
 def prepare_data(df):
     df['element_subject'] = df["ce"].apply(id_zfill).apply(construction_element_subject)
     df['measure_subject'] = (df["ce"].apply(id_zfill) + "-" + df["id_"]).apply(eem_subject)
-    df['measurement_type'] = df.apply(create_measurement, axis=1).apply(eem_type_taxonomy).apply(lambda x: to_object_property(x, bigg_enums))
+    eem_type_taxonomy = get_taxonomy_mapping(taxonomy_file="sources/Genercat/harmonizer/EEMTypeTaxonomy.xls",
+                                             default="Other")
+    df['measurement_type'] = df.apply(create_measurement, axis=1).map(eem_type_taxonomy). \
+        apply(partial(to_object_property, namespace=bigg_enums))
     df['operation_date'] = (df["""Data de finalització de l'obra / millora"""].astype('datetime64')).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 

@@ -7,7 +7,7 @@
 
 bigg:GrossFloorArea a bigg:AreaType, skos:Concept;
   rdfs:comment "Sum of the floor areas of all building spaces measured from the external faces of the exterior walls" .
-  bigg:name "Gross Floor Area"@en, "Gran area de construccio"@ca
+
 bigg:GrossFloorAreaAboveGround a bigg:AreaType, skos:Concept;
   rdfs:comment "Part of the gross floor area above ground" .
 

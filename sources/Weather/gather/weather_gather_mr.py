@@ -3,7 +3,6 @@ import glob
 import pickle
 from abc import ABC
 from mrjob.job import MRJob
-from utils.utils import log_string
 from utils.mongo import mongo_logger, mongo_connection
 from utils.kafka import save_to_kafka
 from dateutil.relativedelta import relativedelta
@@ -57,7 +56,6 @@ class WeatherMRJob(MRJob, ABC):
         # map receives lat, lon and downloads DarkSky data,
         cp = {k: v for k, v in zip(["latitude", "longitude"], line.split("\t"))}
         mongo_logger.import_log(self.config['mongo_logger'], "gather")
-        # log_string(f"Processing: {'-'.join([str(cp['latitude']), str(cp['longitude'])])}")
         weather_stations = \
             mongo_connection(self.config['mongo_db'])[self.config['data_sources'][self.config['source']]['log_stations']]
 
@@ -76,7 +74,6 @@ class WeatherMRJob(MRJob, ABC):
         date_ini = INIT_DATE
         now = datetime.now() + timedelta(days=1)
         for t, type_params in data_weather_sources.items():
-            # log_string(f"Type {t}")
             if t not in station:
                 station[t] = {
                     "date_ini": date_ini,
@@ -97,8 +94,6 @@ class WeatherMRJob(MRJob, ABC):
                     save_weather_data(data, mongo_logger, self.config)
                     station[t]['date_end'] = last_data
                 start_obtaining_date += type_params['freq_rec'] + relativedelta(days=1)
-                # log_string(f"Request sent")
-        # log_string(f"finished device")
         weather_stations.replace_one({"_id": station_id}, station, upsert=True)
         self.increment_counter('gathered', 'device', 1)
 

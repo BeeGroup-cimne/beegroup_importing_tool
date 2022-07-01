@@ -2,6 +2,9 @@ import re
 from datetime import datetime
 import os
 import sys
+
+from utils.utils import log_string
+
 sys.path.append(os.getcwd())
 import utils
 BATCH = 1000
@@ -24,9 +27,9 @@ def get_data(gemweb, data_type):
     return data
 
 def update_static_data(data_type, mongo_conf, hbase_conf, connection, data_source, gemweb):
-    print("getting_data")
+    log_string("getting_data", mongo=False)
     data = gemweb.gemweb.gemweb_query(data_type['endpoint'], category=data_type['category'])
-    print("uploading_data")
+    log_string("uploading_data", mongo=False)
 
     htable = get_HTable(hbase, "{}_{}_{}".format(data_source["hbase_name"], data_type['name'], user), {"info": {}})
     save_to_hbase(htable, data, [("info", "all")], row_fields=['id'], version=version)

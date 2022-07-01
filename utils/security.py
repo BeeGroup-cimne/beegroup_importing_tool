@@ -12,7 +12,7 @@ def pad(s):
     :param s:
     :return:
     """
-    block_size = 16
+    block_size = AES.block_size
     remainder = len(s) % block_size
     padding_needed = block_size - remainder
     return s + padding_needed * ' '
@@ -42,20 +42,21 @@ def encrypt(plain_text, password):
 
     # create cipher config
     cipher_config = AES.new(private_key, AES.MODE_CBC, iv)
-
+    # return string with encrypted text
+    return (base64.b64encode(cipher_config.encrypt(padded_text))+base64.b64encode(salt)+base64.b64encode(iv)).decode()
     # return a dictionary with the encrypted text
-    return {
-        'cipher_text': base64.b64encode(cipher_config.encrypt(padded_text)),
-        'salt': base64.b64encode(salt),
-        'iv': base64.b64encode(iv)
-    }
+    # return {
+    #     'cipher_text': base64.b64encode(cipher_config.encrypt(padded_text)),
+    #     'salt': base64.b64encode(salt),
+    #     'iv': base64.b64encode(iv)
+    # }
 
 
-def decrypt(enc_dict, password):
+def decrypt(enc_str, password):
     # decode the dictionary entries from base64
-    salt = base64.b64decode(enc_dict['salt'])
-    enc = base64.b64decode(enc_dict['cipher_text'])
-    iv = base64.b64decode(enc_dict['iv'])
+    iv = base64.b64decode(enc_str[-24:])
+    salt = base64.b64decode(enc_str[-48:-24])
+    enc = base64.b64decode(enc_str[:-48])
 
     # generate the private key from the password and salt
     private_key = hashlib.scrypt(password.encode(), salt=salt, n=2 ** 14, r=8, p=1, dklen=32)

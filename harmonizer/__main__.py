@@ -1,14 +1,11 @@
 import argparse
-import os
+import importlib
 import time
 
 import pandas as pd
 
-import argparse
-import os
 import settings
-import importlib
-
+from harmonizer.cache import Cache
 from utils.kafka import read_from_kafka
 from utils.mongo import mongo_logger
 from utils.utils import read_config, load_plugins, log_string
@@ -23,8 +20,10 @@ def start_harmonizer():
     sources_available = load_plugins(settings)
     consumer = read_from_kafka(config['kafka']['topic'], config["kafka"]['group_harmonize'],
                                config['kafka']['connection'])
+    Cache.load_cache()
     try:
         for x in consumer:
+            print(x.value)
             start = time.time()
             message = x.value
             df = pd.DataFrame.from_records(message['data'])
@@ -35,26 +34,23 @@ def start_harmonizer():
             message_part = ""
             if 'message_part' in message:
                 message_part = message['message_part']
-            # log_string(f"received part {message_part} from {message['source']} to harmonize")
             for k, v in sources_available.items():
                 if message['source'] == k:
-                    # log_string(f"{k}, {v}, {message['source']}")
                     mapper = v.get_mapper(message)
                     kwargs_function = v.get_kwargs(message)
                     df = v.transform_df(df)
                     break
             if mapper:
-                # log_string("mapping data")
                 try:
                     mapper(df.to_dict(orient="records"), **kwargs_function)
-                    # log_string(f"part {message_part} from {message['source']} harmonized successfully")
+                    log_string(f"part {message_part} from {message['source']} harmonized successfully", mongo=False)
                 except Exception as e:
                     log_string(f"part {message_part} from {message['source']} harmonized error: {e}")
             duration = time.time() - start
-            print(duration)
+            log_string(duration, mongo=False)
     except Exception as e:
         time.sleep(10)
-        print(e)
+        log_string(e)
 
 
 def harmonize_source(g_args):
@@ -64,6 +60,7 @@ def harmonize_source(g_args):
     source_plugin = load_source_plugin(args.source)
     source = source_plugin.Plugin(settings=settings)
     source.harmonizer_command_line(unknown)
+
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()

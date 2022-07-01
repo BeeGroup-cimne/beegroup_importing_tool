@@ -2,6 +2,7 @@ import argparse
 import pickle
 from tempfile import NamedTemporaryFile
 import utils
+from utils.utils import log_string
 from .datadis_utils import get_users, decrypt_passwords
 from .datadis_gather_mr import DatadisMRJob
 
@@ -16,7 +17,7 @@ def get_timeseries_data(store, policy, config, settings):
 
     # Get Users to generate the MR input file
     users = get_users(config['neo4j'])
-    users = decrypt_passwords(users[:1], settings)
+    users = decrypt_passwords(users, settings)
     local_input = utils.hdfs.generate_input_tsv(users, ["username", "password", "user", "namespace"])
     input_mr = utils.hdfs.put_file_to_hdfs(source_file_path=local_input, destination_file_path='/tmp/datadis_tmp/')
     utils.hdfs.remove_file(local_input)
@@ -41,7 +42,7 @@ def get_timeseries_data(store, policy, config, settings):
         utils.hdfs.remove_file_from_hdfs(input_mr)
         utils.hdfs.remove_file(config_file.name)
     except Exception as e:
-        print(f"error in map_reduce: {e}")
+        log_string(f"error in map_reduce: {e}")
         utils.hdfs.remove_file_from_hdfs(input_mr)
         utils.hdfs.remove_file(config_file.name)
 

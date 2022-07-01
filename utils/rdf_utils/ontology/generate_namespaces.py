@@ -6,7 +6,7 @@ ONTOLOGIES = "utils/rdf_utils/ontology/ontologies"
 DICTIONARIES = "utils/rdf_utils/ontology/dictionaries"
 STORE_NAMESPACES = "utils/rdf_utils/ontology/namespaces_definition.py"
 STORE_CLASS_DEFINITIONS = "utils/rdf_utils/ontology/bigg_classes.py"
-
+ThingClass = rdflib.term.URIRef('http://www.w3.org/2002/07/owl#Thing')
 
 def get_namespace_subject(s):
     if "#" in s:
@@ -47,7 +47,8 @@ class BIGGObjects(object):
 
     def get_graph(self):
         g = Graph()
-        g.add((self.subject, RDF.type, self.__rdf_type__))
+        for tt in self.__rdf_type__:
+            g.add((self.subject, RDF.type, tt))
         for k, v in vars(self).items():
             if k != "subject" and v:
                 if isinstance(v, URIRef):
@@ -90,15 +91,52 @@ def namespace_definition_ontology(ontology_name, namespace_uri, onto):
 
 def ontology_class_implementations(ontology_name, namespace_uri, onto):
     object_str = ""
-    for class_def in onto.query("""Select ?class Where {?class a owl:Class}"""):
+    class_def_super = {}
+    class_with_superclass = onto.query(
+        f"""Select ?class ?super Where {{
+            ?class a owl:Class . 
+            ?class rdfs:subClassOf ?super 
+            FILTER(?class != <{ThingClass}>).
+        }}"""
+    )
+    for s in class_with_superclass:
+        try:
+            class_def_super[s[0]].append(s[1])
+        except:
+            class_def_super[s[0]] = [s[1]]
+    class_def = onto.query(
+        f"""
+         Select ?class Where {{
+             ?class a owl:Class .
+             FILTER(?class != <{ThingClass}>).
+             FILTER NOT EXISTS {{
+                 ?class rdfs:subClassOf ?n}}.
+         }}
+         """)
+    for s in class_def:
+        class_def_super[s[0]] = []
+
+    for s in class_def_super:
+        class_def_super[s].append(ThingClass)
+    
+    
+    for class_d, super_class in class_def_super.items():
+        joined_py_class = [class_d.split("#")[1]] + [x.split("#")[1] for x in super_class]
         object_str += f"""
         
-class {class_def[0].split("#")[1]}(BIGGObjects):
-    __rdf_type__ = {ontology_name}.{class_def[0].split("#")[1]}
+class {class_d.split("#")[1]}(BIGGObjects):
+    __rdf_type__ = {joined_py_class}
 """
+
+        joined_class = [class_d] + super_class
+        union_query = " UNION ".join([f"{{ ?dt rdfs:domain {sclass.n3()}}}" for sclass in joined_class])
+        query_d_prop = f"""
+        Select ?dt WHERE {{ 
+        {{?dt a owl:DatatypeProperty}} UNION {{?dt a owl:ObjectProperty}} .
+        {union_query} .
+        }}"""
         d_properties = []
-        for data_properties in onto.query(
-                f"Select ?dt WHERE {{ {{?dt a owl:DatatypeProperty}} UNION {{?dt a owl:ObjectProperty}} . ?dt rdfs:domain {class_def[0].n3()} }}"):
+        for data_properties in onto.query(query_d_prop):
             d_properties.append(f"""{data_properties[0].split("#")[1]}""")
         object_str += f"""
     def __init__(self, subject, {",".join([f"{k}=None" for k in d_properties])}):
