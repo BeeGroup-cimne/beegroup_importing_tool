@@ -1,5 +1,4 @@
 import argparse
-import math
 
 from utils.gmao import GMAO
 from utils.hbase import save_to_hbase
@@ -9,8 +8,12 @@ from utils.utils import log_string
 
 
 def gather_zones(g, config, settings, args):
-    page_size = 100
-    total_pages = math.ceil(g.find_zones(page_index=0, page_size=1)['totalcount'] / page_size)
+    try:
+        total_pages = g.find_zones(page_index=0, page_size=1)['totalpages']
+    except Exception as ex:
+        g.login()
+        total_pages = g.find_zones(page_index=0, page_size=1)['totalpages']
+        log_string(ex, mongo=False)
 
     for i in range(total_pages):
         try:
@@ -38,9 +41,44 @@ def gather_zones(g, config, settings, args):
                   config=config, settings=settings, args=args)
 
 
+def gather_assets(g: GMAO, config, settings, args):
+    try:
+        total_pages = g.find_assets(page_index=0, page_size=1)['totalpages']
+    except Exception as ex:
+        g.login()
+        total_pages = g.find_assets(page_index=0, page_size=1)['totalpages']
+        log_string(ex, mongo=False)
+
+    for i in range(total_pages):
+
+        try:
+            data = g.find_assets(page_index=i)['items']
+        except Exception as ex:
+            g.login()
+            data = g.find_assets(page_index=i)['items']
+            log_string(ex, mongo=False)
+
+        for asset in data:
+            try:
+                full_asset = g.get_full_asset(asset['id'])
+            except Exception as ex:
+                g.login()
+                full_asset = g.get_full_asset(asset['id'])
+                log_string(ex, mongo=False)
+
+            save_data(data=[full_asset], data_type='fullAsset', row_keys=['id'],
+                      column_map=[("info", "all")],
+                      config=config, settings=settings, args=args)
+
+        save_data(data=data, data_type='assets', row_keys=['id'],
+                  column_map=[("info", "all")],
+                  config=config, settings=settings, args=args)
+
+
 def gather_data(arguments, config, settings):
     g = GMAO(**config['GMAO'])
     gather_zones(g, config, settings, arguments)
+    gather_assets(g, config, settings, arguments)
 
 
 def save_data(data, data_type, row_keys, column_map, config, settings, args):
