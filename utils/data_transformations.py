@@ -27,10 +27,17 @@ def fuzz_params(dicty, fields, filter_query=None):
             dicty.add(triple)
     query = f"""SELECT ?s ?obj WHERE{{ {" UNION ".join([f"{{ ?s {p} ?obj }}" for p in fields])} }}"""
     obj = dicty.query(query)
+    return {o[1]: o[0] for o in obj}
 
-    map_dict = {o[1]: o[0] for o in obj}
-    match, score = process.extractOne(text, list(map_dict.keys()), score_cutoff=90)
-    return map_dict[match]
+
+def fuzzy_dictionary_match(text, map_dict, default):
+    if not map_dict:
+        return default
+    match, score = process.extractOne(text, list(map_dict.keys()))
+    if score > 90:
+        return map_dict[match]
+    else:
+        return default
 
 
 def get_taxonomy_mapping(taxonomy_file, default):
@@ -86,9 +93,6 @@ def cadastral_info_subject(key):
     return f"CADASTRALINFO-{key}"
 
 
-def epc_subject(key):
-    return f"EPC-{key}"
-
 def __area_subject__(key, a_type, a_source):
     return f"AREA-{a_type}-{a_source}-{key}"
 
@@ -111,10 +115,6 @@ def eem_subject(key):
 
 def device_subject(key, source):
     return f"DEVICE-{source}-{key}"
-
-
-def tariff_subject(key, source):
-    return f"TARIFF-{source}-{key}"
 
 
 def sensor_subject(device_source, device_key, measured_property, sensor_type, freq):
@@ -142,7 +142,3 @@ def validate_ref_cadastral(value):
 
 def epc_subject(key):
     return f"EPC-{key}"
-
-
-def building_space_use_type_subject(key):
-    return f"BUILDING-SPACE-USE-TYPE-{key}"
