@@ -7,15 +7,8 @@ from utils.nomenclature import raw_nomenclature
 from utils.utils import log_string
 
 
-def gather_zones(g, config, settings, args):
-    try:
-        total_pages = g.find_zones(page_index=0, page_size=1)['totalpages']
-    except Exception as ex:
-        g.login()
-        total_pages = g.find_zones(page_index=0, page_size=1)['totalpages']
-        log_string(ex, mongo=False)
-
-    for i in range(total_pages):
+def gather_zones(g: GMAO, config, settings, args):
+    for i in range(g.get_total_pages('find_zones')):
         try:
             data = g.find_zones(page_index=i)['items']
         except Exception as ex:
@@ -42,15 +35,7 @@ def gather_zones(g, config, settings, args):
 
 
 def gather_assets(g: GMAO, config, settings, args):
-    try:
-        total_pages = g.find_assets(page_index=0, page_size=1)['totalpages']
-    except Exception as ex:
-        g.login()
-        total_pages = g.find_assets(page_index=0, page_size=1)['totalpages']
-        log_string(ex, mongo=False)
-
-    for i in range(total_pages):
-
+    for i in range(g.get_total_pages('find_assets')):
         try:
             data = g.find_assets(page_index=i)['items']
         except Exception as ex:
@@ -73,6 +58,10 @@ def gather_assets(g: GMAO, config, settings, args):
         save_data(data=data, data_type='assets', row_keys=['id'],
                   column_map=[("info", "all")],
                   config=config, settings=settings, args=args)
+
+
+def gather_indicator_values(g: GMAO, config, settings, args):
+    pass
 
 
 def gather_data(arguments, config, settings):
