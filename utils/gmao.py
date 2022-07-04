@@ -89,7 +89,8 @@ class GMAO:
     def find_indicator_values(self, service: List[str], searchtext: str = None, fromdate: str = None,
                               todate: str = None,
                               indicatorid=None,
-                              managedscopeid=None, zoneid=None, zonepath=None, pagesize: int = 100, pageindex: int = 0):
+                              managedscopeid=None, zoneid=None, zonepath=None, page_size: int = 100,
+                              page_index: int = 0):
 
         if service is None:
             service = ['Maintenance', 'Cleaning', 'Gardening']
@@ -98,8 +99,8 @@ class GMAO:
             {
                 "service": service,
                 "searchtext": searchtext,
-                "pagesize": pagesize,
-                "pageindex": pageindex,
+                "pagesize": page_size,
+                "pageindex": page_index,
                 "fromdate": fromdate,
                 "todate": todate,
                 "indicatorid": indicatorid,
@@ -115,14 +116,14 @@ class GMAO:
 
     def find_work_orders(self, service: str, modifiedfromdate: str = None, fromorderdate: str = None,
                          searchtext: str = None, toorderdate: str = None,
-                         zoneid: str = None, zonepath: str = None, pagesize: int = 100, pageindex: int = 0,
+                         zoneid: str = None, zonepath: str = None, page_size: int = 100, page_index: int = 0,
                          statusids: List[str] = None, worktypes: List[str] = None):
 
         body = json.dumps({
             "service": service,
             "searchtext": searchtext,
-            "pagesize": pagesize,
-            "pageindex": pageindex,
+            "pagesize": page_size,
+            "pageindex": page_index,
             "modifiedfromdate": modifiedfromdate,
             "fromorderdate": fromorderdate,
             "toorderdate": toorderdate,

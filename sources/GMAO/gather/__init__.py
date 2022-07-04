@@ -9,23 +9,12 @@ from utils.utils import log_string
 
 def gather_zones(g: GMAO, config, settings, args):
     for i in range(g.get_total_pages('find_zones')):
-        try:
-            data = g.find_zones(page_index=i)['items']
-        except Exception as ex:
-            log_string(ex, mongo=False)
-            g.login()
-            data = g.find_zones(page_index=i)['items']
+
+        data = g.find_zones(page_index=i)['items']
 
         for zone in data:
             if len(zone['zonepath'].split('.')) == 3:
-                print(zone)
-                try:
-                    full_zone = g.get_full_zone(id=zone['id'], services=['Maintenance'])
-                except Exception as ex:
-                    log_string(ex)
-                    g.login()
-                    full_zone = g.get_full_zone(id=zone['id'], services=['Maintenance'])
-
+                full_zone = g.get_full_zone(id=zone['id'], services=['Maintenance'])
                 save_data([full_zone], data_type='fullZone', row_keys=['id'], column_map=[("info", "all")],
                           config=config, settings=settings, args=args)
 
@@ -36,21 +25,11 @@ def gather_zones(g: GMAO, config, settings, args):
 
 def gather_assets(g: GMAO, config, settings, args):
     for i in range(g.get_total_pages('find_assets')):
-        try:
-            data = g.find_assets(page_index=i)['items']
-        except Exception as ex:
-            g.login()
-            data = g.find_assets(page_index=i)['items']
-            log_string(ex, mongo=False)
+
+        data = g.find_assets(page_index=i)['items']
 
         for asset in data:
-            try:
-                full_asset = g.get_full_asset(asset['id'])
-            except Exception as ex:
-                g.login()
-                full_asset = g.get_full_asset(asset['id'])
-                log_string(ex, mongo=False)
-
+            full_asset = g.get_full_asset(asset['id'])
             save_data(data=[full_asset], data_type='fullAsset', row_keys=['id'],
                       column_map=[("info", "all")],
                       config=config, settings=settings, args=args)
@@ -61,13 +40,33 @@ def gather_assets(g: GMAO, config, settings, args):
 
 
 def gather_indicator_values(g: GMAO, config, settings, args):
-    pass
+    for i in range(g.get_total_pages('find_indicator_values')):
+        data = g.find_indicator_values(page_index=i, service=['Maintenance'])['items']
+        save_data(data=data, data_type='indicatorValues', row_keys=['id'],
+                  column_map=[("info", "all")],
+                  config=config, settings=settings, args=args)
+
+
+def gather_work_orders(g: GMAO, config, settings, args):
+    for i in range(g.get_total_pages('find_work_orders')):
+        data = g.find_work_orders(page_index=i, service='Maintenance')['items']
+        for work_order in data:
+            full_work_order = g.get_full_work_order(id=work_order['id'])
+            save_data(data=[full_work_order], data_type='fullWorkOrders', row_keys=['id'],
+                      column_map=[("info", "all")],
+                      config=config, settings=settings, args=args)
+
+        save_data(data=data, data_type='workOrders', row_keys=['id'],
+                  column_map=[("info", "all")],
+                  config=config, settings=settings, args=args)
 
 
 def gather_data(arguments, config, settings):
     g = GMAO(**config['GMAO'])
     gather_zones(g, config, settings, arguments)
     gather_assets(g, config, settings, arguments)
+    gather_indicator_values(g, config, settings, arguments)
+    gather_work_orders(g, config, settings, arguments)
 
 
 def save_data(data, data_type, row_keys, column_map, config, settings, args):
