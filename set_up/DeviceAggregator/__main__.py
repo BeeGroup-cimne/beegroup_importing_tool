@@ -18,17 +18,17 @@ def create_dev_agg(measured_property, device_query, freq, agg_name, required, ag
     }}
     MATCH (bs:{bigg}__BuildingSpace)-[:{bigg}__isObservedByDevice]->(d:{device_query})-
         [:{bigg}__hasSensor]->(s:{bigg}__Sensor)-[:{bigg}__hasMeasurement]->(ts:{bigg}__Measurement) 
-    WHERE s.{bigg}__timeSeriesFrequency="{freq}" 
+    WHERE s.{bigg}__timeSeriesFrequency=["{freq}"] 
           AND EXISTS((s)-[:{bigg}__hasMeasuredProperty]->(prop))
     WITH bs, d, prop, ts, split(bs.uri, "-")[0]+"-AGGREGATOR-{id_prop}-TOTAL-"+split(bs.uri, "-")[1] as uri
     MERGE (da:{bigg}__DeviceAggregator:Resource{{uri:uri}})
     MERGE (da)-[:{bigg}__includesDevice]->(d)
     WITH da, apoc.text.join(collect("<mi>"+split(ts.uri,"#")[1]+"</mi>"), "<mo>"+"+"+"</mo>") as key1, prop, bs
-    SET da.required = {required}, 
-        da.{bigg}__deviceAggregatorName = "{agg_name}",
-        da.{bigg}__deviceAggregatorFrequency = "{freq}",
-        da.{bigg}__deviceAggregatorFormula=key1,
-        da.{bigg}__deviceAggregatorTimeAggregationFunction="{agg_func}"
+    SET da.required = [{required}], 
+        da.{bigg}__deviceAggregatorName = ["{agg_name}"],
+        da.{bigg}__deviceAggregatorFrequency = ["{freq}"],
+        da.{bigg}__deviceAggregatorFormula=[key1],
+        da.{bigg}__deviceAggregatorTimeAggregationFunction=["{agg_func}"]
     MERGE (da)-[:{bigg}__hasDeviceAggregatorProperty]->(prop)
     MERGE (bs)-[:{bigg}__hasDeviceAggregator]->(da)    
     RETURN da
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     # read config file
     config = utils.read_config(settings.conf_file)
     neo4j = GraphDatabase.driver(**config['neo4j'])
-    with neo4j.session() as session:
-        for query in d_agg[args.device_aggregator_type]:
+    for query in d_agg[args.device_aggregator_type]:
+        with neo4j.session() as session:
             session.run(query)
 

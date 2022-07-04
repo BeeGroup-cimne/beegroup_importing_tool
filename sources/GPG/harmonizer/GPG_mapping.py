@@ -17,6 +17,38 @@ class Mapper(object):
         BuildingConstructionElement.set_namespace(namespace)
 
     def get_mappings(self, group):
+        organization_organization = {
+            "name": "organization_organization",
+            "class": Organization,
+            "type": {
+                "origin": "row_split_column",
+                "operations": [],
+                "sep": ";",
+                "column": "organization_organization",
+                "column_mapping": {
+                    "subject": [],
+                }
+            },
+            "params": {
+                "raw": {
+                    "organizationDivisionType": "Organization"
+                },
+                "column_mapping": {
+                    "subject": "subject",
+                }
+            },
+            "links": {
+                # "main_organization": {
+                #     "type": Bigg.hasSuperOrganization,
+                #     "link": "__all__"
+                # },
+                "building_organization": {
+                    "type": Bigg.hasSubOrganization,
+                    "link": "Num_Ens_Inventari"
+                }
+            }
+        }
+
         department_organization = {
             "name": "department_organization",
             "class": Organization,
@@ -331,7 +363,7 @@ class Mapper(object):
             }
         }
         grouped_modules = {
-            "all": [department_organization, building_organization, building, location_info, cadastral_info,
+            "all": [organization_organization, department_organization, building_organization, building, location_info, cadastral_info,
                     building_space, gross_floor_area, gross_floor_area_under_ground, gross_floor_area_above_ground,
                     building_element],
             "buildings": [building_organization, building, location_info, cadastral_info, building_space,

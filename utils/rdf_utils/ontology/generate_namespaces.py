@@ -48,7 +48,7 @@ class BIGGObjects(object):
     def get_graph(self):
         g = Graph()
         for tt in self.__rdf_type__:
-            g.add((self.subject, RDF.type, tt))
+            g.add((self.subject, RDF.type, eval(tt)))
         for k, v in vars(self).items():
             if k != "subject" and v:
                 if isinstance(v, URIRef):
@@ -121,7 +121,7 @@ def ontology_class_implementations(ontology_name, namespace_uri, onto):
     
     
     for class_d, super_class in class_def_super.items():
-        joined_py_class = [class_d.split("#")[1]] + [x.split("#")[1] for x in super_class]
+        joined_py_class = [f"{ontology_name}.{class_d.split('#')[1]}"] + [f"{ontology_name}.{x.split('#')[1]}" for x in super_class]
         object_str += f"""
         
 class {class_d.split("#")[1]}(BIGGObjects):

@@ -95,13 +95,13 @@ def create_timeseries(session, ts_uri, property_uri, is_regular, is_cumulative, 
                s.{bigg}__timeSeriesStart = CASE 
                    WHEN s.{bigg}__timeSeriesStart[0] < 
                     datetime("{convert(dt_ini).to_pydatetime().isoformat()}") 
-                       THEN s.{bigg}__timeSeriesStart[0] 
+                       THEN s.{bigg}__timeSeriesStart
                        ELSE [datetime("{convert(dt_ini).to_pydatetime().isoformat()}")] 
                    END,
                s.{bigg}__timeSeriesEnd = CASE 
                    WHEN s.{bigg}__timeSeriesEnd[0] >
                     datetime("{convert(dt_end).to_pydatetime().isoformat()}") 
-                       THEN s.{bigg}__timeSeriesEnd[0]
+                       THEN s.{bigg}__timeSeriesEnd
                        ELSE [datetime("{convert(dt_end).to_pydatetime().isoformat()}")]
                    END  
            return s
