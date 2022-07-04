@@ -10,9 +10,9 @@ class Plugin(SourcePlugin):
         gather(arguments, settings=self.settings, config=self.config)
 
     def get_mapper(self, message):
-        if message["collection_type"] == 'static':
+        if message["collection_type"] == 'zone':
             pass
-        elif message["collection_type"] == 'ts':
+        elif message["collection_type"] == 'full_zone':
             pass
 
     def get_kwargs(self, message):
@@ -23,7 +23,5 @@ class Plugin(SourcePlugin):
         }
 
     def get_store_table(self, message):
-        if message["collection_type"] == "static":
-            return f"{self.source_name}_{message['collection_type']}_devices__{message['user']}"
-        elif message["collection_type"] == "ts":
-            return raw_nomenclature(self.source_name, message['collection_type'])
+        return raw_nomenclature(source=self.source_name, mode='static', data_type=message["collection_type"],
+                                user=message['user'])
