@@ -43,7 +43,8 @@ class GMAO:
                            "zonepath": zone_path
                            })
 
-        return requests.post(url=f"{API_URL}/api/zone/apifindzones", headers=self.headers, data=body)
+        return self.check_response(requests.post,
+                                   {"url": f"{API_URL}/api/zone/apifindzones", "headers": self.headers, "data": body})
 
     def get_full_zone(self, id: str, get_criticalities: bool = True, get_managed_scopes: bool = True,
                       get_operations: bool = True,
@@ -62,7 +63,8 @@ class GMAO:
             "services": services,
         })
 
-        return requests.post(url=f"{API_URL}/api/zone/apigetfullzone", headers=self.headers, data=body)
+        return self.check_response(requests.post,
+                                   {"url": f"{API_URL}/api/zone/apigetfullzone", "headers": self.headers, "data": body})
 
     def find_assets(self, modified_from_date: str = None, zone_path: str = None, page_size: int = 100,
                     page_index: int = 0):
@@ -73,12 +75,16 @@ class GMAO:
                 }
 
         body = json.dumps(body)
-        return requests.post(url=f"{API_URL}/api/inventory/apifindassets", headers=self.headers, data=body)
+        return self.check_response(requests.post,
+                                   {"url": f"{API_URL}/api/inventory/apifindassets", "headers": self.headers,
+                                    "data": body})
 
     def get_full_asset(self, id: int, get_feature: str = True):
         body = json.dumps({"id": id, "getfeatures": get_feature})
 
-        return requests.post(url=f"{API_URL}/api/inventory/apigetfullasset", headers=self.headers, data=body)
+        return self.check_response(requests.post,
+                                   {"url": f"{API_URL}/api/inventory/apigetfullasset", "headers": self.headers,
+                                    "data": body})
 
     def find_indicator_values(self, service: List[str], searchtext: str = None, fromdate: str = None,
                               todate: str = None,
@@ -103,7 +109,9 @@ class GMAO:
             })
 
         body = json.dumps(body)
-        return requests.post(url=f"{API_URL}/api/workorder/apifindindicatorvalues", headers=self.headers, data=body)
+        return self.check_response(requests.post,
+                                   {"url": f"{API_URL}/api/workorder/apifindindicatorvalues", "headers": self.headers,
+                                    "data": body})
 
     def find_work_orders(self, service: str, modifiedfromdate: str = None, fromorderdate: str = None,
                          searchtext: str = None, toorderdate: str = None,
@@ -124,7 +132,9 @@ class GMAO:
             "worktypes": worktypes
         })
 
-        return requests.post(url=f"{API_URL}/api/workorder/apifindworkorders", headers=self.headers, data=body)
+        return self.check_response(requests.post,
+                                   {"url": f"{API_URL}/api/workorder/apifindworkorders", "headers": self.headers,
+                                    "data": body})
 
     def get_full_work_order(self, id: str, getelementlist: bool = True, gettrasklist: bool = True,
                             gettimelist: bool = True, getfeatures: bool = True):
@@ -132,7 +142,9 @@ class GMAO:
             {"id": id, "getfeatures": getfeatures, "getelementlist": getelementlist, "gettrasklist": gettrasklist,
              "gettimelist": gettimelist})
 
-        return requests.post(url=f"{API_URL}/api/workorder/apigetfullworkorder", headers=self.headers, data=body)
+        return self.check_response(requests.post,
+                                   {"url": f"{API_URL}/api/workorder/apigetfullworkorder", "headers": self.headers,
+                                    "data": body})
 
     def get_total_pages(self, fn_name: str) -> int:
         fn = getattr(self, fn_name)
