@@ -1,11 +1,15 @@
 import hashlib
-import settings
+from datetime import timedelta
+
 from neo4j import GraphDatabase
 from rdflib import Namespace
-from datetime import timedelta
-from utils.hbase import save_to_hbase
+
+import settings
 from utils.data_transformations import *
-from utils.neo4j import get_device_from_datasource, create_sensor
+
+from utils.hbase import save_to_hbase
+from utils.neo4j import get_devices_from_datasource, create_sensor
+
 from utils.rdf_utils.ontology.namespaces_definition import units, bigg_enums
 
 time_to_timedelta = {
@@ -29,7 +33,7 @@ def harmonize_data(data, **kwargs):
     df["ts"] = pd.to_datetime(df['timestamp'].apply(int), unit="s")
     df["bucket"] = (df['timestamp'].apply(int) // settings.ts_buckets) % settings.buckets
     df['start'] = df['timestamp'].apply(decode_hbase)
-    df['end'] = (df.ts + time_to_timedelta[freq]).astype(int) / 10**9
+    df['end'] = (df.ts + time_to_timedelta[freq]).astype(int) / 10 ** 9
     df['value'] = df['consumptionKWh']
     df['isReal'] = df['obtainMethod'].apply(lambda x: True if x == "Real" else False)
     for device_id, data_group in df.groupby("cups"):
@@ -58,7 +62,9 @@ def harmonize_data(data, **kwargs):
 
             data_group['listKey'] = measurement_id
             device_table = f"harmonized_online_EnergyConsumptionGridElectricity_100_SUM_{freq}_{user}"
-            save_to_hbase(data_group.to_dict(orient="records"), device_table, hbase_conn2,
+            save_to_
+            
+            (data_group.to_dict(orient="records"), device_table, hbase_conn2,
                           [("info", ['end', 'isReal']), ("v", ['value'])],
                           row_fields=['bucket', 'listKey', 'start'])
             period_table = f"harmonized_batch_EnergyConsumptionGridElectricity_100_SUM_{freq}_{user}"
