@@ -86,14 +86,14 @@ class GMAO:
                                    {"url": f"{API_URL}/api/inventory/apigetfullasset", "headers": self.headers,
                                     "data": body})
 
-    def find_indicator_values(self, service: List[str], searchtext: str = None, fromdate: str = None,
+    def find_indicator_values(self, service: List[str] = None, searchtext: str = None, fromdate: str = None,
                               todate: str = None,
                               indicatorid=None,
                               managedscopeid=None, zoneid=None, zonepath=None, page_size: int = 100,
                               page_index: int = 0):
 
         if service is None:
-            service = ['Maintenance', 'Cleaning', 'Gardening']
+            service = ['Maintenance']
 
         body = json.dumps(
             {
@@ -114,10 +114,12 @@ class GMAO:
                                    {"url": f"{API_URL}/api/workorder/apifindindicatorvalues", "headers": self.headers,
                                     "data": body})
 
-    def find_work_orders(self, service: str, modifiedfromdate: str = None, fromorderdate: str = None,
+    def find_work_orders(self, service: str = None, modifiedfromdate: str = None, fromorderdate: str = None,
                          searchtext: str = None, toorderdate: str = None,
                          zoneid: str = None, zonepath: str = None, page_size: int = 100, page_index: int = 0,
                          statusids: List[str] = None, worktypes: List[str] = None):
+        if service is None:
+            service = 'Maintenance'
 
         body = json.dumps({
             "service": service,
@@ -149,18 +151,20 @@ class GMAO:
 
     def get_total_pages(self, fn_name: str) -> int:
         fn = getattr(self, fn_name)
-        return self.check_response(fn, {"page_size": 1,
-                                        "page_index": 0})['totalpages']
+        return fn(page_size=1, page_index=0)['totalpages']
 
     def check_response(self, fn, args=None):
         if args is None:
             args = {}
 
-        res = fn(**args)
-
-        if res.status_code != 200:
-            self.login()
+        try:
             res = fn(**args)
-            raise res.status_code != 200
 
-        return res.json()
+            if res.status_code != 200:
+                self.login()
+                res = fn(**args)
+                raise res.status_code != 200
+
+            return res.json()
+        except HTTPError as ex:
+            print(ex)

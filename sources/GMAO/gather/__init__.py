@@ -5,6 +5,7 @@ from utils.hbase import save_to_hbase
 from utils.kafka import save_to_kafka
 from utils.nomenclature import raw_nomenclature
 from utils.utils import log_string
+import pandas as pd
 
 
 def gather_zones(g: GMAO, config, settings, args):
@@ -42,7 +43,9 @@ def gather_assets(g: GMAO, config, settings, args):
 def gather_indicator_values(g: GMAO, config, settings, args):
     for i in range(g.get_total_pages('find_indicator_values')):
         data = g.find_indicator_values(page_index=i, service=['Maintenance'])['items']
-        save_data(data=data, data_type='indicatorValues', row_keys=['id'],
+        df = pd.json_normalize(data, sep='_')
+        save_data(data=df.to_dict(orient='records'), data_type='indicatorValues',
+                  row_keys=['indicator_id', 'managedscope_id', 'zone_id'],
                   column_map=[("info", "all")],
                   config=config, settings=settings, args=args)
 
@@ -63,10 +66,18 @@ def gather_work_orders(g: GMAO, config, settings, args):
 
 def gather_data(arguments, config, settings):
     g = GMAO(**config['GMAO'])
-    gather_zones(g, config, settings, arguments)
-    gather_assets(g, config, settings, arguments)
-    gather_indicator_values(g, config, settings, arguments)
-    gather_work_orders(g, config, settings, arguments)
+
+    if arguments.type == 'zones' or arguments.type == 'all':
+        gather_zones(g, config, settings, arguments)
+
+    if arguments.type == 'assets' or arguments.type == 'all':
+        gather_assets(g, config, settings, arguments)
+
+    if arguments.type == 'indicators' or arguments.type == 'all':
+        gather_indicator_values(g, config, settings, arguments)
+
+    if arguments.type == 'work_orders' or arguments.type == 'all':
+        gather_work_orders(g, config, settings, arguments)
 
 
 def save_data(data, data_type, row_keys, column_map, config, settings, args):
@@ -105,6 +116,8 @@ def save_data(data, data_type, row_keys, column_map, config, settings, args):
 def gather(arguments, config=None, settings=None):
     ap = argparse.ArgumentParser(description='Gathering data from GMAO')
     ap.add_argument("-st", "--store", required=True, help="Where to store the data", choices=["kafka", "hbase"])
+    ap.add_argument("-t", "--type", required=True, help="Type of data that you would to gather",
+                    choices=["zones", "assets", "indicators", "work_orders", "all"])
     ap.add_argument("--user", "-u", help="The user importing the data", required=True)
     ap.add_argument("--namespace", "-n", help="The subjects namespace uri", required=True)
     args = ap.parse_args(arguments)
