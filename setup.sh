@@ -18,6 +18,10 @@ Match(n:bigg__BuildingSpaceUseType) set n.rdfs__label=[apoc.text.regreplace(apoc
 Match(n:bigg__AreaType) set n.rdfs__label=[apoc.text.regreplace(apoc.text.split(apoc.text.split(n.uri,"#")[1],"\.")[-1], "(.)([A-Z])", "$1 $2")+"@en"];
 Match(n:bigg__EnergyEfficiencyMeasureType) set n.rdfs__label=[apoc.text.regreplace(apoc.text.split(apoc.text.split(n.uri,"#")[1],"\.")[-1], "(.)([A-Z])", "$1 $2")+"@en"];
 
+### General Setup
+echo "weather stations"
+python3 -m set_up.Weather -f data/Weather/cpcat.json -n "https://weather.beegroup-cimne.com#" -c
+
 ### ICAEN ORGANIZATION "https://icaen.cat#"
 # SET UP
 echo "org"
@@ -28,8 +32,7 @@ echo "datadis source"
 python3 -m set_up.DataSources -u "icaen" -n "https://icaen.cat#" -f data/DataSources/datadis.xls -d DatadisSource
 echo "nedgia source"
 python3 -m set_up.DataSources -u "icaen" -n "https://icaen.cat#" -f data/DataSources/nedgia.xls -d NedgiaSource
-echo "weather stations"
-python3 -m set_up.Weather -f data/Weather/cpcat.json -n "https://weather.beegroup-cimne.com#" -c
+
 
 # LOAD DATA HBASE
 echo "GPG"
@@ -40,17 +43,24 @@ echo "Genercat"
 python3 -m harmonizer -so Genercat -u "icaen" -n "https://icaen.cat#" -c
 echo "Datadis static"
 python3 -m harmonizer -so Datadis -n "https://icaen.cat#" -u icaen -t static -c
+
+
+echo "Link WS with Buildings"
+python3 -m set_up.Weather -f data/Weather/cpcat.json -n "https://weather.beegroup-cimne.com#" -u
+
+
+# load TS
 echo "Datadis TS"
 python3 -m harmonizer -so Datadis -n "https://icaen.cat#" -u icaen -t ts -c
 echo "Nedgia"
 python3 -m harmonizer -so Nedgia -n "https://icaen.cat#" -u icaen -tz "Europe/Madrid" -c
-echo "Link WS with Buildings"
-python3 -m set_up.Weather -f data/Weather/cpcat.json -n "https://weather.beegroup-cimne.com#" -u
 
+# General TS
 echo "Weather ts"
 python3 -m harmonizer -so Weather -n "https://weather.beegroup-cimne.com#" -c
 
 # create Device AGGREGATORS
+
 echo "DeviceAggregators datadis"
 python3 -m set_up.DeviceAggregator -t "totalElectricityConsumption"
 echo "DeviceAggregators nedgia"
@@ -64,10 +74,6 @@ python3 -m gather -so Gemweb -st kafka
 python3 -m gather -so Genercat -f data/genercat/data2.xls -u icaen -n "https://icaen.cat#" -st kafka
 python3 -m gather -so Datadis
 python3 -m gather -so Weather
-
-
-
-
 
 
 

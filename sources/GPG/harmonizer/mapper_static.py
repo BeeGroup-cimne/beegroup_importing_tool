@@ -1,4 +1,4 @@
-
+import ast
 from neo4j import GraphDatabase
 from rdflib import Namespace, Graph
 from slugify import slugify
