@@ -13,15 +13,15 @@ class Plugin(SourcePlugin):
         gather(arguments, settings=self.settings, config=self.config)
 
     def get_mapper(self, message):
-        # if message["collection_type"] == 'zones':
-        #     return harmonize_zone
-        #
+        if message["collection_type"] == 'zones':
+            return harmonize_zone
+
         # if message["collection_type"] == 'fullZone':
         #     return harmonize_full_zone
-
-        if message["collection_type"] == 'assets':
-            return harmonize_assets
-
+        #
+        # if message["collection_type"] == 'assets':
+        #     return harmonize_assets
+        #
         # if message["collection_type"] == 'fullAsset':
         #     return harmonize_full_assets
         #

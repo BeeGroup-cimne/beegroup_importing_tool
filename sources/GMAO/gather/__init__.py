@@ -1,6 +1,6 @@
 import argparse
 
-from utils.gmao import GMAO
+from sources.GMAO.gmao import GMAO
 from utils.hbase import save_to_hbase
 from utils.kafka import save_to_kafka
 from utils.nomenclature import raw_nomenclature

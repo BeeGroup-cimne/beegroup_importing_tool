@@ -1,6 +1,10 @@
 import pandas as pd
+from rdflib import Namespace
 
+from sources.GMAO.harmonizer.mapper import Mapper
 from utils.data_transformations import building_space_subject, decode_hbase
+from utils.rdf_utils.rdf_functions import generate_rdf
+from utils.rdf_utils.save_rdf import save_rdf_with_source
 
 
 def harmonize_zone(data, **kwargs):
@@ -27,7 +31,23 @@ def harmonize_zone(data, **kwargs):
     df = pd.DataFrame(data)
     df.apply(decode_hbase)
     df['buildingSpace_subject'] = df['id'].apply(building_space_subject)
-    # TODO: BuildingSpace (subSpace from full_zone)
+
+    save_df(df, **kwargs)
+
+
+def save_df(df, **kwargs):
+    namespace = kwargs['namespace']
+    config = kwargs['config']
+    n = Namespace(namespace)
+
+    mapper = Mapper(config['source'], n)
+    g = generate_rdf(mapper.get_mappings("all"), df)
+
+    g.serialize('output.ttl', format="ttl")
+
+    save_rdf_with_source(g, config['source'], config['neo4j'])
+
+    save_rdf_with_source(g, config['source'], config['neo4j'])
 
 
 def harmonize_full_zone(data, **kwargs):

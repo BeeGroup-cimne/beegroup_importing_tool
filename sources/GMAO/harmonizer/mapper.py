@@ -1,8 +1,7 @@
 from utils.rdf_utils.ontology.bigg_classes import BuildingSpace
-from utils.rdf_utils.ontology.namespaces_definition import Bigg
 
 
-class Mapping(object):
+class Mapper(object):
 
     def __init__(self, source, namespace):
         self.source = source
@@ -20,18 +19,22 @@ class Mapping(object):
                     "subject": {
                         "key": "building_space_subject",
                         "operations": []
+                    },
+                    "buildingSpaceIDFromOrganization": {
+                        "key": "id",
+                        "operations": []
+                    },
+                    "buildingSpaceName": {
+                        "key": "name",
+                        "operations": []
+                    },
+                    "label": {
+                        "key": "zonepath",
+                        "operations": []
                     }
                 }
             },
             "links": {
-                "device": {
-                    "type": Bigg.isObservedByDevice,
-                    "link": "CUPS"
-                },
-                "utility_point": {
-                    "type": Bigg.hasUtilityPointOfDelivery,
-                    "link": "CUPS"
-                }
             }
         }
 
