@@ -55,7 +55,7 @@ def gather_work_orders(g: GMAO, config, settings, args):
         data = g.find_work_orders(page_index=i, service='Maintenance')['items']
         for work_order in data:
             full_work_order = g.get_full_work_order(id=work_order['id'])
-            save_data(data=[full_work_order], data_type='fullWorkOrders', row_keys=['id'],
+            save_data(data=[full_work_order], data_type='fullWorkOrder', row_keys=['id'],
                       column_map=[("info", "all")],
                       config=config, settings=settings, args=args)
 
