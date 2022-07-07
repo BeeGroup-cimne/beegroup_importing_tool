@@ -17,9 +17,9 @@ bigg = settings.namespace_mappings['bigg']
 
 def clean_dataframe(df, source):
     df['department_organization'] = df["Departments"].apply(lambda x: ";".join([slugify(x1) for x1 in x.split(";")]))
-    df['building_organization'] = df['Unique Code'].apply(lambda x: x.replace("-", "_")).apply(building_department_subject)
-    df['building'] = df['Unique Code'].apply(lambda x: x.replace("-", "_")).apply(building_subject)
-    df['location_info'] = df['Unique Code'].apply(lambda x: x.replace("-", "_")).apply(location_info_subject)
+    df['building_organization'] = df['Unique Code'].apply(building_department_subject)
+    df['building'] = df['Unique Code'].apply(building_subject)
+    df['location_info'] = df['Unique Code'].apply(location_info_subject)
     country_dic = Cache.country_dic
     country_fuzz = partial(fuzzy_dictionary_match,
                             map_dict=fuzz_params(country_dic, ['ns1:countryCode']),
@@ -51,21 +51,17 @@ def clean_dataframe(df, source):
     city_map = {k: municipality_fuzz(k) for k in unique_city}
     df.loc[:, 'hasAddressCity'] = df['Administration Level 3'].map(city_map)
     df['Cadastral References'] = df['Cadastral References'].apply(validate_ref_cadastral)
-    df['building_space'] = df['Unique Code'].apply(lambda x: x.replace("-", "_")).apply(building_space_subject)
+    df['building_space'] = df['Unique Code'].apply(building_space_subject)
     building_type_taxonomy = get_taxonomy_mapping(
         taxonomy_file="sources/BIS/harmonizer/BuildingUseTypeTaxonomyInfraestructures.xls",
         default="Other")
     df['hasBuildingSpaceUseType'] = df['Use Type'].map(building_type_taxonomy). \
         apply(partial(to_object_property, namespace=bigg_enums))
-    df['gross_floor_area'] = df['Unique Code'].apply(lambda x: x.replace("-", "_")).\
-        apply(partial(gross_area_subject, a_source=source))
-    df['gross_floor_area_above_ground'] = df['Unique Code'].apply(lambda x: x.replace("-", "_")).\
-        apply(partial(gross_area_subject_above, a_source=source))
-    df['gross_floor_area_under_ground'] = df['Unique Code'].apply(lambda x: x.replace("-", "_")).\
-        apply(partial(gross_area_subject_under, a_source=source))
+    df['gross_floor_area'] = df['Unique Code'].apply(partial(gross_area_subject, a_source=source))
+    df['gross_floor_area_above_ground'] = df['Unique Code'].apply(partial(gross_area_subject_above, a_source=source))
+    df['gross_floor_area_under_ground'] = df['Unique Code'].apply(partial(gross_area_subject_under, a_source=source))
 
-    df['building_element'] = df['Unique Code'].apply(lambda x: x.replace("-", "_")).\
-        apply(construction_element_subject)
+    df['building_element'] = df['Unique Code'].apply(construction_element_subject)
 
 
 def harmonize_data(data, **kwargs):
