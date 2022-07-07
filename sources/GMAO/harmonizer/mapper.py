@@ -17,19 +17,19 @@ class Mapper(object):
             "params": {
                 "mapping": {
                     "subject": {
-                        "key": "building_space_subject",
+                        "key": "buildingSpace_subject",
                         "operations": []
                     },
                     "buildingSpaceIDFromOrganization": {
-                        "key": "id",
+                        "key": "zonepath",
                         "operations": []
                     },
                     "buildingSpaceName": {
-                        "key": "building_space",
+                        "key": "name",
                         "operations": []
                     },
-                    "label": {
-                        "key": "name",
+                    "hasSubSpace": {
+                        "key": "hasSubSpace",
                         "operations": []
                     }
                 }

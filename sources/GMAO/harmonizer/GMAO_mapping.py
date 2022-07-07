@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from rdflib import Namespace
 
@@ -11,8 +12,8 @@ def split_zone_name(value):
     spl = value.split('.')
     building_type = spl[0]
     building = spl[1]
-    space = '.'.join(spl[1:]) if len(spl[1:]) - 1 > 0 else spl[1]
-    parent_space = '.'.join(spl[1:-1]) if len(spl[1:]) - 1 > 0 else None
+    space = building if spl[2] == '' else '.'.join(spl[1:])
+    parent_space = '.'.join(spl[1:-1])
     return f"{building_type},{building},{space},{parent_space}"
 
 
@@ -22,13 +23,17 @@ def harmonize_full_zone(data, **kwargs):
     df.drop(['typology', 'criticalities', 'managedscopes', 'operations', 'featuresvalues'], axis=1, inplace=True)
     df[['building_type', 'building_id', 'building_space', 'building_space_parent']] = df['zonepath'].apply(
         split_zone_name).str.split(',', expand=True)
-    df['buildingSpace_subject'] = df['id'].apply(building_space_subject)
-    # hasBuildingSpaceUseType
-    # Location
+
+    df['buildingSpace_subject'] = df['building_space'].apply(building_space_subject)
+    df['hasSubSpace'] = df.apply(
+        lambda x: building_space_subject(x['building_space_parent']) if x['building_space'] != x[
+            'building_id'] else np.NaN, axis=1)
+
+    # TODO: hasBuildingSpaceUseType
 
     save_df(df, 'zone', **kwargs)
     data = [{'id': 'be5a976d-f260-4789-a5e2-0e6c6e00e2d9', 'parentid': 'e0b42485-0f81-4356-a796-d8193d5c4453',
-             'zonepath': 'BEN.BSV-06359.P1', 'name': 'Residència Roger de Llúria',
+             'zonepath': 'BEN.BSV-06359.', 'name': 'Residència Roger de Llúria',
              'typology': {'id': '67a7cc22-b1e2-4004-b389-36a9883e2bd9', 'name': 'Edifici 1', 'isselectable': False},
              'criticalities': [], 'managedscopes': [
             {'service': 'Maintenance', 'id': 'f74d92da-41fe-42a0-8a0b-e60a69905621', 'name': 'Nou Lot 12',
