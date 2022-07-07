@@ -139,3 +139,7 @@ def validate_ref_cadastral(value):
         if match:
             valid_ref.append(match[0])
     return ";".join(valid_ref)
+
+
+def maintenance_subject(value):
+    return f"MAINTENANCE-ACTION-{value}"

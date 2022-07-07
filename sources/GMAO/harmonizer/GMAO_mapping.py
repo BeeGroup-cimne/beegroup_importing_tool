@@ -3,7 +3,7 @@ import pandas as pd
 from rdflib import Namespace
 
 from sources.GMAO.harmonizer.mapper import Mapper
-from utils.data_transformations import decode_hbase, building_space_subject, to_object_property
+from utils.data_transformations import decode_hbase, building_space_subject, to_object_property, maintenance_subject
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums
 from utils.rdf_utils.rdf_functions import generate_rdf
 
@@ -18,6 +18,8 @@ def split_zone_name(value):
 
 
 def harmonize_full_zone(data, **kwargs):
+    print(kwargs)
+
     df = pd.DataFrame(data)
     df = df.applymap(decode_hbase)
     df.drop(['typology', 'criticalities', 'managedscopes', 'operations', 'featuresvalues'], axis=1, inplace=True)
@@ -34,20 +36,17 @@ def harmonize_full_zone(data, **kwargs):
     save_df(df, 'zones', **kwargs)
 
 
-def harmonize_assets(data, **kwargs):
-    print(data)
+# TODO: maintenance action
+# TODO: element
 
 
-def harmonize_full_assets(data, **kwargs): pass
+def harmonize_full_work_order(data, **kwargs):
+    df = pd.DataFrame(data)
+    df = df.applymap(decode_hbase)
 
+    df['subject'] = df['ordernumber'].apply(maintenance_subject)
 
-def harmonize_indicator_values(data, **kwargs): pass
-
-
-def harmonize_work_orders(data, **kwargs): pass
-
-
-def harmonize_full_work_order(data, **kwargs): pass
+    save_df(df, 'work_order', **kwargs)
 
 
 def save_df(df, mapping_type, **kwargs):
