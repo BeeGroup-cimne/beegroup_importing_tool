@@ -4,14 +4,18 @@ from sources.Bulgaria.constants import eem_headers, enum_energy_saving_type, \
     enum_energy_efficiency_measurement_type
 from utils.data_transformations import to_object_property
 from utils.rdf_utils.ontology.bigg_classes import Organization, Building, LocationInfo, BuildingSpace, Area, \
-    EnergyPerformanceCertificate, BuildingSpaceUseType, AreaType, AreaUnitOfMeasurement, Element, Device, \
-    EnergyEfficiencyMeasure, Sensor, EnergySaving
+    EnergyPerformanceCertificate, BuildingSpaceUseType, AreaType, AreaUnitOfMeasurement, Device, \
+    EnergyEfficiencyMeasure, Sensor, EnergySaving, BuildingConstructionElement, RenovationProject
 from utils.rdf_utils.ontology.namespaces_definition import Bigg, units, bigg_enums, countries
 
 
 class Mapper(object):
     def __init__(self, source, namespace):
         self.source = source
+        self.eem_list = None
+        self.eem_start_column = None
+        self.saving_list = None
+        self.saving_start_column = None
         Organization.set_namespace(namespace)
         Building.set_namespace(namespace)
         LocationInfo.set_namespace(namespace)
@@ -21,11 +25,18 @@ class Mapper(object):
         EnergyPerformanceCertificate.set_namespace(namespace)
         AreaType.set_namespace(namespace)
         AreaUnitOfMeasurement.set_namespace(namespace)
-        Element.set_namespace(namespace)
+        BuildingConstructionElement.set_namespace(namespace)
         Device.set_namespace(namespace)
         EnergyEfficiencyMeasure.set_namespace(namespace)
         Sensor.set_namespace(namespace)
         EnergySaving.set_namespace(namespace)
+        RenovationProject.set_namespace(namespace)
+
+    def select_chunk(self, eem_list, eem_start_column, saving_list, saving_start_column):
+        self.eem_list = eem_list
+        self.eem_start_column = eem_start_column
+        self.saving_list = saving_list
+        self.saving_start_column = saving_start_column
 
     def generate_energy_efficiency_measurement(self, column, links):
         return {
@@ -38,9 +49,7 @@ class Mapper(object):
                 "raw": {
                     "hasEnergyEfficiencyMeasureInvestmentCurrency": units["BulgarianLev"],
                     "energyEfficiencyMeasureCurrencyExchangeRate": "0.51",
-                    "hasEnergyEfficiencyMeasureType": to_object_property(
-                        enum_energy_efficiency_measurement_type[column],
-                        namespace=bigg_enums),
+                    "hasEnergyEfficiencyMeasureType": bigg_enums[enum_energy_efficiency_measurement_type[column]],
                 },
                 "mapping": {
                     "subject": {
@@ -57,9 +66,6 @@ class Mapper(object):
         }
 
     def generate_energy_saving(self, column, subcolumn, energy_saving_type, measurement_type):
-        if energy_saving_type != 'OtherSavings':
-            energy_saving_type = to_object_property(energy_saving_type, namespace=bigg_enums)
-
         return {
             "name": f"energy_saving_{column}_{subcolumn}",
             "class": EnergySaving,
@@ -68,7 +74,7 @@ class Mapper(object):
             },
             "params": {
                 "raw": {
-                    "hasEnergySavingType": energy_saving_type
+                    "hasEnergySavingType": bigg_enums[energy_saving_type]
                 },
                 "mapping": {
                     "subject": {
@@ -92,6 +98,7 @@ class Mapper(object):
         }
 
     def get_mappings(self, group):
+        # building info mapping
         organization = {
             "name": "organization",
             "class": Organization,
@@ -100,9 +107,8 @@ class Mapper(object):
             },
             "params": {
                 "raw": {
-                    "subject": slugify("bulgaria"),
-                    "organizationName": self.source,
-                    "organizationDivisionType": "Department"
+                    "subject": "bulgaria",
+                    "organizationName": "Bulgaria"
                 }
             },
             "links": {
@@ -175,11 +181,15 @@ class Mapper(object):
                 },
                 "energy_performance_certificate_before": {
                     "type": Bigg.hasEPC,
-                    "link": "epc_before_subject"
+                    "link": "subject"
                 },
                 "energy_performance_certificate_after": {
                     "type": Bigg.hasEPC,
-                    "link": "epc_after_subject"
+                    "link": "subject"
+                },
+                "project": {
+                    "type": Bigg.hasProject,
+                    "link": "subject"
                 }
             }
         }
@@ -192,16 +202,15 @@ class Mapper(object):
             },
             "params": {
                 "raw": {
-                    "hasAddressCountry":
-                        to_object_property("732800/", namespace=countries)
+                    "hasAddressCountry": countries["732800/"]
                 },
                 "mapping": {
                     "subject": {
                         "key": "location_subject",
                         "operations": []
                     },
-                    "hasAddressCity": {
-                        "key": "municipality",
+                    "hasAddressProvince": {
+                        "key": "hasAddressProvince",
                         "operations": []
                     }
                 }
@@ -224,7 +233,7 @@ class Mapper(object):
                         "key": "epc_date_before",
                         "operations": []
                     },
-                    "energyPerformanceClass": {
+                    "energyPerformanceCertificateClass": {
                         "key": "epc_energy_class_before",
                         "operations": []
                     },
@@ -252,12 +261,45 @@ class Mapper(object):
                         "key": "epc_date",
                         "operations": []
                     },
-                    "energyPerformanceClass": {
+                    "energyPerformanceCertificateClass": {
                         "key": "epc_energy_class_after",
                         "operations": []
                     }
                 }
             }
+        }
+
+        project = {
+            "name": "project",
+            "class": RenovationProject,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "raw": {
+                    "hasProjectInvestmentCurrency": units.BulgarianLev
+                },
+                "mapping": {
+                    "subject": {
+                        "key": "project_subject",
+                        "operations": []
+                    },
+                    "projectIDFromOrganization": {
+                        "key": "subject",
+                        "operations": []
+                    },
+                    "projectStartDate": {
+                        "key": "epc_date",
+                        "operations": []
+                    },
+                    "projectInvestment": {
+                        "key": "total_savings_Investments",
+                        "operations": []
+                    },
+
+                }
+            },
+            "links": {}
         }
 
         building_space = {
@@ -276,7 +318,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "hasBuildingSpaceUseType": {
-                        "key": "type_of_building",
+                        "key": "buildingSpaceUseType",
                         "operations": []
                     },
                 }
@@ -287,10 +329,6 @@ class Mapper(object):
                     "link": "subject"
                 },
                 "element": {
-                    "type": Bigg.isAssociatedWithElement,
-                    "link": "subject"
-                },
-                "hasBuildingSpaceUseType": {
                     "type": Bigg.isAssociatedWithElement,
                     "link": "subject"
                 }
@@ -305,8 +343,8 @@ class Mapper(object):
             },
             "params": {
                 "raw": {
-                    "hasAreaType": to_object_property("GrossFloorAreaAboveGround", namespace=bigg_enums),
-                    "hasAreaUnitOfMeasurement": to_object_property("M2", namespace=units)
+                    "hasAreaType": bigg_enums["GrossFloorAreaAboveGround"],
+                    "hasAreaUnitOfMeasurement": units["M2"]
                 },
                 "mapping": {
                     "subject": {
@@ -323,17 +361,19 @@ class Mapper(object):
 
         element = {
             "name": "element",
-            "class": Element,
+            "class": BuildingConstructionElement,
             "type": {
                 "origin": "row"
             },
             "params": {
+                "raw": {
+                    "hasBuildingConstructionElementType": bigg_enums["OtherBuildingConstructionElement"],
+                },
                 "mapping": {
                     "subject": {
                         "key": "element_subject",
                         "operations": []
-                    },
-
+                    }
                 }
             },
             "links": {
@@ -343,12 +383,6 @@ class Mapper(object):
                 }
             }
         }
-
-        for i in range(len(enum_energy_efficiency_measurement_type)):
-            element['links'].update({f"eem_{i}": {
-                "type": Bigg.isAffectedByMeasure,
-                "link": "subject"}})
-
         device = {
             "name": "device",
             "class": Device,
@@ -365,25 +399,93 @@ class Mapper(object):
             }
         }
 
+        # eem_savings mapping
         energy_saving_list = []
         eem_list = []
+        if self.eem_list:
 
-        for i in range(len(enum_energy_efficiency_measurement_type)):
-            links = {}
-            for j in range(len(enum_energy_saving_type)):
-                energy_saving_list.append(self.generate_energy_saving(column=i, subcolumn=j,
-                                                                      energy_saving_type=enum_energy_saving_type[j],
-                                                                      measurement_type=eem_headers[j]))
+            for i, eem_type in enumerate(self.eem_list):
+                list_i = i + self.eem_start_column
+                links = {}
+                for j, saving_type in enumerate(self.saving_list):
+                    list_j = j + self.saving_start_column
+                    energy_saving_list.append(self.generate_energy_saving(column=list_i, subcolumn=list_j,
+                                                                          energy_saving_type=saving_type,
+                                                                          measurement_type=eem_headers[list_j]))
+                    links.update({f"energy_saving_{list_i}_{list_j}": {"type": Bigg.producesSaving, "link": "subject"}})
+                eem_list.append(self.generate_energy_efficiency_measurement(column=list_i, links=links))
 
-                links.update({f"energy_saving_{i}_{j}": {"type": Bigg.producesSaving, "link": "subject"}})
-            eem_list.append(self.generate_energy_efficiency_measurement(column=i, links=links))
+            for i in range(len(self.eem_list)):
+                list_i = i + self.eem_start_column
+                element['links'].update({f"eem_{list_i}": {
+                    "type": Bigg.isAffectedByMeasure,
+                    "link": "subject"}})
+
+        # project linking and savings
+        eem_links_only = [{
+            "name": f"eem_{i}",
+            "class": EnergyEfficiencyMeasure,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": f"eem_{i}_subject",
+                        "operations": []
+                    }
+                }
+            }
+        } for i in range(len(enum_energy_efficiency_measurement_type))
+        ]
+        project_energy_saving = [{
+            "name": f"project_energy_saving_{enum_energy_saving_type[i]}",
+            "class": EnergySaving,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "raw": {
+                    "hasEnergySavingType": bigg_enums[enum_energy_saving_type[i]]
+                },
+                "mapping": {
+                    "subject": {
+                        "key": f"project_energy_saving_subject_{enum_energy_saving_type[i]}",
+                        "operations": []
+                    },
+                    "energySavingValue": {
+                        "key": f"total_savings_{eem_headers[i]}",
+                        "operations": []
+                    },
+                    "energySavingStartDate": {
+                        "key": f"epc_date_before",
+                        "operations": []
+                    },
+                    "energySavingEndDate": {
+                        "key": f"epc_date",
+                        "operations": []
+                    }
+                }
+            }
+        } for i in range(len(enum_energy_saving_type))]
+
+        for i, eem_type in enumerate(enum_energy_efficiency_measurement_type):
+            project['links'].update({f"eem_{i}": {
+                "type": Bigg.includesMeasure,
+                "link": "subject"}})
+
+        for saving_type in enum_energy_saving_type:
+            project['links'].update({
+                f"project_energy_saving_{saving_type}": {
+                    "type": Bigg.producesSaving,
+                    "link": "subject"}})
+
 
         grouped_modules = {
-            "all": [organization, building_organization, buildings, building_space,
-                    gross_floor_area, location_info, energy_performance_certificate_before,
-                    energy_performance_certificate_after, element, device
-                    ] + energy_saving_list + eem_list,
-            "test": energy_saving_list + eem_list
+            "building_info": [organization, building_organization, buildings, building_space,
+                              gross_floor_area, location_info, energy_performance_certificate_before,
+                              energy_performance_certificate_after, element, device, project],
+            "eem_savings": energy_saving_list + eem_list + [element],
+            "project_info": [project] + eem_links_only + project_energy_saving,
         }
-
         return grouped_modules[group]

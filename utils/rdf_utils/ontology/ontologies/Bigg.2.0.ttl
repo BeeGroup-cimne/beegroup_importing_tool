@@ -1380,32 +1380,32 @@ bigg:energyPerformanceCertificateReferenceNumber a owl:DatatypeProperty ;
     rdfs:domain bigg:EnergyPerformanceCertificate ;
     rdfs:range xsd:string .
 
-bigg:energyPerformanceCertificationMotivation a owl:DatatypeProperty ;
+bigg:energyPerformanceCertificateCertificationMotivation a owl:DatatypeProperty ;
     rdfs:label "energy performance certification motivation" ;
     rdfs:domain bigg:EnergyPerformanceCertificate ;
     rdfs:range xsd:string .
 
-bigg:energyPerformanceCertificationTool a owl:DatatypeProperty ;
+bigg:energyPerformanceCertificateCertificationTool a owl:DatatypeProperty ;
     rdfs:label "energy performance certification tool" ;
     rdfs:domain bigg:EnergyPerformanceCertificate ;
     rdfs:range xsd:string .
 
-bigg:energyPerformanceClass a owl:DatatypeProperty ;
+bigg:energyPerformanceCertificateClass a owl:DatatypeProperty ;
     rdfs:label "energy performance class" ;
     rdfs:domain bigg:EnergyPerformanceCertificate ;
     rdfs:range xsd:string .
 
-bigg:energyPerformanceDateOfAssessment a owl:DatatypeProperty ;
+bigg:energyPerformanceCertificateDateOfAssessment a owl:DatatypeProperty ;
     rdfs:label "energy performance date of assessment" ;
     rdfs:domain bigg:EnergyPerformanceCertificate ;
     rdfs:range xsd:date .
 
-bigg:energyPerformanceDateOfCertification a owl:DatatypeProperty ;
+bigg:energyPerformanceCertificateDateOfCertification a owl:DatatypeProperty ;
     rdfs:label "energy performance date of certification" ;
     rdfs:domain bigg:EnergyPerformanceCertificate ;
     rdfs:range xsd:date .
 
-bigg:energyPerformanceProcedureType a owl:DatatypeProperty ;
+bigg:energyPerformanceCertificateProcedureType a owl:DatatypeProperty ;
     rdfs:label "energy performance procedure type" ;
     rdfs:domain bigg:EnergyPerformanceCertificate ;
     rdfs:range xsd:string .

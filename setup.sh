@@ -43,6 +43,7 @@ echo "Genercat"
 python3 -m harmonizer -so Genercat -u "icaen" -n "https://icaen.cat#" -c
 echo "Datadis static"
 python3 -m harmonizer -so Datadis -n "https://icaen.cat#" -u icaen -t static -c
+python3 -m harmonizer -so CEEC3X -n "https://icaen.cat#" -u icaen -c
 
 
 echo "Link WS with Buildings"
@@ -87,3 +88,12 @@ python3 -m harmonizer -so BIS -u "icat" -n "https://infraestructures.cat#" -c
 # LOAD DATA KAFKA
 
 python3 -m gather -so BIS -f "data/BIS/BIS-infraestructures.xls" -u "icat" -n "https://infraestructures.cat#" -st kafka
+
+
+# BULGARIA ORGANIZATION "https://bulgaria.bg#"
+# SET UP
+python3 -m set_up.Organizations -f data/Organizations/bulgaria-organizations.xls -name "Bulgaria" -u "bulgaria" -n "https://bulgaria.bg#"
+
+# LOAD DATA HBASE
+
+python3 -m harmonizer -so Bulgaria -u "bulgaria" -n "https://bulgaria.bg#" -c

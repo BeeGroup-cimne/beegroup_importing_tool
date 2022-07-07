@@ -6,7 +6,8 @@ import openpyxl
 import pandas as pd
 
 import utils
-from sources.Bulgaria.gather.gather_details import gather_contacts, gather_building_description, gather_consumption, \
+from utils.nomenclature import RAW_MODE
+from .gather_details import gather_contacts, gather_building_description, gather_consumption, \
     gather_savings, transform_data
 
 EXCEL_COLUMNS = ["municipality", "type_of_building", "gross_floor_area", "epc_date", "epc_energy_class_before",
@@ -34,23 +35,21 @@ EXCEL_COLUMNS.append("Energy savings")
 def gather_data_summary(config, settings, args):
     for file in os.listdir(args.file):
         if file.endswith('.xlsx'):
-            path = args.file + file
+            path = f"{args.file}/{file}"
             df = pd.read_excel(path, skiprows=3, sheet_name="List_residential_pilots")
 
-            aux = {}
-            for i in range(len(df.columns)):
-                aux.update({df.columns[i]: EXCEL_COLUMNS[i]})
+            aux = {df.columns[i]: EXCEL_COLUMNS[i] for i in range(len(df.columns)) if i < len(EXCEL_COLUMNS)}
             df.rename(columns=aux, inplace=True)
             df['filename'] = hashlib.sha512(file.encode()).hexdigest()
             df['id'] = df.index
 
-            save_data(data=df.to_dict(orient='records'), data_type="static",
+            save_data(data=df.to_dict(orient='records'), data_type="BuildingInfo",
                       row_keys=["filename", "id"],
                       column_map=[("info", "all")], config=config, settings=settings, args=args)
 
-            save_data(data=df.to_dict(orient='records'), data_type="ts",
-                      row_keys=["filename", "id"],
-                      column_map=[("info", "all")], config=config, settings=settings, args=args)
+            # save_data(data=df.to_dict(orient='records'), data_type="Consumption",
+            #           row_keys=["filename", "id"],
+            #           column_map=[("info", "all")], config=config, settings=settings, args=args)
 
 
 def gather_data_detail(config, settings, args):
@@ -137,7 +136,8 @@ def save_data(data, data_type, row_keys, column_map, config, settings, args):
     elif args.store == "hbase":
 
         try:
-            h_table_name = f"raw_{config['data_sources'][config['source']]['hbase_table']}_static_{data_type}__{args.user}"
+            h_table_name = utils.nomenclature.raw_nomenclature("Bulgaria", RAW_MODE.STATIC, data_type=data_type,
+                                                               frequency="", user=args.user)
 
             utils.hbase.save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
                                       row_fields=row_keys)
@@ -148,7 +148,7 @@ def save_data(data, data_type, row_keys, column_map, config, settings, args):
 
 
 def gather(arguments, settings, config):
-    ap = argparse.ArgumentParser(description='Gathering data from Prilojenie')
+    ap = argparse.ArgumentParser(description='Gathering data from Bulgaria')
     ap.add_argument("-st", "--store", required=True, help="Where to store the data", choices=["kafka", "hbase"])
     ap.add_argument("-t", "--type", required=True, help="Type of data", choices=["detail", "summary"])
     ap.add_argument("--user", "-u", help="The user importing the data", required=True)

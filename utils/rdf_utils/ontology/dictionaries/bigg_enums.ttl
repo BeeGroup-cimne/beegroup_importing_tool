@@ -2570,6 +2570,9 @@ bigg:AdjustedRenewableElectricitySaving a bigg:EnergySavingType, skos:Concept;
 bigg:AdjustedRenewableHeatSaving a bigg:EnergySavingType, skos:Concept;
   rdfs:comment "Annual energy savings over produced heat from renewable sources adjusted for weather/season/production, kWh/year" .
 
+bigg:OtherSavings a bigg:EnergySavingType, skos:Concept;
+  rdfs:comment "Annual energy savings on unknown or not listed sources, kWh/year" .
+
 bigg:ThirdParty a bigg:EnergySavingVerificationSource, skos:Concept .
 
 bigg:ESCO a bigg:EnergySavingVerificationSource, skos:Concept .

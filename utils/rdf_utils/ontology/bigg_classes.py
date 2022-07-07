@@ -1079,7 +1079,7 @@ class EnergyPerformanceCertificateAdditionalInfo(BIGGObjects):
 class EnergyPerformanceCertificate(BIGGObjects):
     __rdf_type__ = ['Bigg.EnergyPerformanceCertificate', 'Bigg.Thing']
 
-    def __init__(self, subject, comment=None,label=None,C02EmissionsClass=None,annualC02Emissions=None,annualCoolingCO2Emissions=None,annualCoolingEnergyDemand=None,annualCoolingPrimaryEnergyConsumption=None,annualEnergyCost=None,annualFinalEnergyConsumption=None,annualHeatingCO2Emissions=None,annualHeatingEnergyDemand=None,annualHeatingPrimaryEnergyConsumption=None,annualHotWaterCO2Emissions=None,annualHotWaterPrimaryEnergyConsumption=None,annualLightingCO2Emissions=None,annualPrimaryEnergyConsumption=None,coolingCO2EmissionsClass=None,coolingEnergyDemandClass=None,coolingPrimaryEnergyClass=None,energyPerformanceCertificateReferenceNumber=None,energyPerformanceCertificationMotivation=None,energyPerformanceCertificationTool=None,energyPerformanceClass=None,energyPerformanceDateOfAssessment=None,energyPerformanceDateOfCertification=None,energyPerformanceProcedureType=None,heatingCO2EmissionsClass=None,heatingEnergyDemandClass=None,heatingPrimaryEnergyClass=None,hotWaterCO2EmissionsClass=None,hotWaterPrimaryEnergyClass=None,lightingCO2EmissionsClass=None,lightingPrimaryEnergyClass=None,lightingPrimaryEnergyConsumption=None,hasAdditionalInfo=None):
+    def __init__(self, subject, comment=None,label=None,C02EmissionsClass=None,annualC02Emissions=None,annualCoolingCO2Emissions=None,annualCoolingEnergyDemand=None,annualCoolingPrimaryEnergyConsumption=None,annualEnergyCost=None,annualFinalEnergyConsumption=None,annualHeatingCO2Emissions=None,annualHeatingEnergyDemand=None,annualHeatingPrimaryEnergyConsumption=None,annualHotWaterCO2Emissions=None,annualHotWaterPrimaryEnergyConsumption=None,annualLightingCO2Emissions=None,annualPrimaryEnergyConsumption=None,coolingCO2EmissionsClass=None,coolingEnergyDemandClass=None,coolingPrimaryEnergyClass=None,energyPerformanceCertificateReferenceNumber=None,energyPerformanceCertificateCertificationMotivation=None,energyPerformanceCertificateCertificationTool=None,energyPerformanceCertificateClass=None,energyPerformanceCertificateDateOfAssessment=None,energyPerformanceCertificateDateOfCertification=None,energyPerformanceCertificateProcedureType=None,heatingCO2EmissionsClass=None,heatingEnergyDemandClass=None,heatingPrimaryEnergyClass=None,hotWaterCO2EmissionsClass=None,hotWaterPrimaryEnergyClass=None,lightingCO2EmissionsClass=None,lightingPrimaryEnergyClass=None,lightingPrimaryEnergyConsumption=None,hasAdditionalInfo=None):
         super().__init__(subject)
         self.comment = comment
         self.label = label
@@ -1101,12 +1101,12 @@ class EnergyPerformanceCertificate(BIGGObjects):
         self.coolingEnergyDemandClass = coolingEnergyDemandClass
         self.coolingPrimaryEnergyClass = coolingPrimaryEnergyClass
         self.energyPerformanceCertificateReferenceNumber = energyPerformanceCertificateReferenceNumber
-        self.energyPerformanceCertificationMotivation = energyPerformanceCertificationMotivation
-        self.energyPerformanceCertificationTool = energyPerformanceCertificationTool
-        self.energyPerformanceClass = energyPerformanceClass
-        self.energyPerformanceDateOfAssessment = energyPerformanceDateOfAssessment
-        self.energyPerformanceDateOfCertification = energyPerformanceDateOfCertification
-        self.energyPerformanceProcedureType = energyPerformanceProcedureType
+        self.energyPerformanceCertificateCertificationMotivation = energyPerformanceCertificateCertificationMotivation
+        self.energyPerformanceCertificateCertificationTool = energyPerformanceCertificateCertificationTool
+        self.energyPerformanceCertificateClass = energyPerformanceCertificateClass
+        self.energyPerformanceCertificateDateOfAssessment = energyPerformanceCertificateDateOfAssessment
+        self.energyPerformanceCertificateDateOfCertification = energyPerformanceCertificateDateOfCertification
+        self.energyPerformanceCertificateProcedureType = energyPerformanceCertificateProcedureType
         self.heatingCO2EmissionsClass = heatingCO2EmissionsClass
         self.heatingEnergyDemandClass = heatingEnergyDemandClass
         self.heatingPrimaryEnergyClass = heatingPrimaryEnergyClass

@@ -113,8 +113,16 @@ def eem_subject(key):
     return f"EEM-{key}"
 
 
+def energy_saving_subject(key):
+    return f"EnergySaving-{key}"
+
+
 def device_subject(key, source):
     return f"DEVICE-{source}-{key}"
+
+
+def project_subject(key):
+    return f"PROJECT-{key}"
 
 
 def sensor_subject(device_source, device_key, measured_property, sensor_type, freq):
