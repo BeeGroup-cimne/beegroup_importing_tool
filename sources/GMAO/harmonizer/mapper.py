@@ -21,7 +21,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "buildingSpaceIDFromOrganization": {
-                        "key": "zonepath",
+                        "key": "building_space",
                         "operations": []
                     },
                     "buildingSpaceName": {
