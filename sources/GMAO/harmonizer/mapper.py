@@ -25,11 +25,11 @@ class Mapper(object):
                         "operations": []
                     },
                     "buildingSpaceName": {
-                        "key": "name",
+                        "key": "building_space",
                         "operations": []
                     },
                     "label": {
-                        "key": "zonepath",
+                        "key": "name",
                         "operations": []
                     }
                 }

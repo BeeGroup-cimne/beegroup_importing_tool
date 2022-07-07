@@ -1,11 +1,12 @@
 import argparse
 
+import pandas as pd
+
 from sources.GMAO.gmao import GMAO
 from utils.hbase import save_to_hbase
 from utils.kafka import save_to_kafka
 from utils.nomenclature import raw_nomenclature
 from utils.utils import log_string
-import pandas as pd
 
 
 def gather_zones(g: GMAO, config, settings, args):
@@ -14,10 +15,9 @@ def gather_zones(g: GMAO, config, settings, args):
         data = g.find_zones(page_index=i)['items']
 
         for zone in data:
-            if len(zone['zonepath'].split('.')) == 3:
-                full_zone = g.get_full_zone(id=zone['id'], services=['Maintenance'])
-                save_data([full_zone], data_type='fullZone', row_keys=['id'], column_map=[("info", "all")],
-                          config=config, settings=settings, args=args)
+            full_zone = g.get_full_zone(id=zone['id'], services=['Maintenance'])
+            save_data([full_zone], data_type='fullZone', row_keys=['id'], column_map=[("info", "all")],
+                      config=config, settings=settings, args=args)
 
         save_data(data=data, data_type='zones', row_keys=['id'],
                   column_map=[("info", "all")],

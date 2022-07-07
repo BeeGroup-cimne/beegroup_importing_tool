@@ -1,6 +1,6 @@
 from sources import SourcePlugin
 from sources.GMAO.gather import gather
-from sources.GMAO.harmonizer.GMAO_mapping import harmonize_zone, harmonize_full_zone, harmonize_full_assets, \
+from sources.GMAO.harmonizer.GMAO_mapping import harmonize_full_zone, harmonize_full_assets, \
     harmonize_indicator_values, harmonize_work_orders, harmonize_assets, \
     harmonize_full_work_order
 from utils.nomenclature import raw_nomenclature
@@ -13,12 +13,9 @@ class Plugin(SourcePlugin):
         gather(arguments, settings=self.settings, config=self.config)
 
     def get_mapper(self, message):
-        if message["collection_type"] == 'zones':
-            return harmonize_zone
+        if message["collection_type"] == 'fullZone':
+            return harmonize_full_zone
 
-        # if message["collection_type"] == 'fullZone':
-        #     return harmonize_full_zone
-        #
         # if message["collection_type"] == 'assets':
         #     return harmonize_assets
         #
@@ -33,6 +30,8 @@ class Plugin(SourcePlugin):
         #
         # if message["collection_type"] == 'fullWorkOrder':
         #     return harmonize_full_work_order
+        else:
+            return None
 
     def get_kwargs(self, message):
         return {

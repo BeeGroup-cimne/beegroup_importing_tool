@@ -2,58 +2,33 @@ import pandas as pd
 from rdflib import Namespace
 
 from sources.GMAO.harmonizer.mapper import Mapper
-from utils.data_transformations import building_space_subject, decode_hbase
+from utils.data_transformations import decode_hbase, building_space_subject
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.rdf_utils.save_rdf import save_rdf_with_source
 
 
-def harmonize_zone(data, **kwargs):
-    data = [{'id': '6df67153-7569-4814-ac2f-8f60e43df57f', 'zonepath': 'BEN.BSV-04375.P0.MAG0-2.',
-             'name': 'Magatzem Roba Neta 2 / Bugaderia 2'},
-            {'id': '8ffe4239-0d35-48f9-8aa1-d39a3d190756', 'zonepath': 'BEN.BSV-04375.P0.MC0-3.',
-             'name': 'Magatzem Cafeteria 3'},
-            {'id': '922498c0-3cfc-44a0-a4f1-7017fd49e4be', 'zonepath': 'BEN.BSV-04375.P0.OFF0.',
-             'name': 'Ofici del Menjador'},
-            {'id': '5b8f0dfd-899b-4b2e-b2f8-56354032a5e2', 'zonepath': 'BEN.BSV-04375.P0.RE0.', 'name': 'Rebost'},
-            {'id': '516f5a02-b6b6-40f7-9b5e-a43d3fdcc736', 'zonepath': 'BEN.BSV-04375.P0.SA0.',
-             'name': 'Sala Acolliment'},
-            {'id': 'b550df39-f0b4-4147-968d-4eefe4265a04', 'zonepath': 'BEN.BSV-04375.P0.SC0.',
-             'name': 'Sala de Control'},
-            {'id': '8a3b1a4f-82bf-4d4b-adee-cdfb52d49806', 'zonepath': 'BEN.BSV-04375.P0.SH0-5.',
-             'name': 'Serveis Higiènics 8'},
-            {'id': 'bf92de3b-bc3d-4e01-849a-add176825a80', 'zonepath': 'BEN.BSV-04375.P0.SH0-6.',
-             'name': 'Serveis Higiènics 9'},
-            {'id': 'c24788db-abe2-4085-856f-b56375bcc231', 'zonepath': 'BEN.BSV-04375.P0.SHD0-1.',
-             'name': 'Serveis Higiènics + Dutxa 4'},
-            {'id': '3f9f9bbb-80f2-46b5-a6e8-7d4f0edfd7d1', 'zonepath': 'BEN.BSV-04375.P0.SHD0-3.',
-             'name': 'Serveis Higiènics Dones 6'}]
-
-    df = pd.DataFrame(data)
-    df.apply(decode_hbase)
-    df['buildingSpace_subject'] = df['id'].apply(building_space_subject)
-
-    save_df(df, **kwargs)
-
-
-def save_df(df, **kwargs):
-    namespace = kwargs['namespace']
-    config = kwargs['config']
-    n = Namespace(namespace)
-
-    mapper = Mapper(config['source'], n)
-    g = generate_rdf(mapper.get_mappings("all"), df)
-
-    g.serialize('output.ttl', format="ttl")
-
-    save_rdf_with_source(g, config['source'], config['neo4j'])
-
-    save_rdf_with_source(g, config['source'], config['neo4j'])
+def split_zone_name(value):
+    spl = value.split('.')
+    building_type = spl[0]
+    building = spl[1]
+    space = '.'.join(spl[1:]) if len(spl[1:]) - 1 > 0 else spl[1]
+    parent_space = '.'.join(spl[1:-1]) if len(spl[1:]) - 1 > 0 else None
+    return f"{building_type},{building},{space},{parent_space}"
 
 
 def harmonize_full_zone(data, **kwargs):
-    print(data)
+    df = pd.DataFrame(data)
+    df = df.applymap(decode_hbase)
+    df.drop(['typology', 'criticalities', 'managedscopes', 'operations', 'featuresvalues'], axis=1, inplace=True)
+    df[['building_type', 'building_id', 'building_space', 'building_space_parent']] = df['zonepath'].apply(
+        split_zone_name).str.split(',', expand=True)
+    df['buildingSpace_subject'] = df['id'].apply(building_space_subject)
+    # hasBuildingSpaceUseType
+    # Location
+
+    save_df(df, 'zone', **kwargs)
     data = [{'id': 'be5a976d-f260-4789-a5e2-0e6c6e00e2d9', 'parentid': 'e0b42485-0f81-4356-a796-d8193d5c4453',
-             'zonepath': 'BEN.BSV-06359.', 'name': 'Residència Roger de Llúria',
+             'zonepath': 'BEN.BSV-06359.P1', 'name': 'Residència Roger de Llúria',
              'typology': {'id': '67a7cc22-b1e2-4004-b389-36a9883e2bd9', 'name': 'Edifici 1', 'isselectable': False},
              'criticalities': [], 'managedscopes': [
             {'service': 'Maintenance', 'id': 'f74d92da-41fe-42a0-8a0b-e60a69905621', 'name': 'Nou Lot 12',
@@ -534,3 +509,18 @@ def harmonize_work_orders(data, **kwargs): pass
 
 
 def harmonize_full_work_order(data, **kwargs): pass
+
+
+def save_df(df, mapping_type, **kwargs):
+    namespace = kwargs['namespace']
+    config = kwargs['config']
+    n = Namespace(namespace)
+
+    mapper = Mapper(config['source'], n)
+    g = generate_rdf(mapper.get_mappings(mapping_type), df)
+
+    g.serialize('output.ttl', format="ttl")
+
+    save_rdf_with_source(g, config['source'], config['neo4j'])
+
+    save_rdf_with_source(g, config['source'], config['neo4j'])
