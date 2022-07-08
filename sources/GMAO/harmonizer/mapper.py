@@ -33,6 +33,10 @@ class Mapper(object):
                     "hasSubSpace": {
                         "key": "hasSubSpace",
                         "operations": []
+                    },
+                    "hasBuildingSpaceUseType": {
+                        "key": "hasBuildingSpaceUseType",
+                        "operations": []
                     }
                 }
             },
@@ -92,13 +96,13 @@ class Mapper(object):
             "params": {
                 "mapping": {
                     "subject": {
-                        "key": "isSubjectToMaintenance",
+                        "key": "element_subject",
                         "operations": []
                     }, "isAssociatedWithSpace": {
                         "key": "isAssociatedWithSpace",
                         "operations": []
                     }, "maintainsElement": {
-                        "key": "subject",
+                        "key": "maintainsElement",
                         "operations": []
                     }
                 }

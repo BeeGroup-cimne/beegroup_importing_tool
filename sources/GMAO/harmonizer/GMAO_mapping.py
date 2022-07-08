@@ -25,6 +25,9 @@ def split_zone(value):
 
 
 def harmonize_full_zone(data, **kwargs):
+    namespace = kwargs['namespace']
+    n = Namespace(namespace)
+
     df = pd.DataFrame(data)
     df = df.applymap(decode_hbase)
     df.drop(['typology', 'criticalities', 'managedscopes', 'operations', 'featuresvalues'], axis=1, inplace=True)
@@ -33,7 +36,7 @@ def harmonize_full_zone(data, **kwargs):
 
     df['buildingSpace_subject'] = df['building_space'].apply(building_space_subject)
     df['hasSubSpace'] = df.apply(
-        lambda x: building_space_subject(x['building_space_parent']) if x['building_space_parent'] != '' else np.NaN,
+        lambda x: n[building_space_subject(x['building_space_parent'])] if x['building_space_parent'] != '' else np.NaN,
         axis=1)
 
     df['hasBuildingSpaceUseType'] = to_object_property("Public", namespace=bigg_enums)  # TODO: set taxonomy
@@ -42,9 +45,13 @@ def harmonize_full_zone(data, **kwargs):
 
 
 def harmonize_full_work_order(data, **kwargs):
+    namespace = kwargs['namespace']
+    n = Namespace(namespace)
+
     df = pd.json_normalize(data, sep='_')
     df = df.applymap(decode_hbase)
 
+    # Maintenance Action
     df['subject'] = df['id'].apply(maintenance_subject)
     df['maintenanceActionIsPeriodic'] = False
 
@@ -52,8 +59,13 @@ def harmonize_full_work_order(data, **kwargs):
     df['zone_name_id'] = df['zone_name_id'].str.strip()
     df['zone_name_id'] = df['zone_name_id'].apply(split_zone)
 
-    df['isSubjectToMaintenance'] = df['zone_name_id'].apply(construction_element_subject)
-    df['isAssociatedWithSpace'] = df['zone_name_id'].apply(building_space_subject)
+    df['isSubjectToMaintenance'] = df['zone_name_id'].apply(n[construction_element_subject])
+
+    # ELEMENT
+    df['element_subject'] = df['zone_name_id'].apply(construction_element_subject)
+    df['isAssociatedWithSpace'] = df['zone_name_id'].apply(lambda x: n[building_space_subject(x)])
+    df['maintainsElement'] = df['subject'].apply(lambda x: n[x])
+
     save_df(df, 'work_order', **kwargs)
 
 

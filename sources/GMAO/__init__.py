@@ -1,7 +1,7 @@
 from sources import SourcePlugin
 from sources.GMAO.gather import gather
 from sources.GMAO.harmonizer.GMAO_mapping import harmonize_full_zone, harmonize_full_work_order
-from utils.nomenclature import raw_nomenclature
+from utils.nomenclature import raw_nomenclature, RAW_MODE
 
 
 class Plugin(SourcePlugin):
@@ -28,5 +28,5 @@ class Plugin(SourcePlugin):
         }
 
     def get_store_table(self, message):
-        return raw_nomenclature(source=self.source_name, mode='static', data_type=message["collection_type"],
+        return raw_nomenclature(source=self.source_name, mode=RAW_MODE.STATIC, data_type=message["collection_type"],
                                 user=message['user'])

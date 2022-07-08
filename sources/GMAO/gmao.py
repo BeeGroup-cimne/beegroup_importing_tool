@@ -1,4 +1,5 @@
 import json
+from time import sleep
 from typing import List
 
 import requests
@@ -162,8 +163,8 @@ class GMAO:
 
             if res.status_code != 200:
                 self.login()
+                sleep(3)
                 res = fn(**args)
-                raise res.status_code != 200
 
             return res.json()
         except HTTPError as ex:
