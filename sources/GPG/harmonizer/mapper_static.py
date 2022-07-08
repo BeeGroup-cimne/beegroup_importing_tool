@@ -1,4 +1,4 @@
-
+import ast
 from neo4j import GraphDatabase
 from rdflib import Namespace, Graph
 from slugify import slugify
@@ -35,9 +35,9 @@ def _organization_map(series, orgs, default):
         query = slugify(xx)
         match, score = process.extractOne(query, orgs.keys())
         if score > 90:
-            resp[xx] = orgs[match]
+            resp[xx] = (orgs[match], True)
         else:
-            resp[xx] = default
+            resp[xx] = (default, False)
     return resp
 
 
@@ -60,12 +60,13 @@ def _get_fuzz_params(user_id, neo4j_conn):
 
 
 def fuzz_departments(df, user_id, neo4j):
-    df['department_organization'] = df['Departament_Assig_Adscrip'].apply(lambda x: x.split(";")). \
+    df['department_organization_tmp'] = df['Departament_Assig_Adscrip'].apply(lambda x: x.split(";")). \
         apply(lambda x: [clean_department(s) for s in x])
     fparams = _get_fuzz_params(user_id, neo4j)
-    org_map = _organization_map(df['department_organization'], **fparams)
+    org_map = _organization_map(df['department_organization_tmp'], **fparams)
     harmonize_deps = partial(harmonize_organizations, map=org_map)
-    df['department_organization'] = df['department_organization'].apply(harmonize_deps).apply(lambda x: ";".join(x))
+    df['department_organization'] = df['department_organization_tmp'].apply(harmonize_deps).apply(lambda x: ";".join([x1[0] for x1 in x if x1[1]]))
+    df['organization_organization'] = df['department_organization_tmp'].apply(harmonize_deps).apply(lambda x: ";".join([x1[0] for x1 in x if not x1[1]]))
 
 
 def clean_dataframe(df, source):

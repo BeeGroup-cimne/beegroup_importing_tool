@@ -6,3 +6,4 @@ from utils import kafka
 from utils import mongo
 from utils import neo4j
 from utils import security
+from utils import nomenclature

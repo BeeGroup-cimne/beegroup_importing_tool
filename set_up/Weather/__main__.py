@@ -22,13 +22,13 @@ def link_ws(driver, ws_subject, l_subject):
         )
 
 
-def create_ws(driver, stations):
+def create_ws(driver, stations, ns):
     with driver.session() as session:
         for _, s in stations.iterrows():
-            subject = f"{args.namespace}{float(s.latitude):.3f}~{float(s.longitude):.3f}"
+            subject = f"{ns}{float(s.latitude):.3f}~{float(s.longitude):.3f}"
             session.run(
                 f"""
-                       MERGE (ws:{bigg}__WeatherStation:{bigg}__Device:{wgs}__SpatialThing:Resource{{uri:"{subject}"}})
+                       MERGE (ws:{bigg}__WeatherStation:{wgs}__SpatialThing:Resource{{uri:"{subject}"}})
                        SET ws.{wgs}__lat="{float(s.latitude):.3f}", ws.{wgs}__long="{float(s.longitude):.3f}",
                            ws.source="Darksky"
                        RETURN ws
@@ -117,7 +117,7 @@ if __name__ == "__main__":
     stations = pd.DataFrame.from_dict(cpcat, orient="index")
     stations.columns = ["longitude", "latitude"]
     if args.create:
-        create_ws(driver, stations)
+        create_ws(driver, stations, args.namespace)
     if args.update:
         location = pd.DataFrame(get_building_locations(driver, stations))
         location = location[(pd.isna(location.latitude) | pd.isna(location.longitude)) == False]

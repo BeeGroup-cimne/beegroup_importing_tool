@@ -44,7 +44,7 @@ if __name__ == "__main__":
         try:
             org_levels_df.append(pd.read_excel(args.file, sheet_name=level))
             level += 1
-        except IndexError:
+        except (IndexError, ValueError):
             break
 
     n = Namespace(args.namespace)

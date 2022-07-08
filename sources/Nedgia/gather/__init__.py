@@ -7,9 +7,9 @@ import utils
 
 
 def gather_data(config, settings, args):
-    for file in os.listdir('data/'):
+    for file in os.listdir('data/nedgia'):
         if file.endswith('.xlsx'):
-            df = pd.read_excel(f"data/{file}",
+            df = pd.read_excel(f"data/nedgia/{file}",
                                skiprows=2)  # todo: change way to get input
 
             save_nedgia_data(

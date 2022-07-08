@@ -5,6 +5,7 @@ import happybase
 
 import utils
 from harmonizer.cache import Cache
+
 from utils.hbase import get_hbase_data_batch
 from utils.utils import log_string
 from .mapper_static import harmonize_data as harmonize_static_data

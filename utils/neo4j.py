@@ -41,6 +41,16 @@ def get_device_from_datasource(session, user, device_id, source, ns_mappings):
     return device_neo
 
 
+def get_tariff_from_datasource(session, user, device_id, source, ns_mappings):
+    bigg = ns_mappings['bigg']
+    tariff_neo = session.run(f"""
+                MATCH ({bigg}__Organization{{userID:'{user}'}})-[:{bigg}__hasSubOrganization*0..]->(o:{bigg}__Organization)-
+                [:hasSource]->(s:{source})<-[:importedFromSource]-(d)
+                WHERE d.source = "{source}" AND d.{bigg}__tariffName = ["{device_id}"] return d            
+                """)
+    return tariff_neo
+
+
 def get_device_by_uri(session, uri):
     query = f"""
     match(d:bigg__Device)-[:bigg__hasSensor]-(s) where d.uri = "{uri}" return d,s
@@ -59,8 +69,8 @@ def get_all_buildings_id_from_datasource(session, source_id, ns_mappings):
     return list(set([x[0][0] for x in buildings_neo.values()]))
 
 
-def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estimation_method_uri, measurement_uri,
-                  is_regular, is_cumulative, is_on_change, freq, agg_func, dt_ini, dt_end, ns_mappings):
+def create_timeseries(session, ts_uri, property_uri, is_regular, is_cumulative, is_on_change, freq, agg_func, dt_ini, dt_end,
+                      ns_mappings):
     bigg = ns_mappings['bigg']
 
     def convert(tz):
@@ -71,35 +81,71 @@ def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estim
         return tz
 
     session.run(f"""
+           MATCH (mp: {bigg}__MeasuredProperty {{uri:"{property_uri}"}})
+           MERGE (s: {bigg}__TimeSeries:Resource {{
+               uri: "{ts_uri}"
+           }})
+           Merge(s)-[:{bigg}__hasMeasuredProperty]->(mp)
+           SET
+               s.{bigg}__timeSeriesIsCumulative= [{is_cumulative}],
+               s.{bigg}__timeSeriesIsRegular= [{is_regular}],
+               s.{bigg}__timeSeriesIsOnChange= [{is_on_change}],
+               s.{bigg}__timeSeriesFrequency= ["{freq}"],
+               s.{bigg}__timeSeriesTimeAggregationFunction= ["{agg_func}"],
+               s.{bigg}__timeSeriesStart = CASE 
+                   WHEN s.{bigg}__timeSeriesStart[0] < 
+                    datetime("{convert(dt_ini).to_pydatetime().isoformat()}") 
+                       THEN s.{bigg}__timeSeriesStart
+                       ELSE [datetime("{convert(dt_ini).to_pydatetime().isoformat()}")] 
+                   END,
+               s.{bigg}__timeSeriesEnd = CASE 
+                   WHEN s.{bigg}__timeSeriesEnd[0] >
+                    datetime("{convert(dt_end).to_pydatetime().isoformat()}") 
+                       THEN s.{bigg}__timeSeriesEnd
+                       ELSE [datetime("{convert(dt_end).to_pydatetime().isoformat()}")]
+                   END  
+           return s
+       """)
+
+
+def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estimation_method_uri, measurement_uri,
+                  is_regular, is_cumulative, is_on_change, freq, agg_func, dt_ini, dt_end, ns_mappings):
+
+    create_timeseries(session, sensor_uri, property_uri, is_regular, is_cumulative, is_on_change, freq,
+                      agg_func, dt_ini, dt_end, ns_mappings)
+
+    bigg = ns_mappings['bigg']
+    session.run(f"""
         MATCH (device: {bigg}__Device {{uri:"{device_uri}"}})
         MATCH (msu: {bigg}__MeasurementUnit {{uri:"{unit_uri}"}})
-        MATCH (mp: {bigg}__MeasuredProperty {{uri:"{property_uri}"}})
-        MATCH (se: {bigg}__SensorEstimationMethod {{uri:"{estimation_method_uri}"}})   
-        MERGE (s: {bigg}__Sensor:Resource {{
-            uri: "{sensor_uri}"
-        }})<-[:{bigg}__hasSensor]-(device)
+        MATCH (se: {bigg}__SensorEstimationMethod {{uri:"{estimation_method_uri}"}})
+        MATCH (s {{uri:"{sensor_uri}"}})   
+        MERGE (s)<-[:{bigg}__hasSensor]-(device)
         Merge(s)-[:{bigg}__hasMeasurementUnit]->(msu)
-        Merge(s)-[:{bigg}__hasMeasuredProperty]->(mp)
         Merge(s)-[:{bigg}__hasSensorEstimationMethod]->(se)        
         Merge(s)-[:{bigg}__hasMeasurement]->(ms: {bigg}__Measurement:Resource{{uri: "{measurement_uri}"}})
         SET
-            s.{bigg}__sensorIsCumulative= {is_cumulative},
-            s.{bigg}__sensorIsRegular= {is_regular},
-            s.{bigg}__sensorIsOnChange= {is_on_change},
-            s.{bigg}__sensorFrequency= "{freq}",
-            s.{bigg}__sensorTimeAggregationFunction= "{agg_func}",
-            s.{bigg}__sensorStart = CASE 
-                WHEN s.{bigg}__sensorStart < 
-                 datetime("{convert(dt_ini).to_pydatetime().isoformat()}") 
-                    THEN s.{bigg}__sensorStart 
-                    ELSE datetime("{convert(dt_ini).to_pydatetime().isoformat()}") 
-                END,
-            s.{bigg}__sensorEnd = CASE 
-                WHEN s.{bigg}__sensorEnd >
-                 datetime("{convert(dt_end).to_pydatetime().isoformat()}") 
-                    THEN s.{bigg}__sensorEnd
-                    ELSE datetime("{convert(dt_end).to_pydatetime().isoformat()}") 
-                END  
+            s : {bigg}__Sensor
+        return s
+    """)
+
+
+def create_tariffPrice(session, tariff_uri, tariffPrice_uri, unit_uri, property_uri, measurement_uri,
+                  is_regular, is_cumulative, is_on_change, freq, agg_func, dt_ini, dt_end, ns_mappings):
+
+    create_timeseries(session, tariffPrice_uri, property_uri, is_regular, is_cumulative, is_on_change, freq,
+                      agg_func, dt_ini, dt_end, ns_mappings)
+
+    bigg = ns_mappings['bigg']
+    session.run(f"""
+        MATCH (tariff: {bigg}__Tariff {{uri:"{tariff_uri}"}})
+        MATCH (msu: {bigg}__MeasurementUnit {{uri:"{unit_uri}"}})
+        MATCH (s {{uri:"{tariffPrice_uri}"}})   
+        MERGE (s)<-[:{bigg}__hasTariffPrice]-(device)
+        Merge(s)-[:{bigg}__hasTariffCurrencyUnit]->(msu)
+        Merge(s)-[:{bigg}__hasTariffValue]->(ms: {bigg}__TariffPoint:Resource{{uri: "{measurement_uri}"}})
+        SET
+            s : {bigg}__TariffPrice
         return s
     """)
 

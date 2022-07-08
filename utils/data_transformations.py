@@ -1,3 +1,5 @@
+import ast
+import os
 import re
 from collections import defaultdict
 from functools import partial
@@ -42,8 +44,7 @@ def fuzzy_dictionary_match(text, map_dict, default):
 
 def get_taxonomy_mapping(taxonomy_file, default):
     # Transformation function
-    taxonomy_dict = \
-        pd.read_excel(taxonomy_file, index_col="SOURCE").to_dict()["TAXONOMY"]
+    taxonomy_dict = pd.read_excel(taxonomy_file, index_col="SOURCE").to_dict()["TAXONOMY"]
     return defaultdict(lambda: default, taxonomy_dict)
 
 
@@ -69,7 +70,6 @@ def zfill_param(key, num):
         return key.zfill(num)
     except:
         return None
-
 
 id_zfill = partial(zfill_param, num=5)
 
@@ -118,12 +118,24 @@ def eem_subject(key):
     return f"EEM-{key}"
 
 
+def energy_saving_subject(key):
+    return f"EnergySaving-{key}"
+
+
 def device_subject(key, source):
     return f"DEVICE-{source}-{key}"
 
 
+def project_subject(key):
+    return f"PROJECT-{key}"
+
+
 def sensor_subject(device_source, device_key, measured_property, sensor_type, freq):
     return f"SENSOR-{device_source}-{device_key}-{measured_property}-{sensor_type}-{freq}"
+
+
+def tariff_subject(device_source, device_key, measured_property, sensor_type, freq):
+    return f"TARIFF-{device_source}-{device_key}-{measured_property}-{sensor_type}-{freq}"
 
 
 def delivery_subject(key):
