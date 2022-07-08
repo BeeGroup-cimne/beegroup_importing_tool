@@ -3,7 +3,8 @@ import pandas as pd
 from rdflib import Namespace
 
 from sources.GMAO.harmonizer.mapper import Mapper
-from utils.data_transformations import decode_hbase, building_space_subject, to_object_property, maintenance_subject
+from utils.data_transformations import decode_hbase, building_space_subject, to_object_property, maintenance_subject, \
+    construction_element_subject
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums
 from utils.rdf_utils.rdf_functions import generate_rdf
 
@@ -18,8 +19,6 @@ def split_zone_name(value):
 
 
 def harmonize_full_zone(data, **kwargs):
-    print(kwargs)
-
     df = pd.DataFrame(data)
     df = df.applymap(decode_hbase)
     df.drop(['typology', 'criticalities', 'managedscopes', 'operations', 'featuresvalues'], axis=1, inplace=True)
@@ -36,16 +35,19 @@ def harmonize_full_zone(data, **kwargs):
     save_df(df, 'zones', **kwargs)
 
 
-# TODO: maintenance action
-# TODO: element
-
-
 def harmonize_full_work_order(data, **kwargs):
-    df = pd.DataFrame(data)
+    df = pd.json_normalize(data, sep='_')
     df = df.applymap(decode_hbase)
 
-    df['subject'] = df['ordernumber'].apply(maintenance_subject)
+    df['subject'] = df['id'].apply(maintenance_subject)
+    df['maintenanceActionIsPeriodic'] = False
 
+    df[['zone_name_id', 'zone_name_name']] = df['zone_name'].str.split(' - ', expand=True)
+    df['zone_name_id'] = df['zone_name_id'].str.strip()
+    df['zone_name_id'] = df['zone_name_id'].apply(lambda x: x[:-1])
+
+    df['isSubjectToMaintenance'] = df['zone_name_id'].apply(construction_element_subject)
+    df['isAssociatedWithSpace'] = df['zone_name_id'].apply(building_space_subject)
     save_df(df, 'work_order', **kwargs)
 
 

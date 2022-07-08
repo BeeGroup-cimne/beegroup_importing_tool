@@ -1,4 +1,4 @@
-from utils.rdf_utils.ontology.bigg_classes import BuildingSpace, MaintenanceAction
+from utils.rdf_utils.ontology.bigg_classes import BuildingSpace, MaintenanceAction, Element
 
 
 class Mapper(object):
@@ -7,6 +7,7 @@ class Mapper(object):
         self.source = source
         BuildingSpace.set_namespace(namespace)
         MaintenanceAction.set_namespace(namespace)
+        Element.set_namespace(namespace)
 
     def get_mappings(self, group):
         building_space = {
@@ -51,12 +52,29 @@ class Mapper(object):
                         "key": "subject",
                         "operations": []
                     },
+                    "label": {
+                        "key": "ordernumber",
+                        "operations": []
+                    },
+                    "comment": {
+                        "key": "title",
+                        "operations": []
+                    },
                     "maintenanceActionDate": {
                         "key": "orderdate",
                         "operations": []
                     },
                     "maintenanceActionDescription": {
-                        "key": "title",
+                        "key": "description",
+                        "operations": []
+                    }, "maintenanceActionIsPeriodic": {
+                        "key": "maintenanceActionIsPeriodic",
+                        "operations": []
+                    }, "maintenanceActionName": {
+                        "key": "worktype",
+                        "operations": []
+                    }, "isSubjectToMaintenance": {
+                        "key": "isSubjectToMaintenance",
                         "operations": []
                     },
                 }
@@ -65,8 +83,32 @@ class Mapper(object):
             }
         }
 
+        element = {
+            "name": "element",
+            "class": Element,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "isSubjectToMaintenance",
+                        "operations": []
+                    }, "isAssociatedWithSpace": {
+                        "key": "isAssociatedWithSpace",
+                        "operations": []
+                    }, "maintainsElement": {
+                        "key": "subject",
+                        "operations": []
+                    }
+                }
+            },
+            "links": {
+            }
+        }
+
         grouped_modules = {
             "zones": [building_space],
-            "work_order": [maintenance_action]
+            "work_order": [maintenance_action, element]
         }
         return grouped_modules[group]
