@@ -7,6 +7,7 @@ from utils.data_transformations import decode_hbase, building_space_subject, to_
     construction_element_subject
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums
 from utils.rdf_utils.rdf_functions import generate_rdf
+from utils.rdf_utils.save_rdf import save_rdf_with_source
 
 
 def split_zone_name(value):
@@ -66,4 +67,4 @@ def save_df(df, mapping_type, **kwargs):
 
     g.serialize('output.ttl', format="ttl")
 
-    # save_rdf_with_source(g, config['source'], config['neo4j'])
+    save_rdf_with_source(g, config['source'], config['neo4j'])
