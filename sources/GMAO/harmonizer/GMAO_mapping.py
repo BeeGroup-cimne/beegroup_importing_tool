@@ -18,6 +18,11 @@ def split_zone_name(value):
     return f"{building_type},{building},{space},{parent_space}"
 
 
+def split_zone(value):
+    spl = value.split('.')
+    return '.'.join(spl[1:-1])
+
+
 def harmonize_full_zone(data, **kwargs):
     df = pd.DataFrame(data)
     df = df.applymap(decode_hbase)
@@ -44,7 +49,7 @@ def harmonize_full_work_order(data, **kwargs):
 
     df[['zone_name_id', 'zone_name_name']] = df['zone_name'].str.split(' - ', expand=True)
     df['zone_name_id'] = df['zone_name_id'].str.strip()
-    df['zone_name_id'] = df['zone_name_id'].apply(lambda x: x[:-1])
+    df['zone_name_id'] = df['zone_name_id'].apply(split_zone)
 
     df['isSubjectToMaintenance'] = df['zone_name_id'].apply(construction_element_subject)
     df['isAssociatedWithSpace'] = df['zone_name_id'].apply(building_space_subject)
