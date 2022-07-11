@@ -27,7 +27,7 @@ def split_zone(value):
 def harmonize_full_zone(data, **kwargs):
     namespace = kwargs['namespace']
     n = Namespace(namespace)
-
+    # TODO: check if building exist, if exist do if not create building
     df = pd.DataFrame(data)
     df = df.applymap(decode_hbase)
     df.drop(['typology', 'criticalities', 'managedscopes', 'operations', 'featuresvalues'], axis=1, inplace=True)
