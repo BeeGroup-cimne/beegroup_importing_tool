@@ -19,12 +19,7 @@ COLUMN_NAMES = ['Year', 'Month', 'Code', 'Municipality Unit', 'Municipality', 'R
                 'High VAT', 'Intermediate Value', 'Total Energy Value', 'Total VAT of electricity',
                 'Total VAT Services', 'Total VAT', 'Total ERT', 'Municipal TAX', 'Total TAP',
                 'EETIDE', 'Total Account', 'Total Current Month', 'Account Type',
-                'Municiaplity Unit 1']
-
-
-# def clean_data(df: pd.DataFrame):
-#     df.drop(columns=['Year1', 'Month1'], inplace=True)
-#     df['Date'] = df.apply(lambda x: parse(f"{x['Year']}/{x['Month']}/1"), axis=1)
+                'Municipality Unit 1']
 
 
 def gather_data(config, settings, args):
@@ -72,7 +67,7 @@ def save_data(data, data_type, row_keys, column_map, config, settings, args):
 
 
 def gather(arguments, config=None, settings=None):
-    ap = argparse.ArgumentParser(description='Gathering data from Nedgia')
+    ap = argparse.ArgumentParser(description='Gathering data from ePlanet')
     ap.add_argument("-st", "--store", required=True, help="Where to store the data", choices=["kafka", "hbase"])
     ap.add_argument("--user", "-u", help="The user importing the data", required=True)
     ap.add_argument("--namespace", "-n", help="The subjects namespace uri", required=True)

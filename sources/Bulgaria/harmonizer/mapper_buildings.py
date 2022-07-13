@@ -2,11 +2,8 @@ import hashlib
 from datetime import timedelta
 
 import numpy as np
-import pandas as pd
-import rdflib
 from neo4j import GraphDatabase
 from rdflib import Namespace
-from thefuzz import process
 
 import settings
 from harmonizer.cache import Cache
@@ -26,7 +23,8 @@ def set_taxonomy(df):
         taxonomy_file="sources/Bulgaria/harmonizer/TAX_BULGARIA.xlsx",
         default="Other")
     df['buildingSpaceUseType'] = df['type_of_building'].map(building_type_taxonomy).apply(partial(to_object_property,
-                                                                                              namespace=bigg_enums))
+                                                                                                  namespace=bigg_enums))
+
 
 def set_municipality(df):
     province_dic = Cache.province_dic
@@ -96,14 +94,13 @@ def clean_dataframe_project(df_orig):
     for i, eem_type in enumerate(enum_energy_efficiency_measurement_type):
         df[f"eem_{i}_subject"] = df['subject'].apply(lambda x: f"{x}-{eem_type}").apply(eem_subject)
     for saving_type in enum_energy_saving_type:
-        df[f'project_energy_saving_subject_{saving_type}'] = df['subject']\
+        df[f'project_energy_saving_subject_{saving_type}'] = df['subject'] \
             .apply(lambda x: f"{x}-project-{saving_type}").apply(energy_saving_subject)
     return df[['subject', 'project_subject', 'epc_date_before', 'epc_date'] +
               [x for x in df.columns if re.match("eem_.*_subject", x)] +
               [x for x in df.columns if re.match("total_.*", x)] +
               [x for x in df.columns if re.match("energy_saving_.*_subject", x)] +
               [x for x in df.columns if re.match("project_energy_saving_subject_.*", x)]]
-
 
 
 def harmonize_static(data, **kwargs):
@@ -129,7 +126,8 @@ def harmonize_static(data, **kwargs):
         start_column_saving = 0
         for chunk_saving in range(parts_saving):
             k, m = divmod(len(enum_energy_saving_type), parts_saving)
-            saving_parted = [enum_energy_saving_type[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(parts_saving)]
+            saving_parted = [enum_energy_saving_type[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in
+                             range(parts_saving)]
             mapper.select_chunk(eems_parted[chunk], start_column_eem, saving_parted[chunk_saving], start_column_saving)
             g = generate_rdf(mapper.get_mappings("eem_savings"), df_eem)
             try:
@@ -143,6 +141,7 @@ def harmonize_static(data, **kwargs):
     df_project = clean_dataframe_project(df)
     g = generate_rdf(mapper.get_mappings("project_info"), df_project)
     save_rdf_with_source(g, config['source'], config['neo4j'])
+
 
 def harmonize_ts(data, **kwargs):
     namespace = kwargs['namespace']
