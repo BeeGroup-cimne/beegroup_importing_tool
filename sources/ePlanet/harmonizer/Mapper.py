@@ -1,4 +1,4 @@
-from utils.rdf_utils.ontology.bigg_classes import Building, LocationInfo
+from utils.rdf_utils.ontology.bigg_classes import Building, LocationInfo, BuildingSpace, Organization
 from utils.rdf_utils.ontology.namespaces_definition import Bigg, countries
 
 
@@ -7,8 +7,59 @@ class Mapper(object):
         self.source = source
         Building.set_namespace(namespace)
         LocationInfo.set_namespace(namespace)
+        BuildingSpace.set_namespace(namespace)
+        Organization.set_namespace(namespace)
 
     def get_mappings(self, group):
+        organization = {
+            "name": "organization",
+            "class": Organization,
+            "type": {
+                "origin": "static"
+            },
+            "params": {
+                "raw": {
+                    "subject": "ePlanet",
+                    "organizationName": "ePlanet"
+                }
+            },
+            "links": {
+                "building_organization": {
+                    "type": Bigg.hasSubOrganization,
+                    "link": "__all__"
+                }
+            }
+        }
+
+        building_organization = {
+            "name": "building_organization",
+            "class": Organization,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "raw": {
+                    "organizationDivisionType": "Building"
+                },
+                "mapping": {
+                    "subject": {
+                        "key": "organization_subject",
+                        "operations": []
+                    },
+                    "organizationName": {
+                        "key": "Code",
+                        "operations": []
+                    }
+                }
+            },
+            "links": {
+                "buildings": {
+                    "type": Bigg.managesBuilding,
+                    "link": "subject"
+                }
+            }
+        }
+
         buildings = {
             "name": "buildings",
             "class": Building,
@@ -38,6 +89,31 @@ class Mapper(object):
                     "type": Bigg.isObservedByDevice,
                     "link": "subject"
                 }
+            }
+        }
+
+        building_space = {
+            "name": "building_space",
+            "class": BuildingSpace,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "raw": {
+                    "buildingSpaceName": "Building"
+                },
+                "mapping": {
+                    "subject": {
+                        "key": "building_space_subject",
+                        "operations": []
+                    },
+                    "hasBuildingSpaceUseType": {
+                        "key": "hasBuildingSpaceUseType",
+                        "operations": []
+                    },
+                }
+            },
+            "links": {
             }
         }
 
@@ -83,6 +159,6 @@ class Mapper(object):
         }
 
         grouped_modules = {
-            "static": [buildings]
+            "static": [buildings, locations, building_space]
         }
         return grouped_modules[group]

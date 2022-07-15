@@ -1,5 +1,5 @@
-from hashlib import sha256
 from functools import partial
+from hashlib import sha256
 
 import pandas as pd
 from dateutil.parser import parse
@@ -7,7 +7,7 @@ from rdflib import Namespace
 
 from sources.ePlanet.harmonizer.Mapper import Mapper
 from utils.data_transformations import decode_hbase, building_subject, fuzzy_dictionary_match, fuzz_params, \
-    location_info_subject
+    location_info_subject, building_space_subject, building_department_subject
 
 STATIC_COLUMNS = ['Year', 'Month', 'Code', 'Municipality Unit', 'Municipality', 'Region',
                   'Office', 'Meter num', 'Bill num', 'Bill num 2', 'Name', 'Street',
@@ -32,12 +32,19 @@ def clean_static_data(df: pd.DataFrame, **kwargs):
     config = kwargs['config']
     n = Namespace(namespace)
 
+    # Organization
+    df['organization_subject'] = df['Code'].apply(
+        lambda x: building_department_subject(sha256(x.encode('utf-8')).hexdigest()))
+
     # Building
-    df['building_subject'] = df['Code'].apply(building_subject)
+    df['building_subject'] = df['Code'].apply(lambda x: building_subject(sha256(x.encode('utf-8')).hexdigest()))
     # df['hasBuildingConstructionType'] = df['Type Of Building'].apply()
     # set_taxonomy_to_df(df, 'Name')
 
     # Building Space
+    df['building_space_subject'] = df['Code'].apply(building_space_subject)
+    # TODO: set hasBuildingSpaceUseType using taxonomy -> Label Name
+    # df['hasBuildingSpaceUseType'] = df['hasBuildingSpaceUseType'].apply(building_space_subject)
 
     # Location
     df['location_subject'] = df['Code'].apply(lambda x: location_info_subject(sha256(x.encode('utf-8')).hexdigest()))
