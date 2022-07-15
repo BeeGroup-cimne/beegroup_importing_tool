@@ -97,3 +97,8 @@ python3 -m set_up.Organizations -f data/Organizations/bulgaria-organizations.xls
 # LOAD DATA HBASE
 
 python3 -m harmonizer -so Bulgaria -u "bulgaria" -n "https://bulgaria.bg#" -c
+
+# ePlanet ORGANIZATION "https://ePlanet.eu#"
+# SET UP
+
+python3 -m set_up.Organizations -f data/Organizations/bulgaria-organizations.xls -name "ePlanet" -u "ePlanet" -n "https://ePlanet.eu#"

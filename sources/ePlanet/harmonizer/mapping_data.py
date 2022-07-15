@@ -7,7 +7,7 @@ from rdflib import Namespace
 
 from sources.ePlanet.harmonizer.Mapper import Mapper
 from utils.data_transformations import decode_hbase, building_subject, fuzzy_dictionary_match, fuzz_params, \
-    location_info_subject, building_space_subject, building_department_subject
+    location_info_subject, building_space_subject, device_subject, delivery_subject
 
 STATIC_COLUMNS = ['Year', 'Month', 'Code', 'Municipality Unit', 'Municipality', 'Region',
                   'Office', 'Meter num', 'Bill num', 'Bill num 2', 'Name', 'Street',
@@ -32,9 +32,9 @@ def clean_static_data(df: pd.DataFrame, **kwargs):
     config = kwargs['config']
     n = Namespace(namespace)
 
-    # Organization
-    df['organization_subject'] = df['Code'].apply(
-        lambda x: building_department_subject(sha256(x.encode('utf-8')).hexdigest()))
+    # # Organization
+    # df['pertainsToOrganization'] = df['Code'].apply(
+    #     lambda x: building_department_subject(sha256(x.encode('utf-8')).hexdigest()))
 
     # Building
     df['building_subject'] = df['Code'].apply(lambda x: building_subject(sha256(x.encode('utf-8')).hexdigest()))
@@ -49,11 +49,16 @@ def clean_static_data(df: pd.DataFrame, **kwargs):
     # Location
     df['location_subject'] = df['Code'].apply(lambda x: location_info_subject(sha256(x.encode('utf-8')).hexdigest()))
     df['hasLocationInfo'] = df['Code'].apply(location_info_subject)
-
     # fuzzy_location(Cache.province_dic, df, 'Municipality Unit', 'hasAddressProvince')
-    # fuzzy_location(Cache.province_dic, df, 'Municipality Unit', 'hasAddressProvince')
+    # fuzzy_location(Cache.municipality_dic, df, 'Municipality', 'hasAddressCity')
 
-    # TODO: static -> Organization, UtilityPoint, Device
+    # Device
+    df['device_subject'] = df['Meter Code'].apply(partial(device_subject, source=config['source']))
+    df['isObservedByDevice'] = df['device_subject'].apply(lambda x: n[x])
+
+    # Utility Point
+    df['utility_point_subject'] = df['Meter Code'].apply(delivery_subject)
+
 
     return df
 

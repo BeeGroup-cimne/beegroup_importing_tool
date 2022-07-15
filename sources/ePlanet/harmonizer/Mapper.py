@@ -1,5 +1,7 @@
-from utils.rdf_utils.ontology.bigg_classes import Building, LocationInfo, BuildingSpace, Organization
-from utils.rdf_utils.ontology.namespaces_definition import Bigg, countries
+from utils.data_transformations import to_object_property
+from utils.rdf_utils.ontology.bigg_classes import Building, LocationInfo, BuildingSpace, Organization, Device, \
+    UtilityPointOfDelivery
+from utils.rdf_utils.ontology.namespaces_definition import Bigg, countries, bigg_enums
 
 
 class Mapper(object):
@@ -11,55 +13,6 @@ class Mapper(object):
         Organization.set_namespace(namespace)
 
     def get_mappings(self, group):
-        organization = {
-            "name": "organization",
-            "class": Organization,
-            "type": {
-                "origin": "static"
-            },
-            "params": {
-                "raw": {
-                    "subject": "ePlanet",
-                    "organizationName": "ePlanet"
-                }
-            },
-            "links": {
-                "building_organization": {
-                    "type": Bigg.hasSubOrganization,
-                    "link": "__all__"
-                }
-            }
-        }
-
-        building_organization = {
-            "name": "building_organization",
-            "class": Organization,
-            "type": {
-                "origin": "row"
-            },
-            "params": {
-                "raw": {
-                    "organizationDivisionType": "Building"
-                },
-                "mapping": {
-                    "subject": {
-                        "key": "organization_subject",
-                        "operations": []
-                    },
-                    "organizationName": {
-                        "key": "Code",
-                        "operations": []
-                    }
-                }
-            },
-            "links": {
-                "buildings": {
-                    "type": Bigg.managesBuilding,
-                    "link": "subject"
-                }
-            }
-        }
-
         buildings = {
             "name": "buildings",
             "class": Building,
@@ -74,14 +27,22 @@ class Mapper(object):
                         "key": "building_subject",
                         "operations": []
                     },
+                    "buildingIDFromOrganization": {
+                        "key": "Code",
+                        "operations": []
+                    },
                     "hasLocationInfo": {
                         "key": "hasLocationInfo",
                         "operations": []
-                    }
-                    # "hasBuildingConstructionType": {
-                    #     "key": "hasBuildingConstructionType",
+                    },
+                    # "pertainsToOrganization": {
+                    #     "key": "pertainsToOrganization",
                     #     "operations": []
-                    # }
+                    # },
+                    "isObservedByDevice": {
+                        "key": "isObservedByDevice",
+                        "operations": []
+                    }
                 }
             },
             "links": {
@@ -158,7 +119,60 @@ class Mapper(object):
             }
         }
 
+        device = {
+            "name": "device",
+            "class": Device,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "raw": {
+                    "hasDeviceType": to_object_property("Meter.EnergyMeter", namespace=bigg_enums)
+                },
+                "mapping": {
+                    "subject": {
+                        "key": "device_subject",
+                        "operations": []
+                    },
+                    "deviceName": {
+                        "key": 'Meter Code',
+                        "operations": []
+                    }
+                }
+            }
+        }
+
+        utility_point = {
+            "name": "utility_point",
+            "class": UtilityPointOfDelivery,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "raw": {
+                    "hasUtilityType": to_object_property("Electricity", namespace=bigg_enums)
+                },
+                "mapping": {
+                    "subject": {
+                        "key": 'utility_point_subject',
+                        "operations": []
+                    },
+                    "pointOfDeliveryIDFromOrganization": {
+                        "key": 'Meter Code',
+                        "operations": []
+                    },
+                    "hasDevice": {
+                        "key": 'isObservedByDevice',
+                        "operations": []
+                    }
+                }
+            },
+            "links": {
+
+            }
+        }
+
         grouped_modules = {
-            "static": [buildings, locations, building_space]
+            "static": [buildings, locations, building_space, device, utility_point]
         }
         return grouped_modules[group]
