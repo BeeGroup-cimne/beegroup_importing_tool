@@ -1,12 +1,13 @@
+from hashlib import sha256
 from functools import partial
 
 import pandas as pd
 from dateutil.parser import parse
 from rdflib import Namespace
 
-from harmonizer.cache import Cache
 from sources.ePlanet.harmonizer.Mapper import Mapper
-from utils.data_transformations import decode_hbase, building_subject, fuzzy_dictionary_match, fuzz_params
+from utils.data_transformations import decode_hbase, building_subject, fuzzy_dictionary_match, fuzz_params, \
+    location_info_subject
 
 STATIC_COLUMNS = ['Year', 'Month', 'Code', 'Municipality Unit', 'Municipality', 'Region',
                   'Office', 'Meter num', 'Bill num', 'Bill num 2', 'Name', 'Street',
@@ -26,15 +27,26 @@ TS_COLUMNS = ['Year', 'Month', 'Code', 'Bill num', 'Bill num 2', 'Bill Issuing D
               'Municipality Unit 1']
 
 
-def clean_static_data(df: pd.DataFrame):
+def clean_static_data(df: pd.DataFrame, **kwargs):
+    namespace = kwargs['namespace']
+    config = kwargs['config']
+    n = Namespace(namespace)
+
     # Building
     df['building_subject'] = df['Code'].apply(building_subject)
-
     # df['hasBuildingConstructionType'] = df['Type Of Building'].apply()
-    # Location
-    fuzzy_location(Cache.province_dic, df, 'Municipality Unit', '')
+    # set_taxonomy_to_df(df, 'Name')
 
-    # TODO: static -> Building, Locations, Organization, UtilityPoint, Device
+    # Building Space
+
+    # Location
+    df['location_subject'] = df['Code'].apply(lambda x: location_info_subject(sha256(x.encode('utf-8')).hexdigest()))
+    df['hasLocationInfo'] = df['Code'].apply(location_info_subject)
+
+    # fuzzy_location(Cache.province_dic, df, 'Municipality Unit', 'hasAddressProvince')
+    # fuzzy_location(Cache.province_dic, df, 'Municipality Unit', 'hasAddressProvince')
+
+    # TODO: static -> Organization, UtilityPoint, Device
 
     return df
 
@@ -74,7 +86,7 @@ def harmonize_data(data, **kwargs):
     df_static = df[STATIC_COLUMNS].copy()
     df_ts = df[TS_COLUMNS].copy()
 
-    clean_static_data(df_static)
+    clean_static_data(df_static, **kwargs)
     clean_ts_data(df_ts)
 
     mapper = Mapper(config['source'], n)
