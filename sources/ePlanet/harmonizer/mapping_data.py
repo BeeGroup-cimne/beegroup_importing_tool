@@ -1,7 +1,6 @@
 from functools import partial
 from hashlib import sha256
 
-import numpy as np
 import pandas as pd
 from dateutil.parser import parse
 from neo4j import GraphDatabase
@@ -72,7 +71,7 @@ def clean_ts_data(raw_df: pd.DataFrame, **kwargs):
     namespace = kwargs['namespace']
     config = kwargs['config']
     user = kwargs['user']
-    freq = 'None'
+    freq = 'Undefined'
 
     n = Namespace(namespace)
 
@@ -95,34 +94,20 @@ def clean_ts_data(raw_df: pd.DataFrame, **kwargs):
 
         df['device_subject'] = df['Meter Code'].apply(partial(device_subject, source=config['source']))
 
-    with neo.session() as session:
-        for index, row in df.iterrows():
-            device_uri = str(n[row['device_subject']])
-            sensor_id = sensor_subject(config['source'], row['subject'], 'EnergyConsumptionGridElectricity', "RAW",
-                                       freq)
+        with neo.session() as session:
+            for index, row in df.iterrows():
+                device_uri = str(n[row['device_subject']])
+                sensor_id = sensor_subject(config['source'], row['subject'], 'EnergyConsumptionGridElectricity', "RAW",
+                                           freq)
 
-            sensor_uri = str(n[sensor_id])
-            measurement_id = sha256(sensor_uri.encode("utf-8"))
-            measurement_id = measurement_id.hexdigest()
-            measurement_uri = str(n[measurement_id])
-            create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
-                          bigg_enums.EnergyConsumptionGridElectricity, bigg_enums.TrustedModel,
-                          measurement_uri,
-                          False, False, freq, "SUM", row['Date'], row['epc_date'])
-
-            reduced_df = df[['subject', measured_property_df[i],
-                             'epc_date',
-                             'epc_date_before']]
-
-            reduced_df['listKey'] = measurement_id
-            reduced_df['isRead'] = True
-            reduced_df['bucket'] = (df['epc_date_before'].values.astype(np.int64) // 10 ** 9) % settings.buckets
-            reduced_df['start'] = (df['epc_date_before'].values.astype(np.int64) // 10 ** 9) % settings.buckets
-            reduced_df['end'] = (df['epc_date'].values.astype(np.int64) // 10 ** 9) % settings.buckets
-
-            reduced_df.rename(
-                columns={measured_property_df[i]: "value"},
-                inplace=True)
+                sensor_uri = str(n[sensor_id])
+                measurement_id = sha256(sensor_uri.encode("utf-8"))
+                measurement_id = measurement_id.hexdigest()
+                measurement_uri = str(n[measurement_id])
+                create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
+                              bigg_enums.EnergyConsumptionGridElectricity, bigg_enums.TrustedModel,
+                              measurement_uri,
+                              False, False, freq, "SUM", row['Date'], row['EndDate'])
 
 
 def clean_general_data(df: pd.DataFrame):
