@@ -35,22 +35,16 @@ class Mapper(object):
                         "key": "hasLocationInfo",
                         "operations": []
                     },
+                    "hasSpace": {
+                        "key": "hasSpace",
+                        "operations": []
+                    },
                     # "pertainsToOrganization": {
                     #     "key": "pertainsToOrganization",
                     #     "operations": []
                     # },
-                    "isObservedByDevice": {
-                        "key": "isObservedByDevice",
-                        "operations": []
-                    }
                 }
             },
-            "links": {
-                "device": {
-                    "type": Bigg.isObservedByDevice,
-                    "link": "subject"
-                }
-            }
         }
 
         building_space = {
@@ -72,6 +66,10 @@ class Mapper(object):
                         "key": "hasBuildingSpaceUseType",
                         "operations": []
                     },
+                    "isObservedByDevice": {
+                        "key": "isObservedByDevice",
+                        "operations": []
+                    }
                 }
             },
             "links": {
@@ -166,9 +164,6 @@ class Mapper(object):
                         "operations": []
                     }
                 }
-            },
-            "links": {
-
             }
         }
 
