@@ -33,6 +33,7 @@ TS_COLUMNS = ['Year', 'Month', 'Code', 'Bill num', 'Bill num 2', 'Bill Issuing D
               'Total VAT', 'Total ERT', 'Municipal TAX', 'Total TAP', 'EETIDE',
               'Total Account', 'Total Current Month', 'Account Type',
               'Municipality Unit 1']
+
 DEBUG_MODE = True
 
 

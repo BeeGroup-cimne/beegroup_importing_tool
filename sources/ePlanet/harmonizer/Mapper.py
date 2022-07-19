@@ -1,7 +1,7 @@
 from utils.data_transformations import to_object_property
 from utils.rdf_utils.ontology.bigg_classes import Building, LocationInfo, BuildingSpace, Organization, Device, \
     UtilityPointOfDelivery
-from utils.rdf_utils.ontology.namespaces_definition import Bigg, countries, bigg_enums
+from utils.rdf_utils.ontology.namespaces_definition import countries, bigg_enums
 
 
 class Mapper(object):
@@ -11,6 +11,8 @@ class Mapper(object):
         LocationInfo.set_namespace(namespace)
         BuildingSpace.set_namespace(namespace)
         Organization.set_namespace(namespace)
+        Device.set_namespace(namespace)
+        UtilityPointOfDelivery.set_namespace(namespace)
 
     def get_mappings(self, group):
         buildings = {
@@ -76,8 +78,6 @@ class Mapper(object):
                     }
                 }
             },
-            "links": {
-            }
         }
 
         locations = {
@@ -111,12 +111,6 @@ class Mapper(object):
                         "key": "hasAddressProvince",
                         "operations": []
                     }
-                }
-            },
-            "links": {
-                "device": {
-                    "type": Bigg.isObservedByDevice,
-                    "link": "subject"
                 }
             }
         }
