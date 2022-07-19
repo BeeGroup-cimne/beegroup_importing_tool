@@ -30,5 +30,5 @@ class Plugin(SourcePlugin):
     def get_store_table(self, message):
         if message['collection_type'] == "devices":
             return None  # Useless info
-        else:
-            return f"{self.source_name}_ts_{message['collection_type']}_invoices_{message['user']}"  # TODO: Change
+        elif message['collection_type'] == "invoices":
+            return f"raw_Nedgia_ts_invoices__{message['user']}"
