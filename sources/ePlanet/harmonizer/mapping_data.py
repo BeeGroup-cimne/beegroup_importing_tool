@@ -10,7 +10,9 @@ import settings
 from sources.ePlanet.harmonizer.Mapper import Mapper
 from utils.data_transformations import decode_hbase, building_subject, fuzzy_dictionary_match, fuzz_params, \
     location_info_subject, building_space_subject, device_subject, delivery_subject, sensor_subject
+from utils.hbase import save_to_hbase
 from utils.neo4j import create_sensor
+from utils.nomenclature import harmonized_nomenclature
 from utils.rdf_utils.ontology.namespaces_definition import units, bigg_enums
 
 STATIC_COLUMNS = ['Year', 'Month', 'Code', 'Municipality Unit', 'Municipality', 'Region',
@@ -71,25 +73,26 @@ def clean_ts_data(raw_df: pd.DataFrame, **kwargs):
     namespace = kwargs['namespace']
     config = kwargs['config']
     user = kwargs['user']
-    freq = 'Undefined'
 
     n = Namespace(namespace)
 
-    df_group = raw_df.groupby('Meter Code')
     neo4j_connection = config['neo4j']
     neo = GraphDatabase.driver(**neo4j_connection)
 
     hbase_conn = config['hbase_store_harmonized_data']
 
-    for unique_value, df in df_group:
+    for unique_value, df in raw_df.groupby('Meter Code'):
+        dt_ini = df.iloc[0]['Date']
+        dt_end = df.iloc[-1]['Date']
+
         df['timestamp'] = df['Date'].view(int) // 10 ** 9
         df['EndDate'] = df['Date'].shift(-1)
 
         df["ts"] = df['Date']
         df["bucket"] = (df['timestamp'].apply(float) // settings.ts_buckets) % settings.buckets
         df['start'] = df['timestamp'].apply(decode_hbase)
-        df['end'] = df['EndDate'].view(int) / 10 ** 9
-        df['value'] = df['value']
+        df['end'] = df['EndDate'].view(int) // 10 ** 9
+        df['value'] = df['Electricity Consumption']
         df['isReal'] = True
 
         df['device_subject'] = df['Meter Code'].apply(partial(device_subject, source=config['source']))
@@ -97,17 +100,40 @@ def clean_ts_data(raw_df: pd.DataFrame, **kwargs):
         with neo.session() as session:
             for index, row in df.iterrows():
                 device_uri = str(n[row['device_subject']])
-                sensor_id = sensor_subject(config['source'], row['subject'], 'EnergyConsumptionGridElectricity', "RAW",
-                                           freq)
+                sensor_id = sensor_subject(config['source'], row['Meter Code'], 'EnergyConsumptionGridElectricity',
+                                           "RAW",
+                                           "")
 
                 sensor_uri = str(n[sensor_id])
                 measurement_id = sha256(sensor_uri.encode("utf-8"))
                 measurement_id = measurement_id.hexdigest()
                 measurement_uri = str(n[measurement_id])
+
                 create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
                               bigg_enums.EnergyConsumptionGridElectricity, bigg_enums.TrustedModel,
-                              measurement_uri,
-                              False, False, freq, "SUM", row['Date'], row['EndDate'])
+                              measurement_uri, False,
+                              False, False, "", "SUM", dt_ini, dt_end, settings.namespace_mappings)
+
+                df['listKey'] = measurement_id
+
+                reduced_df = df[['start', 'end', 'value', 'listKey', 'bucket', 'ts', 'isReal']]
+
+                device_table = harmonized_nomenclature(mode='online', data_type='EnergyConsumptionGridElectricity',
+                                                       R=True, C=False, O=False,
+                                                       aggregation_function='SUM',
+                                                       freq="", user=user)
+
+                save_to_hbase(reduced_df.to_dict(orient="records"), device_table, hbase_conn,
+                              [("info", ['end', 'isReal']), ("v", ['value'])],
+                              row_fields=['bucket', 'listKey', 'start'])
+
+                period_table = harmonized_nomenclature(mode='batch', data_type='EnergyConsumptionGridElectricity',
+                                                       R=False, C=False, O=False,
+                                                       aggregation_function='SUM', freq="", user=user)
+
+                save_to_hbase(df.to_dict(orient="records"), period_table, hbase_conn,
+                              [("info", ['end', 'isReal']), ("v", ['value'])],
+                              row_fields=['bucket', 'start', 'listKey'])
 
 
 def clean_general_data(df: pd.DataFrame):
