@@ -12,12 +12,14 @@ from utils.data_transformations import decode_hbase, building_subject, fuzzy_dic
     location_info_subject, building_space_subject, device_subject, delivery_subject, sensor_subject
 from utils.hbase import save_to_hbase
 from utils.neo4j import create_sensor
-from utils.nomenclature import harmonized_nomenclature
+from utils.nomenclature import harmonized_nomenclature, HARMONIZED_MODE
 from utils.rdf_utils.ontology.namespaces_definition import units, bigg_enums
+from utils.rdf_utils.rdf_functions import generate_rdf
+from utils.rdf_utils.save_rdf import save_rdf_with_source
 
 STATIC_COLUMNS = ['Year', 'Month', 'Code', 'Municipality Unit', 'Municipality', 'Region',
                   'Office', 'Meter num', 'Bill num', 'Bill num 2', 'Name', 'Street',
-                  'Street num', 'City', 'Meter Code', 'Type Of Building', 'Account Type',
+                  'Street num', 'City', 'Meter Code', 'Type Of Billing', 'Account Type',
                   'Municipality Unit 1']
 
 TS_COLUMNS = ['Year', 'Month', 'Code', 'Bill num', 'Bill num 2', 'Bill Issuing Day',
@@ -31,6 +33,7 @@ TS_COLUMNS = ['Year', 'Month', 'Code', 'Bill num', 'Bill num 2', 'Bill Issuing D
               'Total VAT', 'Total ERT', 'Municipal TAX', 'Total TAP', 'EETIDE',
               'Total Account', 'Total Current Month', 'Account Type',
               'Municipality Unit 1']
+DEBUG_MODE = True
 
 
 def clean_static_data(df: pd.DataFrame, **kwargs):
@@ -44,14 +47,10 @@ def clean_static_data(df: pd.DataFrame, **kwargs):
 
     # Building
     df['building_subject'] = df['Meter Code'].apply(building_subject)
-    # df['hasBuildingConstructionType'] = df['Type Of Building'].apply()
-    # set_taxonomy_to_df(df, 'Name')
 
     # Building Space
     df['building_space_subject'] = df['Meter Code'].apply(building_space_subject)
     df['hasSpace'] = df['building_space_subject'].apply(lambda x: n[x])
-    # TODO: set hasBuildingSpaceUseType using taxonomy -> Label Name
-    # df['hasBuildingSpaceUseType'] = df['hasBuildingSpaceUseType'].apply(building_space_subject)
 
     # Location
     df['location_subject'] = df['Meter Code'].apply(location_info_subject)
@@ -69,7 +68,7 @@ def clean_static_data(df: pd.DataFrame, **kwargs):
     return df
 
 
-def clean_ts_data(raw_df: pd.DataFrame, **kwargs):
+def harmonize_ts_data(raw_df: pd.DataFrame, **kwargs):
     namespace = kwargs['namespace']
     config = kwargs['config']
     user = kwargs['user']
@@ -118,22 +117,24 @@ def clean_ts_data(raw_df: pd.DataFrame, **kwargs):
 
                 reduced_df = df[['start', 'end', 'value', 'listKey', 'bucket', 'ts', 'isReal']]
 
-                device_table = harmonized_nomenclature(mode='online', data_type='EnergyConsumptionGridElectricity',
+                device_table = harmonized_nomenclature(mode=HARMONIZED_MODE.ONLINE,
+                                                       data_type='EnergyConsumptionGridElectricity',
                                                        R=True, C=False, O=False,
                                                        aggregation_function='SUM',
                                                        freq="", user=user)
 
-                save_to_hbase(reduced_df.to_dict(orient="records"), device_table, hbase_conn,
-                              [("info", ['end', 'isReal']), ("v", ['value'])],
-                              row_fields=['bucket', 'listKey', 'start'])
-
-                period_table = harmonized_nomenclature(mode='batch', data_type='EnergyConsumptionGridElectricity',
+                period_table = harmonized_nomenclature(mode=HARMONIZED_MODE.BATCH,
+                                                       data_type='EnergyConsumptionGridElectricity',
                                                        R=False, C=False, O=False,
                                                        aggregation_function='SUM', freq="", user=user)
+                if not DEBUG_MODE:
+                    save_to_hbase(reduced_df.to_dict(orient="records"), device_table, hbase_conn,
+                                  [("info", ['end', 'isReal']), ("v", ['value'])],
+                                  row_fields=['bucket', 'listKey', 'start'])
 
-                save_to_hbase(df.to_dict(orient="records"), period_table, hbase_conn,
-                              [("info", ['end', 'isReal']), ("v", ['value'])],
-                              row_fields=['bucket', 'start', 'listKey'])
+                    save_to_hbase(df.to_dict(orient="records"), period_table, hbase_conn,
+                                  [("info", ['end', 'isReal']), ("v", ['value'])],
+                                  row_fields=['bucket', 'start', 'listKey'])
 
 
 def clean_general_data(df: pd.DataFrame):
@@ -170,12 +171,14 @@ def harmonize_data(data, **kwargs):
     df_static = df[STATIC_COLUMNS].copy()
     df_ts = df[TS_COLUMNS].copy()
 
-    clean_static_data(df_static, **kwargs)
-    clean_ts_data(df_ts)
+    df_static = clean_static_data(df_static, **kwargs)
 
     mapper = Mapper(config['source'], n)
-    # g = generate_rdf(mapper.get_mappings("all"), df)
-    #
-    # g.serialize('output.ttl', format="ttl")
-    #
-    # save_rdf_with_source(g, config['source'], config['neo4j'])
+    g = generate_rdf(mapper.get_mappings("static"), df_static)
+
+    g.serialize('output.ttl', format="ttl")
+
+    if not DEBUG_MODE:
+        save_rdf_with_source(g, config['source'], config['neo4j'])
+
+    harmonize_ts_data(df_ts)

@@ -39,6 +39,10 @@ class Mapper(object):
                         "key": "hasSpace",
                         "operations": []
                     },
+                    "buildingName": {
+                        "key": "Name",
+                        "operations": []
+                    },
                     # "pertainsToOrganization": {
                     #     "key": "pertainsToOrganization",
                     #     "operations": []
@@ -62,10 +66,10 @@ class Mapper(object):
                         "key": "building_space_subject",
                         "operations": []
                     },
-                    "hasBuildingSpaceUseType": {
-                        "key": "hasBuildingSpaceUseType",
-                        "operations": []
-                    },
+                    # "hasBuildingSpaceUseType": {
+                    #     "key": "hasBuildingSpaceUseType",
+                    #     "operations": []
+                    # },
                     "isObservedByDevice": {
                         "key": "isObservedByDevice",
                         "operations": []

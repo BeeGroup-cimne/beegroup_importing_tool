@@ -11,7 +11,7 @@ from utils.utils import log_string
 
 COLUMN_NAMES = ['Year', 'Month', 'Code', 'Municipality Unit', 'Municipality', 'Region', 'Office', 'Meter num',
                 'Bill num', 'Bill num 2', 'Name', 'Street', 'Street num', 'City', 'Bill Issuing Day', 'Month1', 'Year1',
-                'Meter Code', 'Type Of Building', 'Current Record', 'Previous Record', 'Variable', 'Recording Date',
+                'Meter Code', 'Type Of Billing', 'Current Record', 'Previous Record', 'Variable', 'Recording Date',
                 'Previous Recording Date', 'Electricity Consumption', 'Electricity Cost', 'VAT', 'Other',
                 'Prev payment',
                 'Energy Value', 'VAT Prev Payment', 'EPT', 'Out service', 'Debit/Credit', 'ETMEAR', 'VAT ETMEAR',
