@@ -28,6 +28,7 @@ def gather_data(config, settings, args):
             path = f"{args.file}/{file}"
             df = pd.read_excel(path,
                                skiprows=7, header=None, names=COLUMN_NAMES)
+            df = df.dropna(axis=0, how='all')
 
             save_data(data=df.to_dict(orient='records'), data_type="BuildingInfo",
                       row_keys=["Year", "Month", 'Code'],
