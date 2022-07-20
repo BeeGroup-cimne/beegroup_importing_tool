@@ -9,11 +9,6 @@ class SourcePlugin(object):
     def __init__(self, settings=None):
         self.settings = settings
         self.config = utils.read_config(settings.conf_file)
-
-        self.config['data_sources'] = {self.source_name: json.loads(pkgutil.get_data(self.__class__.__module__,
-                                                                                     "config.json"))}
-        print("AAAAAAA")
-
         self.config['source'] = self.source_name
 
     def gather(self, arguments):
