@@ -8,15 +8,19 @@
  CALL n10s.nsprefixes.add("wgs","http://www.w3.org/2003/01/geo/wgs84_pos#");
  ###CALL n10s.nsprefixes.add("ttt","http://ttt.cat#");
 
+## TEST
+CALL n10s.graphconfig.init({ keepLangTag: true, handleMultival:"ARRAY", multivalPropList:["http://www.w3.org/2000/01/rdf-schema#label", "http://www.w3.org/2000/01/rdf-schema#comment", "http://www.geonames.org/ontology#officialName"]});
+ CALL n10s.nsprefixes.add("bigg","http://bigg-project.eu/ontology#");
+ CALL n10s.nsprefixes.add("geo","http://www.geonames.org/ontology#");
+ CALL n10s.nsprefixes.add("unit","http://qudt.org/vocab/unit/");
+ CALL n10s.nsprefixes.add("wgs","http://www.w3.org/2003/01/geo/wgs84_pos#");
 
 # Create the dictionary of elements
 echo "dict"
 python3 -m set_up.Dictionaries
 
-# set "en" names to taxonomies.
-Match(n:bigg__BuildingSpaceUseType) set n.rdfs__label=[apoc.text.regreplace(apoc.text.split(apoc.text.split(n.uri,"#")[1],"\.")[-1], "(.)([A-Z])", "$1 $2")+"@en"];
-Match(n:bigg__AreaType) set n.rdfs__label=[apoc.text.regreplace(apoc.text.split(apoc.text.split(n.uri,"#")[1],"\.")[-1], "(.)([A-Z])", "$1 $2")+"@en"];
-Match(n:bigg__EnergyEfficiencyMeasureType) set n.rdfs__label=[apoc.text.regreplace(apoc.text.split(apoc.text.split(n.uri,"#")[1],"\.")[-1], "(.)([A-Z])", "$1 $2")+"@en"];
+# add translation labels
+python3 -m utils.rdf_utils.ontology.taxonomy_translations  translate
 
 ### General Setup
 echo "weather stations"
