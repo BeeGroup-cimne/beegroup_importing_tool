@@ -1,6 +1,7 @@
 from sources import SourcePlugin
 from sources.ePlanet.gather import gather
 from sources.ePlanet.harmonizer.mapping_data import harmonize_data
+from utils.nomenclature import raw_nomenclature, RAW_MODE
 
 
 class Plugin(SourcePlugin):
@@ -21,4 +22,5 @@ class Plugin(SourcePlugin):
         }
 
     def get_store_table(self, message):
-        return f"{self.source_name}_{message['collection_type']}_BuildingInfo__{message['user']}"
+        return raw_nomenclature(source=self.source_name, mode=RAW_MODE.STATIC, data_type=message["collection_type"],
+                                frequency="", user=message['user'])

@@ -33,7 +33,7 @@ TS_COLUMNS = ['Year', 'Month', 'Code', 'Bill num', 'Bill num 2', 'Bill Issuing D
               'Total Account', 'Total Current Month', 'Account Type',
               'Municipality Unit 1']
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 
 def clean_static_data(df: pd.DataFrame, **kwargs):
