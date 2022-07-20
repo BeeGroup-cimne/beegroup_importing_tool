@@ -1,4 +1,4 @@
-FROM docker.tech.beegroup-cimne.com/admin/enma-job:latest as cached
+FROM docker.tech.beegroup-cimne.com/admin/enma-job-3.10:latest as cached
 ENV DEBIAN_FRONTEND=noninteractive
 ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
 RUN git clone https://github.com/BeeGroup-cimne/beegroup_importing_tool.git
