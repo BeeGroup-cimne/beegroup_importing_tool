@@ -7,4 +7,4 @@ secret_password = os.getenv("SECRET_PASSWORD")
 namespace_mappings = {"bigg": "bigg", "wgs": "wgs"}
 ts_buckets = 10000000
 buckets = 20
-sources_priorities = ["GPG", "bulgaria", "BIS", "gemweb", "DatadisSource", "Genercat", "Nedgia", "Weather"]
+sources_priorities = ["Org", "GPG", "bulgaria", "BIS", "gemweb", "datadis", "CEEC3X", "genercat", "nedgia", "weather"]
