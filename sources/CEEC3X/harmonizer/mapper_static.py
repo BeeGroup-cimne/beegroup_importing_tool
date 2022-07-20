@@ -34,8 +34,9 @@ def clean_DatosGeneralesyGeometria_dataframes(df, sources):
     df.loc[:, 'netfloor_area_subject'] = df.building_organization_code.apply(partial(net_area_subject, a_source=sources))
     df.loc[:, 'heated_area_subject'] = df.building_organization_code.apply(partial(heated_area_subject, a_source=sources))
     df.loc[:, 'cooling_area_subject'] = df.building_organization_code.apply(partial(cooled_area_subject, a_source=sources))
-    df.loc[:, 'heated_area_value'] = float(df.SuperficieHabitable) * float((float(df.PorcentajeSuperficieHabitableCalefactada)/100))
-    df.loc[:, 'cooling_area_value'] = float(df.SuperficieHabitable) * float((float(df.PorcentajeSuperficieHabitableRefrigerada)/100))
+    df.loc[:, 'heated_area_value'] = f"{float(df.SuperficieHabitable) * float((float(df.PorcentajeSuperficieHabitableCalefactada)/100)):.3f}"
+    df.loc[:, 'cooling_area_value'] = f"{float(df.SuperficieHabitable) * float((float(df.PorcentajeSuperficieHabitableRefrigerada)/100)):.3f}"
+
 
 def clean_IdentificacionEdificio_dataframes(df, source):
     df.loc[:, 'building_subject'] = df.building_organization_code.apply(building_subject)
