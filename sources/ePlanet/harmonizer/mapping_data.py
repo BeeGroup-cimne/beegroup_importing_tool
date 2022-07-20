@@ -33,8 +33,6 @@ TS_COLUMNS = ['Year', 'Month', 'Code', 'Bill num', 'Bill num 2', 'Bill Issuing D
               'Total Account', 'Total Current Month', 'Account Type',
               'Municipality Unit 1']
 
-DEBUG_MODE = False
-
 
 def clean_static_data(df: pd.DataFrame, **kwargs):
     namespace = kwargs['namespace']
@@ -126,14 +124,14 @@ def harmonize_ts_data(raw_df: pd.DataFrame, **kwargs):
                                                        data_type='EnergyConsumptionGridElectricity',
                                                        R=False, C=False, O=False,
                                                        aggregation_function='SUM', freq="", user=user)
-                if not DEBUG_MODE:
-                    save_to_hbase(reduced_df.to_dict(orient="records"), device_table, hbase_conn,
-                                  [("info", ['end', 'isReal']), ("v", ['value'])],
-                                  row_fields=['bucket', 'listKey', 'start'])
 
-                    save_to_hbase(df.to_dict(orient="records"), period_table, hbase_conn,
-                                  [("info", ['end', 'isReal']), ("v", ['value'])],
-                                  row_fields=['bucket', 'start', 'listKey'])
+                save_to_hbase(reduced_df.to_dict(orient="records"), device_table, hbase_conn,
+                              [("info", ['end', 'isReal']), ("v", ['value'])],
+                              row_fields=['bucket', 'listKey', 'start'])
+
+                save_to_hbase(df.to_dict(orient="records"), period_table, hbase_conn,
+                              [("info", ['end', 'isReal']), ("v", ['value'])],
+                              row_fields=['bucket', 'start', 'listKey'])
 
 
 def clean_general_data(df: pd.DataFrame):
@@ -183,7 +181,6 @@ def harmonize_data(data, **kwargs):
 
     g.serialize('output.ttl', format="ttl")
 
-    if not DEBUG_MODE:
-        save_rdf_with_source(g, config['source'], config['neo4j'])
+    save_rdf_with_source(g, config['source'], config['neo4j'])
 
     harmonize_ts_data(df_ts)
