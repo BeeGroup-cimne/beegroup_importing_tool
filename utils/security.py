@@ -43,7 +43,7 @@ def encrypt(plain_text, password):
     # create cipher config
     cipher_config = AES.new(private_key, AES.MODE_CBC, iv)
     # return string with encrypted text
-    return (base64.b64encode(cipher_config.encrypt(padded_text))+base64.b64encode(salt)+base64.b64encode(iv)).decode()
+    return (base64.b64encode(cipher_config.encrypt(padded_text.encode()))+base64.b64encode(salt)+base64.b64encode(iv)).decode()
     # return a dictionary with the encrypted text
     # return {
     #     'cipher_text': base64.b64encode(cipher_config.encrypt(padded_text)),
