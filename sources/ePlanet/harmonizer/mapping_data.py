@@ -122,7 +122,7 @@ def harmonize_ts_data(raw_df: pd.DataFrame, **kwargs):
 
                 period_table = harmonized_nomenclature(mode=HARMONIZED_MODE.BATCH,
                                                        data_type='EnergyConsumptionGridElectricity',
-                                                       R=False, C=False, O=False,
+                                                       R=True, C=False, O=False,
                                                        aggregation_function='SUM', freq="", user=user)
 
                 save_to_hbase(reduced_df.to_dict(orient="records"), device_table, hbase_conn,
