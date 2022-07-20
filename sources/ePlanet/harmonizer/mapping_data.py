@@ -2,7 +2,6 @@ from functools import partial
 from hashlib import sha256
 
 import pandas as pd
-from dateutil.parser import parse
 from neo4j import GraphDatabase
 from rdflib import Namespace
 
@@ -82,13 +81,12 @@ def harmonize_ts_data(raw_df: pd.DataFrame, **kwargs):
     hbase_conn = config['hbase_store_harmonized_data']
 
     for unique_value, df in raw_df.groupby('Meter Code'):
-        dt_ini = df.iloc[0]['Date']
-        dt_end = df.iloc[-1]['Date']
+        dt_ini = df.iloc[0]['StartDate']
+        dt_end = df.iloc[-1]['EndDate']
 
-        df['timestamp'] = df['Date'].view(int) // 10 ** 9
-        df['EndDate'] = df['Date'].shift(-1)
+        df['timestamp'] = df['StartDate'].view(int) // 10 ** 9
 
-        df["ts"] = df['Date']
+        df["ts"] = df['StartDate']
         df["bucket"] = (df['timestamp'].apply(float) // settings.ts_buckets) % settings.buckets
         df['start'] = df['timestamp'].apply(decode_hbase)
         df['end'] = df['EndDate'].view(int) // 10 ** 9
@@ -140,9 +138,15 @@ def harmonize_ts_data(raw_df: pd.DataFrame, **kwargs):
 
 def clean_general_data(df: pd.DataFrame):
     df = df.applymap(decode_hbase)
-    df['Date'] = df.apply(lambda x: parse(f"{x['Year']}/{x['Month']}/1"), axis=1)
+
+    df['StartDate'] = df['Previous Recording Date'].astype(str).str.zfill(8)
+    df['EndDate'] = df['Recording Date'].astype(str).str.zfill(8)
+
+    df['StartDate'] = pd.to_datetime(df['StartDate'], format="%d%m%Y")
+    df['EndDate'] = pd.to_datetime(df['EndDate'], format="%d%m%Y")
+
     df['Meter Code'] = df['Meter Code'].astype(str)
-    df.sort_values(by=['Meter Code', 'Date'], inplace=True)
+    df.sort_values(by=['Meter Code', 'StartDate'], inplace=True)
 
     return df
 
