@@ -46,34 +46,6 @@ spec:
               subPath: config.json
 
             - name: biggsecrets
-              mountPath: /home/ubuntu/beegroup_importing_tool/sources/Datadis/config.json
-              subPath: config_datadis.json
-
-            - name: biggsecrets
-              mountPath: /home/ubuntu/beegroup_importing_tool/sources/Gemweb/config.json
-              subPath: config_gemweb.json
-
-            - name: biggsecrets
-              mountPath: /home/ubuntu/beegroup_importing_tool/sources/Genercat/config.json
-              subPath: config_genercat.json
-
-            - name: biggsecrets
-              mountPath: /home/ubuntu/beegroup_importing_tool/sources/GPG/config.json
-              subPath: config_gpg.json
-
-            - name: biggsecrets
-              mountPath: /home/ubuntu/beegroup_importing_tool/sources/Weather/config.json
-              subPath: config_weather.json
-
-            - name: biggsecrets
-              mountPath: /home/ubuntu/beegroup_importing_tool/sources/Nedgia/config.json
-              subPath: config_nedgia.json
-
-            - name: biggsecrets
-              mountPath: /home/ubuntu/beegroup_importing_tool/sources/BIS/config.json
-              subPath: config_bis.json
-
-            - name: biggsecrets
               mountPath: /home/ubuntu/beegroup_importing_tool/.env
               subPath: .env
 
@@ -84,20 +56,6 @@ spec:
               items:
               - key: config.json
                 path: config.json
-              - key: config_datadis.json
-                path: config_datadis.json
-              - key: config_gemweb.json
-                path: config_gemweb.json
-              - key: config_genercat.json
-                path: config_genercat.json
-              - key: config_gpg.json
-                path: config_gpg.json
-              - key: config_weather.json
-                path: config_weather.json
-              - key: config_nedgia.json
-                path: config_nedgia.json
-              - key: config_bis.json
-                path: config_bis.json
               - key: .env
                 path: .env
           restartPolicy: OnFailure
@@ -152,34 +110,6 @@ spec:
               subPath: config.json
 
             - name: biggsecrets
-              mountPath: /home/ubuntu/beegroup_importing_tool/sources/Datadis/config.json
-              subPath: config_datadis.json
-
-            - name: biggsecrets
-              mountPath: /home/ubuntu/beegroup_importing_tool/sources/Gemweb/config.json
-              subPath: config_gemweb.json
-
-            - name: biggsecrets
-              mountPath: /home/ubuntu/beegroup_importing_tool/sources/Genercat/config.json
-              subPath: config_genercat.json
-
-            - name: biggsecrets
-              mountPath: /home/ubuntu/beegroup_importing_tool/sources/GPG/config.json
-              subPath: config_gpg.json
-
-            - name: biggsecrets
-              mountPath: /home/ubuntu/beegroup_importing_tool/sources/Weather/config.json
-              subPath: config_weather.json
-
-            - name: biggsecrets
-              mountPath: /home/ubuntu/beegroup_importing_tool/sources/Nedgia/config.json
-              subPath: config_nedgia.json
-
-            - name: biggsecrets
-              mountPath: /home/ubuntu/beegroup_importing_tool/sources/BIS/config.json
-              subPath: config_bis.json
-
-            - name: biggsecrets
               mountPath: /home/ubuntu/beegroup_importing_tool/.env
               subPath: .env
 
@@ -191,20 +121,6 @@ spec:
               items:
               - key: config.json
                 path: config.json
-              - key: config_datadis.json
-                path: config_datadis.json
-              - key: config_gemweb.json
-                path: config_gemweb.json
-              - key: config_genercat.json
-                path: config_genercat.json
-              - key: config_gpg.json
-                path: config_gpg.json
-              - key: config_weather.json
-                path: config_weather.json
-              - key: config_nedgia.json
-                path: config_nedgia.json
-              - key: config_bis.json
-                path: config_bis.json
               - key: .env
                 path: .env
           restartPolicy: OnFailure
