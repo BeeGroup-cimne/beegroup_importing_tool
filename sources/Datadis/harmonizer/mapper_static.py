@@ -33,7 +33,7 @@ def get_nif_map(user, conn):
 
 def prepare_df_clean_linked(df):
     df.loc[:, 'location_subject'] = df.NumEns.apply(id_zfill).apply(location_info_subject)
-    province_dic = Cache.province_dic
+    province_dic = Cache.province_dic_ES
     province_fuzz = partial(fuzzy_dictionary_match,
                            map_dict=fuzz_params(province_dic, ['ns1:name']),
                            default=None)
@@ -41,7 +41,7 @@ def prepare_df_clean_linked(df):
     province_map = {x: province_fuzz(x) for x in unique_prov}
     df.loc[:, 'hasAddressProvince'] = df.province.map(province_map)
 
-    municipality_dic = Cache.municipality_dic
+    municipality_dic = Cache.municipality_dic_ES
     for prov_k, prov_uri in province_map.items():
         if prov_uri is None:
             df.loc[df['province'] == prov_k, 'hasAddressCity'] = None

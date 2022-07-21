@@ -4,6 +4,7 @@ from datetime import timedelta
 from neo4j import GraphDatabase
 from rdflib import Namespace
 
+import settings
 from utils.data_transformations import *
 
 from utils.hbase import save_to_hbase

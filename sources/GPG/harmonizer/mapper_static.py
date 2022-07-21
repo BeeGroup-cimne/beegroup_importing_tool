@@ -74,7 +74,7 @@ def clean_dataframe(df, source):
     df['building'] = df['Num_Ens_Inventari'].apply(id_zfill).apply(building_subject)
     df['buildingIDFromOrganization'] = df['Num_Ens_Inventari'].apply(id_zfill)
     df['location_info'] = df['Num_Ens_Inventari'].apply(id_zfill).apply(location_info_subject)
-    province_dic = Cache.province_dic
+    province_dic = Cache.province_dic_ES
     province_fuzz = partial(fuzzy_dictionary_match,
                             map_dict=fuzz_params(province_dic, ['ns1:name']),
                             default=None
@@ -83,7 +83,7 @@ def clean_dataframe(df, source):
     prov_map = {k: province_fuzz(k) for k in unique_prov}
     df['hasAddressProvince'] = df['Provincia'].map(prov_map)
 
-    municipality_dic = Cache.municipality_dic
+    municipality_dic = Cache.municipality_dic_ES
     for prov, df_group in df.groupby('hasAddressProvince'):
         municipality_fuzz = partial(fuzzy_dictionary_match,
                                     map_dict=fuzz_params(
