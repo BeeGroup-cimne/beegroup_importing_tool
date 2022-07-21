@@ -41,7 +41,7 @@ def clean_DatosGeneralesyGeometria_dataframes(df, sources):
 def clean_IdentificacionEdificio_dataframes(df, source):
     df.loc[:, 'building_subject'] = df.building_organization_code.apply(building_subject)
     df.loc[:, 'location_subject'] = df.building_organization_code.apply(location_info_subject)
-    municipality_dic = Cache.municipality_dic
+    municipality_dic = Cache.municipality_dic_ES
     municipality_fuzz = partial(fuzzy_dictionary_match,
                                 map_dict=fuzz_params(
                                     municipality_dic,
@@ -50,7 +50,7 @@ def clean_IdentificacionEdificio_dataframes(df, source):
                                 default=None
                                 )
     df.loc[:, 'hasAddressCity'] = df['Municipio'].apply(municipality_fuzz)
-    province_dic = Cache.province_dic
+    province_dic = Cache.province_dic_ES
     province_fuzz = partial(fuzzy_dictionary_match,
                             map_dict=fuzz_params(
                                 province_dic,

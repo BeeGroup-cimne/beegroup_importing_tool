@@ -33,7 +33,7 @@ def clean_prepare_linked_df(df):
     unique_country = df.pais.unique()
     country_map = {k: country_fuzz(k) for k in unique_country}
     df['hasAddressCountry'] = df.pais.map(country_map)
-    province_dic = Cache.province_dic
+    province_dic = Cache.province_dic_ES
     prov_map = {}
     for label, value in country_map.items():
         df_group = df.groupby("pais").get_group(label)
@@ -57,7 +57,7 @@ def clean_prepare_linked_df(df):
         unique_province = df_group.provincia.unique()
         prov_map = {k: province_fuzz(k) for k in unique_province}
         df.loc[df['pais']==label, 'hasAddressProvince'] = df_group.provincia.map(prov_map)
-    municipality_dic = Cache.municipality_dic
+    municipality_dic = Cache.municipality_dic_ES
     for label, value in prov_map.items():
         df_group = df.groupby("provincia").get_group(label)
         if value:
