@@ -140,11 +140,15 @@ def clean_general_data(df: pd.DataFrame):
     df['StartDate'] = df['Previous Recording Date'].astype(str).str.zfill(8)
     df['EndDate'] = df['Recording Date'].astype(str).str.zfill(8)
 
+    df = df[~df['StartDate'].str.contains('^0{8}$')]
+    df = df[~df['EndDate'].str.contains('^0{8}$')]
+
     df['StartDate'] = pd.to_datetime(df['StartDate'], format="%d%m%Y")
     df['EndDate'] = pd.to_datetime(df['EndDate'], format="%d%m%Y")
 
     df['Meter Code'] = df['Meter Code'].astype(str)
     df.sort_values(by=['Meter Code', 'StartDate'], inplace=True)
+    df.drop_duplicates(inplace=True)
 
     return df
 

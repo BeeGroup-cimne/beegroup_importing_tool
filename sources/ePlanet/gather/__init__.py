@@ -27,7 +27,7 @@ def gather_data(config, settings, args):
         if file.endswith('.xlsx'):
             path = f"{args.file}/{file}"
             df = pd.read_excel(path,
-                               skiprows=7, header=None, names=COLUMN_NAMES)
+                               skiprows=7, header=None, names=COLUMN_NAMES, usecols="A:BA")
             df = df.dropna(axis=0, how='all')
 
             save_data(data=df.to_dict(orient='records'), data_type="BuildingInfo",
