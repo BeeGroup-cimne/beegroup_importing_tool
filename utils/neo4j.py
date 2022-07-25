@@ -116,7 +116,7 @@ def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estim
 
     bigg = ns_mappings['bigg']
     session.run(f"""
-        MATCH (device: {bigg}__Device {{uri:"{device_uri}"}})
+        MATCH (device {{uri:"{device_uri}"}})
         MATCH (msu: {bigg}__MeasurementUnit {{uri:"{unit_uri}"}})
         MATCH (se: {bigg}__SensorEstimationMethod {{uri:"{estimation_method_uri}"}})
         MATCH (s {{uri:"{sensor_uri}"}})   
