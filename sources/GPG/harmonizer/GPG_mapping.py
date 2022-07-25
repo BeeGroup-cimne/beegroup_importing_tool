@@ -169,7 +169,8 @@ class Mapper(object):
             "params": {
                 "raw": {
                     "hasAddressCountry":
-                        to_object_property("2510769/", namespace=countries)
+                        to_object_property("2510769/", namespace=countries),
+                    "addressTimeZone": "Europe/Madrid"
                 },
                 "mapping": {
                     "subject": {

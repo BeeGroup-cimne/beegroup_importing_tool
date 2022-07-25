@@ -51,6 +51,11 @@ bigg:addressStreetNumber a owl:DatatypeProperty ;
     rdfs:domain bigg:LocationInfo ;
     rdfs:range xsd:string .
 
+bigg:addressTimeZone a owl:DatatypeProperty ;
+    rdfs:label "address time zone" ;
+    rdfs:domain bigg:LocationInfo ;
+    rdfs:range xsd:string .
+
 bigg:buildingClosingHour a owl:DatatypeProperty ;
     rdfs:label "building closing hour" ;
     rdfs:domain bigg:Building ;
@@ -368,7 +373,6 @@ bigg:LocationInfo a owl:Class ;
 
 bigg:Organization a owl:Class ;
     rdfs:label "Organization" .
-
 
 # building-device
 
