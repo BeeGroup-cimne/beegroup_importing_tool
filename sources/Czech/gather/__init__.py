@@ -1,0 +1,75 @@
+import argparse
+import os
+
+import pandas as pd
+
+from utils.hbase import save_to_hbase
+from utils.kafka import save_to_kafka
+from utils.nomenclature import raw_nomenclature, RAW_MODE
+from utils.utils import log_string
+
+COLUMNS_BUILDINGS = ['ID', 'Country', 'Region', 'Municipality', 'Road', 'Road Number', 'PostalCode', 'Longitude',
+                     'Latitude', 'Name', 'Use Type', 'Owner', 'YearOfConstruction', 'GrossFloorArea', 'Renewable',
+                     'EnergyAudit', 'Monitoring', 'SolarPV', 'SolarThermal', 'SolarThermalPower', 'EnergyCertificate',
+                     'EnergyCertificateDate', 'EnergyCertificateQualification', 'HeatingSource',
+                     'OriginalInstalledPower', 'OriginalInstalledPowerAfter']
+
+
+def gather_building(arguments, settings, config, file_path):
+    df = pd.read_excel(file_path, skiprows=1, sheet_name=0, header=None, names=COLUMNS_BUILDINGS)
+
+    save_data(data=df.to_dict(orient="records"), data_type="BuildingInfo",
+              row_keys=["ePlanet Id"],
+              column_map=[("info", "all")], config=config, settings=settings, args=arguments)
+
+
+def gather_eem(arguments, settings, config, file_path):
+    df = pd.read_excel(file_path, skiprows=1, sheet_name=0)
+
+    save_data(data=df.to_dict(orient="records"), data_type="EnergyEfficiencyMeasure",
+              row_keys=["ePlanet Id"],
+              column_map=[("info", "all")], config=config, settings=settings, args=arguments)
+
+
+def save_data(data, data_type, row_keys, column_map, config, settings, args):
+    if args.store == "kafka":
+        try:
+            k_topic = config["kafka"]["topic"]
+            kafka_message = {
+                "namespace": args.namespace,
+                "user": args.user,
+                "collection_type": data_type,
+                "source": config['source'],
+                "row_keys": row_keys,
+                "data": data
+            }
+            save_to_kafka(topic=k_topic, info_document=kafka_message,
+                          config=config['kafka']['connection'], batch=settings.kafka_message_size)
+
+        except Exception as e:
+            log_string(f"error when sending message: {e}")
+
+    elif args.store == "hbase":
+
+        try:
+            h_table_name = raw_nomenclature(source=config['source'], mode=RAW_MODE.STATIC, data_type=data_type,
+                                            frequency="", user=args.user)
+
+            save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
+                          row_fields=row_keys)
+        except Exception as e:
+            log_string(f"Error saving datadis supplies to HBASE: {e}")
+    else:
+        log_string(f"store {config['store']} is not supported")
+
+
+def gather(arguments, settings, config):
+    ap = argparse.ArgumentParser(description='Gathering data from Czech')
+    ap.add_argument("-st", "--store", required=True, help="Where to store the data", choices=["kafka", "hbase"])
+    ap.add_argument("--user", "-u", help="The user importing the data", required=True)
+    ap.add_argument("--namespace", "-n", help="The subjects namespace uri", required=True)
+    ap.add_argument("-f", "--file", required=True, help="Excel file path to parse")
+    args = ap.parse_args(arguments)
+
+    for file in os.listdir(args.file):
+        gather_building(args, settings, config, f"{arguments.file}/{file}")
