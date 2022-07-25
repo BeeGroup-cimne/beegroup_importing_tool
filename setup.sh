@@ -58,7 +58,7 @@ python3 -m set_up.Weather -f data/Weather/cpcat.json -n "https://weather.beegrou
 echo "Datadis TS"
 python3 -m harmonizer -so Datadis -n "https://icaen.cat#" -u icaen -t fast-ts -c
 echo "Nedgia"
-python3 -m harmonizer -so Nedgia -n "https://icaen.cat#" -u icaen -tz "Europe/Madrid" -c
+python3 -m harmonizer -so Nedgia -n "https://icaen.cat#" -u icaen -tz -t fast-ts "Europe/Madrid" -c
 
 # General TS
 echo "Weather ts"
@@ -71,7 +71,8 @@ python3 -m set_up.DeviceAggregator -t "totalElectricityConsumption"
 echo "DeviceAggregators nedgia"
 python3 -m set_up.DeviceAggregator -t "totalGasConsumption"
 echo "DeviceAggregators weather"
-√
+python3 -m set_up.DeviceAggregator -t "externalWeather"
+
 # LOAD DATA KAFKA
 python3 -m gather -so GPG -f "data/GPG/Llistat immobles alta inventari (13-04-2021).xls" -n "https://icaen.cat#" -st kafka -u icaen
 python3 -m gather -so Gemweb -st kafka
