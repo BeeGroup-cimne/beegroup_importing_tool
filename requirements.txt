@@ -1,17 +1,21 @@
-BAC0==21.2.25
+aes==1.0.0
+attrs==21.4.0
+BAC0==21.12.3
 bacpypes==0.18.6
 beautifulsoup4==4.10.0
-beemeteo @ git+https://github.com/BeeGroup-cimne/beemeteo@v0.2.1
+beecell @ git+https://github.com/BeeGroup-cimne/beecell.git@500bc7a00cf3164ef0b7a6db445e987f4f415189
+beemeteo @ git+https://github.com/beedata-analytics/beemeteo@34339dcec712808b6f300a8f81415dbd656514d5
 bs4==0.0.1
 certifi==2021.10.8
 charset-normalizer==2.0.11
 click==8.1.3
 colorama==0.4.5
-datadis @ git+https://github.com/BeeGroup-cimne/beedis@v1.0.4
+datadis @ git+https://github.com/BeeGroup-cimne/beedis@6a7e87d3ac8060017dcb929d87ba58c17d32ec63
 et-xmlfile==1.1.0
 happybase==1.2.0
 idna==3.3
 importlib-metadata==4.11.0
+iniconfig==1.1.1
 isodate==0.6.1
 kafka-python==2.0.2
 mrjob==0.7.4
@@ -19,12 +23,16 @@ Naked==0.1.31
 neo4j==4.4.1
 numpy==1.21.5
 openpyxl==3.0.9
-pandas==1.4.3
+packaging==21.3
+pandas==1.3.5
+pluggy==1.0.0
 ply==3.11
-psutil==5.9.0
+psutil==5.9.1
+py==1.11.0
 pycryptodome==3.14.1
 pymongo==3.11.0
 pyparsing==3.0.7
+pytest==7.1.2
 python-dateutil==2.8.2
 python-dotenv==0.19.2
 python-forecastio==1.4.0
@@ -42,6 +50,7 @@ text-unidecode==1.3
 thefuzz==0.19.0
 thriftpy2==0.4.14
 timezonefinder==5.2.0
+tomli==2.0.1
 typing_extensions==4.1.1
 urllib3==1.26.8
 xlrd==2.0.1
