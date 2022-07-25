@@ -61,5 +61,35 @@ def harmonize_command_line(arguments, config=None, settings=None):
                 i += len(data_list)
                 log_string(f"{freq}: {i}", mongo=False)
                 harmonize_ts_data(data_list, freq=freq, namespace=args.namespace, user=args.user, config=config)
+    elif args.type == "fast-ts":
+        hbase = happybase.Connection(**hbase_conn)
+        ts_tables = [x for x in hbase.tables() if re.match(rf"raw_Datadis_ts_EnergyConsumptionGridElectricity_.*", x.decode())]
+        for h_table_name in ts_tables:
+            i = 0
+            freq = h_table_name.decode().split("_")[4]
+            row_start = ""
+            end = False
+            while not end:
+                end = True
+                for data in get_hbase_data_batch(hbase_conn, h_table_name, row_start=row_start, batch_size=1, limit=1):
+                    end = False
+                    data_list = []
+                    for key, row in data:
+                        item = dict()
+                        for k, v in row.items():
+                            k1 = re.sub("^info:", "", k.decode())
+                            k1 = re.sub("^v:", "", k1)
+                            item[k1] = v
+                        cups, ts = key.decode().split("~")
+                        print(cups)
+                        item.update({"cups": cups.encode("utf-8")})
+                        item.update({"timestamp": ts.encode("utf-8")})
+                        data_list.append(item)
+                    if len(data_list) <= 0:
+                        continue
+                    i += len(data_list)
+                    log_string(f"{freq}: {i}", mongo=False)
+                    harmonize_ts_data(data_list, freq=freq, namespace=args.namespace, user=args.user, config=config)
+                    row_start = cups[:-1] + chr(ord(cups[-1])+1)
     else:
         raise (NotImplementedError("invalid type: [static, ts]"))

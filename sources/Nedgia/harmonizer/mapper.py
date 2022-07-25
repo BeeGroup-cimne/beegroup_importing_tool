@@ -117,7 +117,6 @@ def harmonize_data_device(data, **kwargs):
     config = kwargs['config']
 
     neo = GraphDatabase.driver(**config['neo4j'])
-    n = Namespace(namespace)
     log_string("creating df", mongo=False)
     df = pd.DataFrame.from_records(data)
     log_string("preparing df", mongo=False)
