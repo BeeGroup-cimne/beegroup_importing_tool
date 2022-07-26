@@ -58,23 +58,35 @@ def gather(arguments, settings, config):
     args = ap.parse_args(arguments)
 
     if args.kinf_of_file == 'building_data':
-        df = pd.read_excel(args.file, skiprows=1, sheet_name=0, header=None, names=COLUMNS_BUILDINGS)
+        df = pd.read_excel(args.file, skiprows=1, sheet_name=0)
+        df = df.rename(columns={"Unikátní kód": 'Unique ID'}, inplace=True)
 
         save_data(data=df.to_dict(orient="records"), data_type="BuildingInfo",
-                  row_keys=["ePlanet Id"],
+                  row_keys=["Unique ID"],
                   column_map=[("info", "all")], config=config, settings=settings, args=arguments)
 
     if args.kinf_of_file == 'building_eem':
-        df = pd.read_excel(args.file, skiprows=1, sheet_name=0)
+        df = pd.read_excel(args.file, skiprows=1, sheet_name=1)
+        df.rename(columns={"Unikátní kód": 'Unique ID'}, inplace=True)
 
         save_data(data=df.to_dict(orient="records"), data_type="EnergyEfficiencyMeasure",
-                  row_keys=["ePlanet Id"],
+                  row_keys=["Unique ID"],
                   column_map=[("info", "all")], config=config, settings=settings, args=arguments)
 
     if args.kinf_of_file == 'municipality':
         df = pd.read_excel(args.files, skiprows=5)
-        df.dropna(how='all', axis='columns')
+        df.dropna(how='all', axis='columns', inplace=True)
+        unique_id = args.files.split('/')[-1].split['_'][0]
+        df['Unique ID'] = unique_id
+        save_data(data=df.to_dict(orient="records"), data_type="municipality_ts",
+                  row_keys=["Unique ID"],
+                  column_map=[("info", "all")], config=config, settings=settings, args=arguments)
 
     if args.kinf_of_file == 'region':
         df = pd.read_excel(args.files, sheet_name='souhrn', skiprows=100)
         df.dropna(how='all', axis='columns')
+
+        df['Unique ID'] = args.files.split('/')[-1]
+        save_data(data=df.to_dict(orient="records"), data_type="region_ts",
+                  row_keys=["Unique ID"],
+                  column_map=[("info", "all")], config=config, settings=settings, args=arguments)
