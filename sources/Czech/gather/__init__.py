@@ -1,5 +1,4 @@
 import argparse
-import os
 
 import pandas as pd
 
@@ -13,22 +12,6 @@ COLUMNS_BUILDINGS = ['ID', 'Country', 'Region', 'Municipality', 'Road', 'Road Nu
                      'EnergyAudit', 'Monitoring', 'SolarPV', 'SolarThermal', 'SolarThermalPower', 'EnergyCertificate',
                      'EnergyCertificateDate', 'EnergyCertificateQualification', 'HeatingSource',
                      'OriginalInstalledPower', 'OriginalInstalledPowerAfter']
-
-
-def gather_building(arguments, settings, config, file_path):
-    df = pd.read_excel(file_path, skiprows=1, sheet_name=0, header=None, names=COLUMNS_BUILDINGS)
-
-    save_data(data=df.to_dict(orient="records"), data_type="BuildingInfo",
-              row_keys=["ePlanet Id"],
-              column_map=[("info", "all")], config=config, settings=settings, args=arguments)
-
-
-def gather_eem(arguments, settings, config, file_path):
-    df = pd.read_excel(file_path, skiprows=1, sheet_name=0)
-
-    save_data(data=df.to_dict(orient="records"), data_type="EnergyEfficiencyMeasure",
-              row_keys=["ePlanet Id"],
-              column_map=[("info", "all")], config=config, settings=settings, args=arguments)
 
 
 def save_data(data, data_type, row_keys, column_map, config, settings, args):
@@ -69,7 +52,29 @@ def gather(arguments, settings, config):
     ap.add_argument("--user", "-u", help="The user importing the data", required=True)
     ap.add_argument("--namespace", "-n", help="The subjects namespace uri", required=True)
     ap.add_argument("-f", "--file", required=True, help="Excel file path to parse")
+    ap.add_argument("-kf", "--kind_of_file", required=True,
+                    help="Choice the kind of file that you would like to harmonize.",
+                    choices=['region', 'municipality', 'building_data', 'building_eem'])
     args = ap.parse_args(arguments)
 
-    for file in os.listdir(args.file):
-        gather_building(args, settings, config, f"{arguments.file}/{file}")
+    if args.kinf_of_file == 'building_data':
+        df = pd.read_excel(args.file, skiprows=1, sheet_name=0, header=None, names=COLUMNS_BUILDINGS)
+
+        save_data(data=df.to_dict(orient="records"), data_type="BuildingInfo",
+                  row_keys=["ePlanet Id"],
+                  column_map=[("info", "all")], config=config, settings=settings, args=arguments)
+
+    if args.kinf_of_file == 'building_eem':
+        df = pd.read_excel(args.file, skiprows=1, sheet_name=0)
+
+        save_data(data=df.to_dict(orient="records"), data_type="EnergyEfficiencyMeasure",
+                  row_keys=["ePlanet Id"],
+                  column_map=[("info", "all")], config=config, settings=settings, args=arguments)
+
+    if args.kinf_of_file == 'municipality':
+        df = pd.read_excel(args.files, skiprows=5)
+        df.dropna(how='all', axis='columns')
+
+    if args.kinf_of_file == 'region':
+        df = pd.read_excel(args.files, sheet_name='souhrn', skiprows=100)
+        df.dropna(how='all', axis='columns')
