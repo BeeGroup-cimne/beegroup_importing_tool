@@ -132,13 +132,13 @@ def harmonize_data_device(data, **kwargs):
     linked_supplies = df[df["NumEns"].isna() == False]
     unlinked_supplies = df[df["NumEns"].isna()]
 
-    for linked, df in [("linked", linked_supplies), ("unlinked", unlinked_supplies)]:
+    for linked, df_t in [("linked", linked_supplies), ("unlinked", unlinked_supplies)]:
         if linked == "linked":
-            prepare_df_clean_linked(df)
+            prepare_df_clean_linked(df_t)
         n = Namespace(namespace)
         log_string("mapping df", mongo=False)
         mapping = Mapping(config['source'], n)
-        g = generate_rdf(mapping.get_mappings(linked), df)
+        g = generate_rdf(mapping.get_mappings(linked), df_t)
         log_string("saving df", mongo=False)
         save_rdf_with_source(g, config['source'], config['neo4j'])
     log_string("linking df", mongo=False)

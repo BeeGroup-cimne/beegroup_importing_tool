@@ -65,14 +65,12 @@ def harmonize_command_line(arguments, config=None, settings=None):
                     dic_list.append(item)
                 if len(dic_list) <= 0:
                     continue
-                print(cups)
                 i += len(dic_list)
                 log_string(i, mongo=False)
                 df = pd.DataFrame.from_records(dic_list)
                 data_raw = pd.DataFrame(data={'CUPS': df['CUPS'].unique(), 'devices': df['CUPS'].unique()}).to_dict(
                     orient="records")
-
-                harmonize_data_device(data_raw, freq="PT1H", namespace=args.namespace, user=args.user, config=config)
+                harmonize_data_device(data_raw, namespace=args.namespace, user=args.user, config=config)
                 harmonize_data_ts(dic_list, namespace=args.namespace, user=args.user, config=config,
                                   timezone=args.timezone)
                 row_start = cups[:-1] + chr(ord(cups[-1]) + 1)
