@@ -101,3 +101,9 @@ python3 -m set_up.Organizations -f data/Organizations/bulgaria-organizations.xls
 # LOAD DATA HBASE
 
 python3 -m harmonizer -so Bulgaria -u "bulgaria" -n "https://bulgaria.bg#" -c
+
+
+# LOAD DATA KAFKA
+
+
+python3 -m gather -so Bulgaria -f "data/Bulgaria" -u "bulgaria" -n "https://bulgaria.bg#" -t summary -st kafka
