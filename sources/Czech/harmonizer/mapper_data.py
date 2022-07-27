@@ -1,9 +1,12 @@
+from functools import partial
+
 import numpy as np
 import pandas as pd
 from rdflib import Namespace
 
 from sources.Czech.harmonizer.Mapper import Mapper
-from utils.data_transformations import building_subject, decode_hbase, building_space_subject, to_object_property
+from utils.data_transformations import building_subject, decode_hbase, building_space_subject, to_object_property, \
+    location_info_subject, gross_area_subject
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.utils import read_config
@@ -43,6 +46,18 @@ def harmonize_building_info(data, **kwargs):
 
     df['hasBuildingSpaceUseType'] = df['hasBuildingSpaceUseType'].apply(
         lambda x: to_object_property(x, namespace=bigg_enums))
+
+    df['hasArea'] = df['gross_floor_area_subject'].apply(lambda x: n[x])
+
+    # Location
+    df['location_subject'] = df['Unique ID'].apply(location_info_subject)
+    df['hasLocationInfo'] = df['location_subject'].apply(lambda x: n[x])
+    # df['hasAddressCity'] = df['Unique ID'].apply(location_info_subject)
+    # df['hasAddressProvince'] = df['Unique ID'].apply(location_info_subject)
+
+    # Area
+    df['gross_floor_area_subject'] = df['Unique ID'].apply(partial(gross_area_subject, a_source=config['source']))
+    df['hasArea'] = df
 
     g = generate_rdf(mapper.get_mappings("building_info"), df)
     # save_rdf_with_source(g, config['source'], config['neo4j'])

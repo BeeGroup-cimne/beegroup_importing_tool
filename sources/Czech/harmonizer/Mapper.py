@@ -1,6 +1,7 @@
 from utils.rdf_utils.ontology.bigg_classes import Organization, Building, LocationInfo, BuildingSpace, Area, \
     EnergyPerformanceCertificate, BuildingSpaceUseType, AreaType, AreaUnitOfMeasurement, Device, \
     EnergyEfficiencyMeasure, Sensor, EnergySaving, BuildingConstructionElement, RenovationProject
+from utils.rdf_utils.ontology.namespaces_definition import countries, bigg_enums, units
 
 
 class Mapper(object):
@@ -47,6 +48,14 @@ class Mapper(object):
                         "key": "YearOfConstruction",
                         "operations": []
                     },
+                    "buildingOpeningHour": {
+                        "key": "Occupancy hours",
+                        "operations": []
+                    },
+                    "hasLocationInfo": {
+                        "key": "hasLocationInfo",
+                        "operations": []
+                    },
                     # "hasBuildingConstructionType": {
                     #     "key": "hasBuildingConstructionType",
                     #     "operations": []
@@ -78,21 +87,90 @@ class Mapper(object):
                         "key": "hasBuildingSpaceUseType",
                         "operations": []
                     },
+                    "hasArea": {
+                        "key": "hasArea",
+                        "operations": []
+                    },
                 }
             },
-            # "links": {
-            #     "gross_floor_area": {
-            #         "type": Bigg.hasArea,
-            #         "link": "subject"
-            #     },
-            #     "element": {
-            #         "type": Bigg.isAssociatedWithElement,
-            #         "link": "subject"
-            #     }
-            # }
+        }
+
+        location_info = {
+            "name": "location_info",
+            "class": LocationInfo,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "raw": {
+                    "hasAddressCountry": countries["3077311/"]
+                },
+                "mapping": {
+                    "subject": {
+                        "key": "location_subject",
+                        "operations": []
+                    },
+                    "hasAddressProvince": {
+                        "key": "hasAddressProvince",
+                        "operations": []
+                    },
+                    "addressLatitude": {
+                        "key": "Latitude",
+                        "operations": []
+                    },
+                    "addressLongitude": {
+                        "key": "Longitude",
+                        "operations": []
+                    },
+                    "addressStreetName": {
+                        "key": "Road",
+                        "operations": []
+                    },
+                    "addressStreetNumber": {
+                        "key": "Road Number",
+                        "operations": []
+                    },
+                    "addressPostalCode": {
+                        "key": "PostalCode",
+                        "operations": []
+                    },
+                    # "hasAddressCity": {
+                    #     "key": "PostalCode",
+                    #     "operations": []
+                    # },
+                    # "hasAddressProvince": {
+                    #     "key": "PostalCode",
+                    #     "operations": []
+                    # }
+                }
+            }
+        }
+
+        gross_floor_area = {
+            "name": "gross_floor_area",
+            "class": Area,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "raw": {
+                    "hasAreaType": bigg_enums["GrossFloorAreaAboveGround"],
+                    "hasAreaUnitOfMeasurement": units["M2"]
+                },
+                "mapping": {
+                    "subject": {
+                        "key": "gross_floor_area_subject",
+                        "operations": []
+                    },
+                    "areaValue": {
+                        "key": "GrossFloorArea",
+                        "operations": []
+                    }
+                }
+            }
         }
 
         grouped_modules = {
-            "building_info": [buildings],
+            "building_info": [buildings, building_space, location_info, gross_floor_area],
         }
         return grouped_modules[group]
