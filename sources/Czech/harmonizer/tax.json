@@ -1,0 +1,18 @@
+{
+  "hasBuildingSpaceUseType": {
+    "Vzdělání a výzkum": "EducationAndResearch",
+    "Zdravotnictví": "Healthcare",
+    "Pohostinství a ubytování": "Hospitality",
+    "Průmysl": "Industrial",
+    "Multifunkční": "Multi-use",
+    "Administrativní budova": "Office",
+    "Jiná veřejná budova": "Public",
+    "Rekreace a kultura": "RecreationAndCulture",
+    "Rezidenční bydlení": "ResidentialHousing",
+    "Maloobchod": "Retail",
+    "Sport a wellness": "SportsAndWellnessFacilities",
+    "Doprava": "TransportRelated",
+    "Neznámá": "Unknown",
+    "Jiná": "Other"
+  }
+}

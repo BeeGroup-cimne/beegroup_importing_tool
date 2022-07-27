@@ -1,8 +1,12 @@
+import numpy as np
 import pandas as pd
 from rdflib import Namespace
 
-from utils.data_transformations import building_subject, decode_hbase
+from sources.Czech.harmonizer.Mapper import Mapper
+from utils.data_transformations import building_subject, decode_hbase, building_space_subject, to_object_property
+from utils.rdf_utils.ontology.namespaces_definition import bigg_enums
 from utils.rdf_utils.rdf_functions import generate_rdf
+from utils.utils import read_config
 
 
 def harmonize_building_info(data, **kwargs):
@@ -10,6 +14,9 @@ def harmonize_building_info(data, **kwargs):
     user = kwargs['user']
     n = Namespace(namespace)
     config = kwargs['config']
+
+    mapper = Mapper(config['source'], n)
+    tax = read_config('tax.json')
 
     df = pd.DataFrame(data,
                       columns=['Unique ID', 'Country', 'Region', 'Municipality', 'Road', 'Road Number', 'PostalCode',
@@ -23,10 +30,23 @@ def harmonize_building_info(data, **kwargs):
                                'CoolingSource', 'CoolingPower'])
 
     df = df.apply(decode_hbase)
+
+    # Building
     df['building_subject'] = df['Unique ID'].apply(building_subject)
-    mapper = Mapper(config['source'], n)
-    g = generate_rdf(mapper.get_mappings("project_info"), df)
+    # df['hasBuildingConstructionType'] =
+    # df['hasBuildingOwnership'] =
+
+    # BuildingSpace
+    df['building_space_subject'] = df['Unique ID'].apply(building_space_subject)
+    df['hasBuildingSpaceUseType'] = df['Use Type'].map(tax['hasBuildingSpaceUseType'])
+    df['hasBuildingSpaceUseType'] = df['hasBuildingSpaceUseType'].replace(np.nan, "Unknown")
+
+    df['hasBuildingSpaceUseType'] = df['hasBuildingSpaceUseType'].apply(
+        lambda x: to_object_property(x, namespace=bigg_enums))
+
+    g = generate_rdf(mapper.get_mappings("building_info"), df)
     # save_rdf_with_source(g, config['source'], config['neo4j'])
+
 
 def harmonize_building_emm(data, **kwargs):
     namespace = kwargs['namespace']
