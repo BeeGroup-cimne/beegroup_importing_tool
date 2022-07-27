@@ -7,14 +7,8 @@ from utils.kafka import save_to_kafka
 from utils.nomenclature import raw_nomenclature, RAW_MODE
 from utils.utils import log_string
 
-COLUMNS_BUILDINGS = ['ID', 'Country', 'Region', 'Municipality', 'Road', 'Road Number', 'PostalCode', 'Longitude',
-                     'Latitude', 'Name', 'Use Type', 'Owner', 'YearOfConstruction', 'GrossFloorArea', 'Renewable',
-                     'EnergyAudit', 'Monitoring', 'SolarPV', 'SolarThermal', 'SolarThermalPower', 'EnergyCertificate',
-                     'EnergyCertificateDate', 'EnergyCertificateQualification', 'HeatingSource',
-                     'OriginalInstalledPower', 'OriginalInstalledPowerAfter']
 
-
-def save_data(data, data_type, row_keys, column_map, config, settings, args):
+def save_data(data, data_type, row_keys, column_map, config, settings, args, table_name):
     if args.store == "kafka":
         try:
             k_topic = config["kafka"]["topic"]
@@ -24,7 +18,8 @@ def save_data(data, data_type, row_keys, column_map, config, settings, args):
                 "collection_type": data_type,
                 "source": config['source'],
                 "row_keys": row_keys,
-                "data": data
+                "data": data,
+                "table_name": table_name
             }
             save_to_kafka(topic=k_topic, info_document=kafka_message,
                           config=config['kafka']['connection'], batch=settings.kafka_message_size)
@@ -57,36 +52,43 @@ def gather(arguments, settings, config):
                     choices=['region', 'municipality', 'building_data', 'building_eem'])
     args = ap.parse_args(arguments)
 
-    if args.kinf_of_file == 'building_data':
-        df = pd.read_excel(args.file, skiprows=1, sheet_name=0)
-        df = df.rename(columns={"Unikátní kód": 'Unique ID'}, inplace=True)
-
+    if args.kind_of_file == 'building_data':
+        df = pd.read_excel(args.file, skiprows=1)
+        df.rename(columns={"Unikátní kód": 'Unique ID'}, inplace=True)
         save_data(data=df.to_dict(orient="records"), data_type="BuildingInfo",
                   row_keys=["Unique ID"],
-                  column_map=[("info", "all")], config=config, settings=settings, args=arguments)
+                  column_map=[("info", "all")], config=config, settings=settings, args=args,
+                  table_name=raw_nomenclature(mode=RAW_MODE.STATIC, data_type="BuildingInfo", frequency="",
+                                              user=args.user, source=config['source']))
 
-    if args.kinf_of_file == 'building_eem':
+    if args.kind_of_file == 'building_eem':
         df = pd.read_excel(args.file, skiprows=1, sheet_name=1)
         df.rename(columns={"Unikátní kód": 'Unique ID'}, inplace=True)
 
         save_data(data=df.to_dict(orient="records"), data_type="EnergyEfficiencyMeasure",
                   row_keys=["Unique ID"],
-                  column_map=[("info", "all")], config=config, settings=settings, args=arguments)
+                  column_map=[("info", "all")], config=config, settings=settings, args=args,
+                  table_name=raw_nomenclature(mode=RAW_MODE.STATIC, data_type="EnergyEfficiencyMeasure", frequency="",
+                                              user=args.user, source=config['source']))
 
-    if args.kinf_of_file == 'municipality':
+    if args.kind_of_file == 'municipality':
         df = pd.read_excel(args.files, skiprows=5)
         df.dropna(how='all', axis='columns', inplace=True)
         unique_id = args.files.split('/')[-1].split['_'][0]
         df['Unique ID'] = unique_id
         save_data(data=df.to_dict(orient="records"), data_type="municipality_ts",
                   row_keys=["Unique ID"],
-                  column_map=[("info", "all")], config=config, settings=settings, args=arguments)
+                  column_map=[("info", "all")], config=config, settings=settings, args=args,
+                  table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES, data_type="municipality_ts", frequency="",
+                                              user=args.user, source=config['source']))
 
-    if args.kinf_of_file == 'region':
+    if args.kind_of_file == 'region':
         df = pd.read_excel(args.files, sheet_name='souhrn', skiprows=100)
         df.dropna(how='all', axis='columns')
 
         df['Unique ID'] = args.files.split('/')[-1]
         save_data(data=df.to_dict(orient="records"), data_type="region_ts",
                   row_keys=["Unique ID"],
-                  column_map=[("info", "all")], config=config, settings=settings, args=arguments)
+                  column_map=[("info", "all")], config=config, settings=settings, args=args,
+                  table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES, data_type="region_ts", frequency="",
+                                              user=args.user, source=config['source']))
