@@ -91,7 +91,15 @@ def harmonize_building_emm(data, **kwargs):
     user = kwargs['user']
     n = Namespace(namespace)
     config = kwargs['config']
-    print(data)
+
+    mapper = Mapper(config['source'], n)
+    tax = read_config('tax.json')
+
+    df = pd.DataFrame(data)
+    df.columns = ['Unique ID', 'ETM Name', 'Measure Implemented', 'Date', 'EEM Life', 'Investment', 'Subsidy',
+                  'Currency Rate', 'Annual Energy Savings', 'Annual CO2 reduction', 'Comments']
+
+    df = df.applymap(decode_hbase)
 
 
 def harmonize_municipality_ts(data, **kwargs):
