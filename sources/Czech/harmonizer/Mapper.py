@@ -1,27 +1,19 @@
-from utils.rdf_utils.ontology.bigg_classes import Organization, Building, LocationInfo, BuildingSpace, Area, \
-    EnergyPerformanceCertificate, BuildingSpaceUseType, AreaType, AreaUnitOfMeasurement, Device, \
-    EnergyEfficiencyMeasure, Sensor, EnergySaving, BuildingConstructionElement, RenovationProject, BuildingOwnership
+from utils.rdf_utils.ontology.bigg_classes import Building, LocationInfo, BuildingSpace, Area, \
+    EnergyPerformanceCertificate, AreaType, AreaUnitOfMeasurement, RenovationProject, BuildingOwnership
 from utils.rdf_utils.ontology.namespaces_definition import countries, bigg_enums, units
 
 
 class Mapper(object):
     def __init__(self, source, namespace):
         self.source = source
-        Organization.set_namespace(namespace)
         Building.set_namespace(namespace)
         BuildingOwnership.set_namespace(namespace)
         LocationInfo.set_namespace(namespace)
         BuildingSpace.set_namespace(namespace)
-        BuildingSpaceUseType.set_namespace(namespace)
         Area.set_namespace(namespace)
         EnergyPerformanceCertificate.set_namespace(namespace)
         AreaType.set_namespace(namespace)
         AreaUnitOfMeasurement.set_namespace(namespace)
-        BuildingConstructionElement.set_namespace(namespace)
-        Device.set_namespace(namespace)
-        EnergyEfficiencyMeasure.set_namespace(namespace)
-        Sensor.set_namespace(namespace)
-        EnergySaving.set_namespace(namespace)
         RenovationProject.set_namespace(namespace)
 
     def get_mappings(self, group):
@@ -67,6 +59,10 @@ class Mapper(object):
                     },
                     "hasEPC": {
                         "key": "hasEPC",
+                        "operations": []
+                    },
+                    "hasProject": {
+                        "key": "hasProject",
                         "operations": []
                     },
 
@@ -216,8 +212,24 @@ class Mapper(object):
             }
         }
 
+        project = {
+            "name": "project",
+            "class": RenovationProject,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "project_subject",
+                        "operations": []
+                    }
+                }
+            }
+        }
+
         grouped_modules = {
             "building_info": [buildings, building_space, location_info, gross_floor_area, owner,
-                              energy_performance_certificate],
+                              energy_performance_certificate, project]
         }
         return grouped_modules[group]

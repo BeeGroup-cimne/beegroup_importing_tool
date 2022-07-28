@@ -7,7 +7,7 @@ from rdflib import Namespace
 
 from sources.Czech.harmonizer.Mapper import Mapper
 from utils.data_transformations import building_subject, decode_hbase, building_space_subject, to_object_property, \
-    location_info_subject, gross_area_subject, owner_subject
+    location_info_subject, gross_area_subject, owner_subject, project_subject
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.utils import read_config
@@ -76,6 +76,10 @@ def harmonize_building_info(data, **kwargs):
         axis=1)
 
     df['hasEPC'] = df['energy_performance_certificate_subject'].apply(lambda x: n[x])
+
+    # Project
+    df['project_subject'] = df['Unique ID'].apply(project_subject)
+    df['hasProject'] = df['project_subject'].apply(lambda x: n[x])
 
     g = generate_rdf(mapper.get_mappings("building_info"), df)
     g.serialize('output.ttl', format="ttl")
