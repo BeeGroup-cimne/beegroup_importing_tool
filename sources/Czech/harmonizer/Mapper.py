@@ -1,6 +1,6 @@
 from utils.rdf_utils.ontology.bigg_classes import Organization, Building, LocationInfo, BuildingSpace, Area, \
     EnergyPerformanceCertificate, BuildingSpaceUseType, AreaType, AreaUnitOfMeasurement, Device, \
-    EnergyEfficiencyMeasure, Sensor, EnergySaving, BuildingConstructionElement, RenovationProject
+    EnergyEfficiencyMeasure, Sensor, EnergySaving, BuildingConstructionElement, RenovationProject, BuildingOwnership
 from utils.rdf_utils.ontology.namespaces_definition import countries, bigg_enums, units
 
 
@@ -9,6 +9,7 @@ class Mapper(object):
         self.source = source
         Organization.set_namespace(namespace)
         Building.set_namespace(namespace)
+        BuildingOwnership.set_namespace(namespace)
         LocationInfo.set_namespace(namespace)
         BuildingSpace.set_namespace(namespace)
         BuildingSpaceUseType.set_namespace(namespace)
@@ -60,10 +61,15 @@ class Mapper(object):
                     #     "key": "hasBuildingConstructionType",
                     #     "operations": []
                     # },
-                    # "hasBuildingOwnership": {
-                    #     "key": "hasBuildingOwnership",
-                    #     "operations": []
-                    # }
+                    "hasBuildingOwnership": {
+                        "key": "hasBuildingOwnership",
+                        "operations": []
+                    },
+                    "hasEPC": {
+                        "key": "hasEPC",
+                        "operations": []
+                    },
+
                 }
             }
         }
@@ -170,7 +176,48 @@ class Mapper(object):
             }
         }
 
+        owner = {
+            "name": "owner",
+            "class": BuildingOwnership,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "building_ownership_subject",
+                        "operations": []
+                    }
+                }
+            },
+        }
+
+        energy_performance_certificate = {
+            "name": "energy_performance_certificate",
+            "class": EnergyPerformanceCertificate,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "energy_performance_certificate_subject",
+                        "operations": []
+                    },
+                    "energyPerformanceCertificateDateOfAssessment": {
+                        "key": "EnergyCertificateDate",
+                        "operations": []
+                    },
+                    "energyPerformanceCertificateClass": {
+                        "key": "EnergyCertificateQualification",
+                        "operations": []
+                    }
+                }
+            }
+        }
+
         grouped_modules = {
-            "building_info": [buildings, building_space, location_info, gross_floor_area],
+            "building_info": [buildings, building_space, location_info, gross_floor_area, owner,
+                              energy_performance_certificate],
         }
         return grouped_modules[group]
