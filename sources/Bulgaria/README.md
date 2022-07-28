@@ -21,7 +21,7 @@ python3 -m gather -so Bulgaria -f <directory> -n <namespace> -u <user_importing>
 ```
 
 ## Raw Data Format
-The key of the file will be made generating a unique field based on the hash `sha512` of the name of the file and the `row index` of the building, concatenated by "~".
+The key of the file will be made generating a unique field based on the hash `md5` of the name of the file and the `row index` of the building, concatenated by "~".
 
 This ensures that if the same file is reloaded, the data can be overwritten.
 The rest of the data will be stored to the column family `info` with column using the raw format name.

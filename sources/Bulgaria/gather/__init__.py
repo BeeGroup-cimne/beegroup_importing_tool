@@ -40,7 +40,7 @@ def gather_data_summary(config, settings, args):
 
             aux = {df.columns[i]: EXCEL_COLUMNS[i] for i in range(len(df.columns)) if i < len(EXCEL_COLUMNS)}
             df.rename(columns=aux, inplace=True)
-            df['filename'] = hashlib.sha512(file.encode()).hexdigest()
+            df['filename'] = hashlib.md5(file.encode()).hexdigest()
             df['id'] = df.index
 
             save_data(data=df.to_dict(orient='records'), data_type="BuildingInfo",
