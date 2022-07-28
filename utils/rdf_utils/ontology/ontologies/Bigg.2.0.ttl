@@ -51,6 +51,11 @@ bigg:addressStreetNumber a owl:DatatypeProperty ;
     rdfs:domain bigg:LocationInfo ;
     rdfs:range xsd:string .
 
+bigg:considerEstimatedValues a owl:DatatypeProperty ;
+    rdfs:label "consider estimated values" ;
+    rdfs:domain bigg:SensorEstimationMethod ;
+    rdfs:range xsd:boolean .
+
 bigg:buildingClosingHour a owl:DatatypeProperty ;
     rdfs:label "building closing hour" ;
     rdfs:domain bigg:Building ;
