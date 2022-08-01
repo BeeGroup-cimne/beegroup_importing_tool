@@ -72,15 +72,53 @@ def gather(arguments, settings, config):
                                               user=args.user, source=config['source']))
 
     if args.kind_of_file == 'municipality':
-        df = pd.read_excel(args.files, skiprows=5)
-        df.dropna(how='all', axis='columns', inplace=True)
-        unique_id = args.files.split('/')[-1].split['_'][0]
-        df['Unique ID'] = unique_id
-        save_data(data=df.to_dict(orient="records"), data_type="municipality_ts",
-                  row_keys=["Unique ID"],
-                  column_map=[("info", "all")], config=config, settings=settings, args=args,
-                  table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES, data_type="municipality_ts", frequency="",
-                                              user=args.user, source=config['source']))
+
+        xl = pd.ExcelFile(args.files)
+
+        for i in xl.sheet_names:
+            unique_id = args.files.split('/')[-1].split['_'][0]
+
+            if i == 'plyn':  # GAS
+                df = pd.read_excel(args.files, skiprows=5, sheet_name=i)
+                df.dropna(how='all', axis='columns', inplace=True)
+                df['Unique ID'] = unique_id
+                df['data_type'] = 'EnergyConsumptionGas'
+
+                save_data(data=df.to_dict(orient="records"), data_type="municipality_ts_gas",
+                          row_keys=["Unique ID"],
+                          column_map=[("info", "all")], config=config, settings=settings, args=args,
+                          table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES, data_type="municipality_ts_gas",
+                                                      frequency="",
+                                                      user=args.user, source=config['source']))
+            elif i == 'elektřina':
+                df = pd.read_excel('data/czech/eP-EAZK-004_Energetický management _Bánov.xlsx', sheet_name='elektřina',
+                                   skiprows=6)
+
+                available_years = [i for i in list(df.columns) if type(i) == int]
+
+                df = pd.read_excel('data/czech/eP-EAZK-004_Energetický management _Bánov.xlsx', sheet_name='elektřina',
+                                   skiprows=7)
+
+                df.dropna(how='all', axis='columns', inplace=True)
+
+                headers = ['Months']
+
+                for year in available_years:
+                    headers.append(f'VT_{year}')
+                    headers.append(f'NT_{year}')
+                    headers.append(f'Total_{year}')
+
+                df.columns = headers
+
+                df['Unique ID'] = unique_id
+                df['data_type'] = 'EnergyConsumptionGridElectricity'
+
+                save_data(data=df.to_dict(orient="records"), data_type="municipality_ts_electricity",
+                          row_keys=["Unique ID"],
+                          column_map=[("info", "all")], config=config, settings=settings, args=args,
+                          table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES, data_type="municipality_ts_electricity",
+                                                      frequency="",
+                                                      user=args.user, source=config['source']))
 
     if args.kind_of_file == 'region':
         df = pd.read_excel(args.files, sheet_name='souhrn', skiprows=100)

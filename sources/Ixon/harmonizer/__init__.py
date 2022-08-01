@@ -84,7 +84,7 @@ def harmonize_ts(data, **kwargs):
         df["ts"] = pd.to_datetime(df['timestamp'].apply(float), unit="s")
         df["bucket"] = (df['timestamp'].apply(float) // settings.ts_buckets) % settings.buckets
         df['start'] = df['timestamp'].apply(decode_hbase)
-        df['end'] = (df.ts + time_to_timedelta[freq]).view(int) / 10 ** 9
+        df['end'] = (df.ts + time_to_timedelta[freq]).view(int) // 10 ** 9
         df['value'] = df['value']
         df['isReal'] = True
 
