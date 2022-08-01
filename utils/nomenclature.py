@@ -1,10 +1,14 @@
-import enum
 from enum import Enum
 
 
 class RAW_MODE(Enum):
     STATIC = "static"
     TIMESERIES = "ts"
+
+
+class HARMONIZED_MODE(Enum):
+    ONLINE = "online"
+    BATCH = "batch"
 
 
 def raw_nomenclature(source, mode, data_type="", frequency="", user=""):
@@ -14,6 +18,8 @@ def raw_nomenclature(source, mode, data_type="", frequency="", user=""):
 
 
 def harmonized_nomenclature(mode, data_type, R, C, O, aggregation_function="", freq='', user=''):
+    if not isinstance(mode, HARMONIZED_MODE):
+        raise Exception("Mode must be enum")
     return f"harmonized_{mode}_{data_type}_{bool_to_int(R)}{bool_to_int(C)}{bool_to_int(O)}_{aggregation_function}_{freq}_{user}"
 
 

@@ -1,16 +1,20 @@
-from functools import partial
+import hashlib
 from functools import partial
 from hashlib import sha256
 
 import numpy as np
 import pandas as pd
+from neo4j import GraphDatabase
 from rdflib import Namespace
 
 import settings
 from sources.Czech.harmonizer.Mapper import Mapper
 from utils.data_transformations import building_subject, decode_hbase, building_space_subject, to_object_property, \
     location_info_subject, gross_area_subject, owner_subject, project_subject, device_subject, sensor_subject
-from utils.rdf_utils.ontology.namespaces_definition import bigg_enums
+from utils.hbase import save_to_hbase
+from utils.neo4j import create_sensor
+from utils.nomenclature import harmonized_nomenclature, HARMONIZED_MODE
+from utils.rdf_utils.ontology.namespaces_definition import bigg_enums, units
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.utils import read_config
 
@@ -107,18 +111,19 @@ def harmonize_building_emm(data, **kwargs):
     df = df.applymap(decode_hbase)
 
     df['Measure Implemented'].apply(lambda x: len(x.split(";"))).max()
-    # TODO:
+    # TODO: Measurements, Currency, etc...
 
 
 def harmonize_municipality_gas(data, **kwargs):
-    pass
-
-
-def harmonize_municipality_ts(data, **kwargs):
     namespace = kwargs['namespace']
-    user = kwargs['user']
     n = Namespace(namespace)
     config = kwargs['config']
+    user = kwargs['user']
+    freq = 'PT1M'
+
+    hbase_conn = config['hbase_store_harmonized_data']
+    neo4j_connection = config['neo4j']
+    neo = GraphDatabase.driver(**neo4j_connection)
 
     df = pd.DataFrame(data)
     df['device_subject'] = df['subject'].apply(partial(device_subject, source=config['source']))
@@ -152,14 +157,52 @@ def harmonize_municipality_ts(data, **kwargs):
         dt_end = sub_df.iloc[-1]
 
         device_uri = n[sub_df.iloc[0]['device_subject']]
-        sensor_id = sensor_subject(config['source'], unique_id, "EnergyConsumptionGas", "RAW", "")
+        sensor_id = sensor_subject(config['source'], unique_id, "EnergyConsumptionGas", "RAW", freq)
 
         sensor_uri = str(n[sensor_id])
         measurement_id = hashlib.sha256(sensor_uri.encode("utf-8"))
         measurement_id = measurement_id.hexdigest()
         measurement_uri = str(n[measurement_id])
 
-        final_df = sub_df[['ts', 'bucket', 'CUPS', 'start', 'end', 'value', 'isReal']]
+        final_df = sub_df[['ts', 'bucket', 'Unique ID', 'start', 'end', 'value', 'isReal']]
+
+        with neo.session() as session:
+            create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
+                          bigg_enums.EnergyConsumptionGas, bigg_enums.TrustedModel,
+                          measurement_uri, False,
+                          False, False, freq, "SUM", dt_ini, dt_end, settings.namespace_mappings)
+
+        final_df['listKey'] = measurement_id
+
+        device_table = harmonized_nomenclature(mode=HARMONIZED_MODE.ONLINE, data_type="EnergyConsumptionGas", R=False,
+                                               C=False, O=False, aggregation_function="SUM", freq=freq, user=user)
+
+        save_to_hbase(final_df.to_dict(orient="records"),
+                      device_table,
+                      hbase_conn,
+                      [("info", ['end', 'isReal']), ("v", ['value'])],
+                      row_fields=['bucket', 'listKey', 'start'])
+
+        period_table = harmonized_nomenclature(mode=HARMONIZED_MODE.BATCH, data_type="EnergyConsumptionGas", R=False,
+                                               C=False, O=False, aggregation_function="SUM", freq=freq, user=user)
+        save_to_hbase(final_df.to_dict(orient="records"),
+                      period_table, hbase_conn,
+                      [("info", ['end', 'isReal']), ("v", ['value'])],
+                      row_fields=['bucket', 'start', 'listKey'])
+
+
+def harmonize_municipality_electricity(data, **kwargs):
+    pass
+
+
+def harmonize_municipality_ts(data, **kwargs):
+    collection_type = kwargs['collection_type']
+
+    if collection_type == 'municipality_ts_gas':
+        harmonize_municipality_gas(data, **kwargs)
+
+    if collection_type == 'municipality_ts_electricity':
+        harmonize_municipality_electricity(data, **kwargs)
 
 
 def harmonize_region_ts(data, **kwargs):
