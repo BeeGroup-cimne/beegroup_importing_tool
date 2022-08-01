@@ -17,8 +17,7 @@ class Plugin(SourcePlugin):
         if message["collection_type"] == 'EnergyEfficiencyMeasure':
             return harmonize_building_emm
 
-        if message["collection_type"] == 'municipality_ts_gas' \
-                or message['collection_type'] == 'municipality_ts_electricity':
+        if message["collection_type"] == 'municipality_ts':
             return harmonize_municipality_ts
 
         if message["collection_type"] == 'region_ts':
@@ -28,8 +27,7 @@ class Plugin(SourcePlugin):
         return {
             "namespace": message['namespace'],
             "user": message['user'],
-            "config": self.config,
-            "collection_type": message['collection_type']
+            "config": self.config
         }
 
     def get_store_table(self, message):

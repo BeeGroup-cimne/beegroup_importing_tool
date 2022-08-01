@@ -72,7 +72,7 @@ def gather(arguments, settings, config):
                                               user=args.user, source=config['source']))
 
     if args.kind_of_file == 'municipality':
-
+        freq = 'PT1M'
         xl = pd.ExcelFile(args.files)
 
         for i in xl.sheet_names:
@@ -84,11 +84,11 @@ def gather(arguments, settings, config):
                 df['Unique ID'] = unique_id
                 df['data_type'] = 'EnergyConsumptionGas'
 
-                save_data(data=df.to_dict(orient="records"), data_type="municipality_ts_gas",
+                save_data(data=df.to_dict(orient="records"), data_type="municipality_ts",
                           row_keys=["Unique ID"],
                           column_map=[("info", "all")], config=config, settings=settings, args=args,
                           table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES, data_type="municipality_ts_gas",
-                                                      frequency="",
+                                                      frequency=freq,
                                                       user=args.user, source=config['source']))
             elif i == 'elektřina':
                 df = pd.read_excel('data/czech/eP-EAZK-004_Energetický management _Bánov.xlsx', sheet_name='elektřina',
@@ -106,18 +106,18 @@ def gather(arguments, settings, config):
                 for year in available_years:
                     headers.append(f'VT_{year}')
                     headers.append(f'NT_{year}')
-                    headers.append(f'Total_{year}')
+                    headers.append(year)
 
                 df.columns = headers
 
                 df['Unique ID'] = unique_id
                 df['data_type'] = 'EnergyConsumptionGridElectricity'
 
-                save_data(data=df.to_dict(orient="records"), data_type="municipality_ts_electricity",
+                save_data(data=df.to_dict(orient="records"), data_type="municipality_ts",
                           row_keys=["Unique ID"],
                           column_map=[("info", "all")], config=config, settings=settings, args=args,
                           table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES, data_type="municipality_ts_electricity",
-                                                      frequency="",
+                                                      frequency=freq,
                                                       user=args.user, source=config['source']))
 
     if args.kind_of_file == 'region':

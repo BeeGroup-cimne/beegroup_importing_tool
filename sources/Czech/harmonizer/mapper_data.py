@@ -114,7 +114,8 @@ def harmonize_building_emm(data, **kwargs):
     # TODO: Measurements, Currency, etc...
 
 
-def harmonize_municipality_gas(data, **kwargs):
+def harmonize_municipality_ts(data, **kwargs):
+    # TODO: TEST
     namespace = kwargs['namespace']
     n = Namespace(namespace)
     config = kwargs['config']
@@ -126,12 +127,13 @@ def harmonize_municipality_gas(data, **kwargs):
     neo = GraphDatabase.driver(**neo4j_connection)
 
     df = pd.DataFrame(data)
-    df['device_subject'] = df['subject'].apply(partial(device_subject, source=config['source']))
+    df['device_subject'] = df['Unique ID'].apply(partial(device_subject, source=config['source']))
     df_c = df.iloc[:-1, :].copy()  # drop last row
 
     available_years = [i for i in list(df_c.columns) if type(i) == int]
 
     unique_id = df.iloc[0]['Unique ID']
+    data_type = df.iloc[0]['data_type']
 
     for year in available_years:
         sub_df = df_c[[year, 'Unique ID']].copy()
@@ -157,7 +159,7 @@ def harmonize_municipality_gas(data, **kwargs):
         dt_end = sub_df.iloc[-1]
 
         device_uri = n[sub_df.iloc[0]['device_subject']]
-        sensor_id = sensor_subject(config['source'], unique_id, "EnergyConsumptionGas", "RAW", freq)
+        sensor_id = sensor_subject(config['source'], unique_id, data_type, "RAW", freq)
 
         sensor_uri = str(n[sensor_id])
         measurement_id = hashlib.sha256(sensor_uri.encode("utf-8"))
@@ -168,13 +170,13 @@ def harmonize_municipality_gas(data, **kwargs):
 
         with neo.session() as session:
             create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
-                          bigg_enums.EnergyConsumptionGas, bigg_enums.TrustedModel,
+                          bigg_enums[data_type], bigg_enums.TrustedModel,
                           measurement_uri, False,
                           False, False, freq, "SUM", dt_ini, dt_end, settings.namespace_mappings)
 
         final_df['listKey'] = measurement_id
 
-        device_table = harmonized_nomenclature(mode=HARMONIZED_MODE.ONLINE, data_type="EnergyConsumptionGas", R=False,
+        device_table = harmonized_nomenclature(mode=HARMONIZED_MODE.ONLINE, data_type=data_type, R=False,
                                                C=False, O=False, aggregation_function="SUM", freq=freq, user=user)
 
         save_to_hbase(final_df.to_dict(orient="records"),
@@ -183,26 +185,13 @@ def harmonize_municipality_gas(data, **kwargs):
                       [("info", ['end', 'isReal']), ("v", ['value'])],
                       row_fields=['bucket', 'listKey', 'start'])
 
-        period_table = harmonized_nomenclature(mode=HARMONIZED_MODE.BATCH, data_type="EnergyConsumptionGas", R=False,
+        period_table = harmonized_nomenclature(mode=HARMONIZED_MODE.BATCH, data_type=data_type, R=False,
                                                C=False, O=False, aggregation_function="SUM", freq=freq, user=user)
+
         save_to_hbase(final_df.to_dict(orient="records"),
                       period_table, hbase_conn,
                       [("info", ['end', 'isReal']), ("v", ['value'])],
                       row_fields=['bucket', 'start', 'listKey'])
-
-
-def harmonize_municipality_electricity(data, **kwargs):
-    pass
-
-
-def harmonize_municipality_ts(data, **kwargs):
-    collection_type = kwargs['collection_type']
-
-    if collection_type == 'municipality_ts_gas':
-        harmonize_municipality_gas(data, **kwargs)
-
-    if collection_type == 'municipality_ts_electricity':
-        harmonize_municipality_electricity(data, **kwargs)
 
 
 def harmonize_region_ts(data, **kwargs):
