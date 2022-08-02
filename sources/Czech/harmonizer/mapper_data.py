@@ -229,3 +229,10 @@ def harmonize_region_ts(data, **kwargs):
                 {"date": date, "date_end": date_end, "value": value, "Unique ID": unique_id, 'DataType': data_type})
 
         sub_df = pd.DataFrame(aux)
+
+        sub_df['ts'] = sub_df['date']
+        sub_df['timestamp'] = sub_df['ts'].view(int) // 10 ** 9
+        sub_df["bucket"] = (sub_df['timestamp'].apply(float) // settings.ts_buckets) % settings.buckets
+        sub_df['start'] = sub_df['timestamp'].apply(decode_hbase)
+        sub_df['end'] = sub_df['date_end'].view(int) // 10 ** 9
+        sub_df['isReal'] = True
