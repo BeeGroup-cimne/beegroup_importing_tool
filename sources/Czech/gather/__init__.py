@@ -91,12 +91,12 @@ def gather(arguments, settings, config):
                                                       frequency=freq,
                                                       user=args.user, source=config['source']))
             elif i == 'elektřina':
-                df = pd.read_excel('data/czech/eP-EAZK-004_Energetický management _Bánov.xlsx', sheet_name='elektřina',
+                df = pd.read_excel(args.files, sheet_name='elektřina',
                                    skiprows=6)
 
                 available_years = [i for i in list(df.columns) if type(i) == int]
 
-                df = pd.read_excel('data/czech/eP-EAZK-004_Energetický management _Bánov.xlsx', sheet_name='elektřina',
+                df = pd.read_excel(args.files, sheet_name='elektřina',
                                    skiprows=7)
 
                 df.dropna(how='all', axis='columns', inplace=True)
@@ -121,8 +121,8 @@ def gather(arguments, settings, config):
                                                       user=args.user, source=config['source']))
 
     if args.kind_of_file == 'region':
-        df = pd.read_excel(args.files, sheet_name='souhrn', skiprows=100)
-        df.dropna(how='all', axis='columns')
+        df = pd.read_excel(args.files, sheet_name='souhrn', skiprows=99)
+        df.dropna(how='all', axis='columns', inplace=True)
 
         df['Unique ID'] = args.files.split('/')[-1]
         save_data(data=df.to_dict(orient="records"), data_type="region_ts",

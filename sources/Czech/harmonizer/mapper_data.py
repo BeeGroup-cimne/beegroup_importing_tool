@@ -1,9 +1,11 @@
+import datetime
 import hashlib
 from functools import partial
 from hashlib import sha256
 
 import numpy as np
 import pandas as pd
+from dateutil.relativedelta import relativedelta
 from neo4j import GraphDatabase
 from rdflib import Namespace
 
@@ -196,7 +198,34 @@ def harmonize_municipality_ts(data, **kwargs):
 
 def harmonize_region_ts(data, **kwargs):
     namespace = kwargs['namespace']
-    user = kwargs['user']
     n = Namespace(namespace)
     config = kwargs['config']
-    print(data)
+    user = kwargs['user']
+    freq = 'PT1M'
+
+    hbase_conn = config['hbase_store_harmonized_data']
+    neo4j_connection = config['neo4j']
+    neo = GraphDatabase.driver(**neo4j_connection)
+
+    df = pd.DataFrame(data)
+    df.drop('celkem', axis=1, inplace=True)
+    df.columns = ['DataType', 'Year', 1, 2, 3, 4, 5, 6, 7, 8,
+                  9, 10, 11, 12, 'Unit', 'Unique ID']
+
+    tax = read_config('tax.json')
+
+    df['DataType'] = df['DataType'].map(tax['consumptionType'])
+    df = df[df['DataType'].notna()]
+
+    for index, row in df.iterrows():
+        aux = []
+        for x in range(1, 13):
+            date = datetime.datetime(year=row['Year'], month=x, day=1)
+            date_end = date + relativedelta(month=1) - datetime.timedelta(days=1)
+            value = row[x]
+            unique_id = row['Unique ID']
+            data_type = row['DataType']
+            aux.append(
+                {"date": date, "date_end": date_end, "value": value, "Unique ID": unique_id, 'DataType': data_type})
+
+        sub_df = pd.DataFrame(aux)

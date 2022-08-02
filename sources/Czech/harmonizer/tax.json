@@ -14,5 +14,11 @@
     "Doprava": "TransportRelated",
     "Neznámá": "Unknown",
     "Jiná": "Other"
+  },
+  "consumptionType": {
+    "plyn": "EnergyConsumptionGas",
+    "elektřina celkem": "EnergyConsumptionGridElectricity",
+    "teplo": "EnergyConsumptionDistrictHeating",
+    "voda": "EnergyConsumptionWaterHeating"
   }
 }
