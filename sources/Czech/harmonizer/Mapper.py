@@ -1,5 +1,6 @@
 from utils.rdf_utils.ontology.bigg_classes import Building, LocationInfo, BuildingSpace, Area, \
-    EnergyPerformanceCertificate, AreaType, AreaUnitOfMeasurement, RenovationProject, BuildingOwnership
+    EnergyPerformanceCertificate, AreaType, AreaUnitOfMeasurement, RenovationProject, BuildingOwnership, Device, \
+    Element
 from utils.rdf_utils.ontology.namespaces_definition import countries, bigg_enums, units
 
 
@@ -15,6 +16,8 @@ class Mapper(object):
         AreaType.set_namespace(namespace)
         AreaUnitOfMeasurement.set_namespace(namespace)
         RenovationProject.set_namespace(namespace)
+        Element.set_namespace(namespace)
+        Device.set_namespace(namespace)
 
     def get_mappings(self, group):
         buildings = {
@@ -63,6 +66,10 @@ class Mapper(object):
                     },
                     "hasProject": {
                         "key": "hasProject",
+                        "operations": []
+                    },
+                    "hasSpace": {
+                        "key": "building_space_uri",
                         "operations": []
                     },
 
@@ -228,8 +235,48 @@ class Mapper(object):
             }
         }
 
+        element = {
+            "name": "element",
+            "class": Element,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "element_subject",
+                        "operations": []
+                    },
+                    "isObservedByDevice": {
+                        "key": "device_uri",
+                        "operations": []
+                    },
+                    "isAssociatedWithSpace": {
+                        "key": "building_space_uri",
+                        "operations": []
+                    }
+                }
+            }
+        }
+
+        devices = {
+            "name": "devices",
+            "class": Device,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "device_subject",
+                        "operations": []
+                    },
+                }
+            }
+        }
+
         grouped_modules = {
             "building_info": [buildings, building_space, location_info, gross_floor_area, owner,
-                              energy_performance_certificate, project]
+                              energy_performance_certificate, project, devices, element]
         }
         return grouped_modules[group]
