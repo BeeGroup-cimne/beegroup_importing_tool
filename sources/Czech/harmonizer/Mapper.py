@@ -294,23 +294,27 @@ class Mapper(object):
                         "operations": []
                     },
                     "energyEfficiencyMeasureInvestment": {
-                        "key": f"Investment",
+                        "key": "Investment",
                         "operations": []
                     },
                     "hasEnergyEfficiencyMeasureType": {
-                        "key": f"hasEnergyEfficiencyMeasureType",
+                        "key": "hasEnergyEfficiencyMeasureType",
                         "operations": []
                     },
                     "label": {
-                        "key": f"ETM Name",
+                        "key": "ETM Name",
                         "operations": []
                     },
                     "energyEfficiencyMeasureCO2Reduction": {
-                        "key": f"Annual CO2 reduction",
+                        "key": "Annual CO2 reduction",
                         "operations": []
                     },
                     "producesSaving": {
                         "key": "producesSaving",
+                        "operations": []
+                    },
+                    "affectsElement": {
+                        "key": "element_uri",
                         "operations": []
                     }
                 },
@@ -329,13 +333,13 @@ class Mapper(object):
                         "key": "energy_saving_subject",
                         "operations": []
                     }, "energySavingStartDate": {
-                        "key": "energy_saving_subject",
+                        "key": "energySavingStartDate",
                         "operations": []
                     }, "energySavingValue": {
                         "key": "Annual Energy Savings",
                         "operations": []
                     }, "hasEnergySavingType": {
-                        "key": "energy_saving_subject",
+                        "key": "hasEnergySavingType",
                         "operations": []
                     }
                 },

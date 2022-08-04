@@ -110,7 +110,6 @@ def harmonize_building_emm(data, **kwargs):
     n = Namespace(namespace)
     config = kwargs['config']
 
-    mapper = Mapper(config['source'], n)
     tax = read_config('tax.json')
 
     df = pd.DataFrame(data)
@@ -118,8 +117,6 @@ def harmonize_building_emm(data, **kwargs):
                   'Currency Rate', 'Annual Energy Savings', 'Annual CO2 reduction', 'Comments']
 
     df = df.applymap(decode_hbase)
-
-    df = df.dropna(subset=['Measure Implemented'])
 
     aux = []
     for index, row in df.iterrows():
@@ -137,16 +134,24 @@ def harmonize_building_emm(data, **kwargs):
 
     # EnergyEfficiencyMeasure
     new_df['energy_efficiency_measure_subject'] = new_df.apply(
-        lambda x: eem_subject(x['Unique ID'] + f"-{x['Measure Implemented']}"))
+        lambda x: eem_subject(x['Unique ID'] + f"-{x['Measure Implemented']}"), axis=1)
 
     new_df['hasEnergyEfficiencyMeasureType'] = new_df['Measure Implemented'].apply(
         lambda x: to_object_property(x, namespace=bigg_enums))
 
     # EnergySaving
     new_df['energy_saving_subject'] = new_df['Unique ID'].apply(energy_saving_subject)
-    new_df['producesSaving'] = new_df['energy_saving_subject ID'].apply(lambda x: n[x])
-    new_df['energySavingStartDate'] = new_df['Unique ID'].apply(energy_saving_subject)
-    new_df['hasEnergySavingType'] = new_df['Unique ID'].apply(energy_saving_subject)
+    new_df['producesSaving'] = new_df['energy_saving_subject'].apply(lambda x: n[x])
+
+    new_df['energySavingStartDate'] = new_df['Date'].apply(
+        lambda x: datetime.date(year=int(x.split('-')[0]), month=1, day=1))
+
+    new_df['hasEnergySavingType'] = to_object_property('TotalEnergySaving', namespace=bigg_enums)
+
+    mapper = Mapper(config['source'], n)
+    g = generate_rdf(mapper.get_mappings("emm"), new_df)
+    g.serialize('output.ttl', format="ttl")
+    save_rdf_with_source(g, config['source'], config['neo4j'])
 
 
 def harmonize_municipality_ts(data, **kwargs):
