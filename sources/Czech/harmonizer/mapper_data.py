@@ -12,7 +12,7 @@ import settings
 from sources.Czech.harmonizer.Mapper import Mapper
 from utils.data_transformations import building_subject, decode_hbase, building_space_subject, to_object_property, \
     location_info_subject, gross_area_subject, owner_subject, project_subject, device_subject, sensor_subject, \
-    construction_element_subject
+    construction_element_subject, eem_subject, energy_saving_subject
 from utils.hbase import save_to_hbase
 from utils.neo4j import create_sensor
 from utils.nomenclature import harmonized_nomenclature, HARMONIZED_MODE
@@ -119,8 +119,34 @@ def harmonize_building_emm(data, **kwargs):
 
     df = df.applymap(decode_hbase)
 
-    df['Measure Implemented'].apply(lambda x: len(x.split(";"))).max()
-    # TODO: Measurements, Currency, etc...
+    df = df.dropna(subset=['Measure Implemented'])
+
+    aux = []
+    for index, row in df.iterrows():
+        for j in row['Measure Implemented'].split('\n'):
+            x = dict(row.to_dict())
+            x.update({"Measure Implemented": j.replace(';_x000D_', '')})
+            aux.append(x)
+
+    new_df = pd.DataFrame(aux)
+    new_df = new_df[new_df['Measure Implemented'] != 'nan']
+    new_df['Measure Implemented'] = new_df['Measure Implemented'].map(tax['energyMeasureType'])
+
+    # Element
+    new_df['element_uri'] = new_df['Unique ID'].apply(lambda x: n[construction_element_subject(x)])
+
+    # EnergyEfficiencyMeasure
+    new_df['energy_efficiency_measure_subject'] = new_df.apply(
+        lambda x: eem_subject(x['Unique ID'] + f"-{x['Measure Implemented']}"))
+
+    new_df['hasEnergyEfficiencyMeasureType'] = new_df['Measure Implemented'].apply(
+        lambda x: to_object_property(x, namespace=bigg_enums))
+
+    # EnergySaving
+    new_df['energy_saving_subject'] = new_df['Unique ID'].apply(energy_saving_subject)
+    new_df['producesSaving'] = new_df['energy_saving_subject ID'].apply(lambda x: n[x])
+    new_df['energySavingStartDate'] = new_df['Unique ID'].apply(energy_saving_subject)
+    new_df['hasEnergySavingType'] = new_df['Unique ID'].apply(energy_saving_subject)
 
 
 def harmonize_municipality_ts(data, **kwargs):
@@ -205,6 +231,7 @@ def harmonize_municipality_ts(data, **kwargs):
 
 
 def harmonize_region_ts(data, **kwargs):
+    # TODO: Test
     namespace = kwargs['namespace']
     n = Namespace(namespace)
     config = kwargs['config']

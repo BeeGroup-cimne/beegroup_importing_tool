@@ -1,6 +1,6 @@
 from utils.rdf_utils.ontology.bigg_classes import Building, LocationInfo, BuildingSpace, Area, \
     EnergyPerformanceCertificate, AreaType, AreaUnitOfMeasurement, RenovationProject, BuildingOwnership, Device, \
-    Element
+    Element, EnergyEfficiencyMeasure, EnergySaving
 from utils.rdf_utils.ontology.namespaces_definition import countries, bigg_enums, units
 
 
@@ -18,6 +18,8 @@ class Mapper(object):
         RenovationProject.set_namespace(namespace)
         Element.set_namespace(namespace)
         Device.set_namespace(namespace)
+        EnergyEfficiencyMeasure.set_namespace(namespace)
+        EnergySaving.set_namespace(namespace)
 
     def get_mappings(self, group):
         buildings = {
@@ -275,8 +277,74 @@ class Mapper(object):
             }
         }
 
+        eem = {
+            "name": "eem",
+            "class": EnergyEfficiencyMeasure,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "raw": {
+                    "hasEnergyEfficiencyMeasureInvestmentCurrency": units["CzechKoruna"],
+                    "energyEfficiencyMeasureCurrencyExchangeRate": "0.041",
+                },
+                "mapping": {
+                    "subject": {
+                        "key": "energy_efficiency_measure_subject",
+                        "operations": []
+                    },
+                    "energyEfficiencyMeasureInvestment": {
+                        "key": f"Investment",
+                        "operations": []
+                    },
+                    "hasEnergyEfficiencyMeasureType": {
+                        "key": f"hasEnergyEfficiencyMeasureType",
+                        "operations": []
+                    },
+                    "label": {
+                        "key": f"ETM Name",
+                        "operations": []
+                    },
+                    "energyEfficiencyMeasureCO2Reduction": {
+                        "key": f"Annual CO2 reduction",
+                        "operations": []
+                    },
+                    "producesSaving": {
+                        "key": "producesSaving",
+                        "operations": []
+                    }
+                },
+            }
+        }
+
+        energy_saving = {
+            "name": "energy_saving",
+            "class": EnergySaving,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "energy_saving_subject",
+                        "operations": []
+                    }, "energySavingStartDate": {
+                        "key": "energy_saving_subject",
+                        "operations": []
+                    }, "energySavingValue": {
+                        "key": "Annual Energy Savings",
+                        "operations": []
+                    }, "hasEnergySavingType": {
+                        "key": "energy_saving_subject",
+                        "operations": []
+                    }
+                },
+            }
+        }
+
         grouped_modules = {
             "building_info": [buildings, building_space, location_info, gross_floor_area, owner,
-                              energy_performance_certificate, project, devices, element]
+                              energy_performance_certificate, project, devices, element],
+            "emm": [eem, energy_saving]
         }
         return grouped_modules[group]
