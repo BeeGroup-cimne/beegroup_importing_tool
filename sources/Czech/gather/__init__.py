@@ -30,10 +30,7 @@ def save_data(data, data_type, row_keys, column_map, config, settings, args, tab
     elif args.store == "hbase":
 
         try:
-            h_table_name = raw_nomenclature(source=config['source'], mode=RAW_MODE.STATIC, data_type=data_type,
-                                            frequency="", user=args.user)
-
-            save_to_hbase(data, h_table_name, config['hbase_store_raw_data'], column_map,
+            save_to_hbase(data, table_name, config['hbase_store_raw_data'], column_map,
                           row_fields=row_keys)
         except Exception as e:
             log_string(f"Error saving datadis supplies to HBASE: {e}")
