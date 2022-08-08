@@ -69,7 +69,8 @@ def get_all_buildings_id_from_datasource(session, source_id, ns_mappings):
     return list(set([x[0][0] for x in buildings_neo.values()]))
 
 
-def create_timeseries(session, ts_uri, property_uri, is_regular, is_cumulative, is_on_change, freq, agg_func, dt_ini, dt_end,
+def create_timeseries(session, ts_uri, property_uri, is_regular, is_cumulative, is_on_change, freq, agg_func, dt_ini,
+                      dt_end,
                       ns_mappings):
     bigg = ns_mappings['bigg']
 
@@ -110,12 +111,11 @@ def create_timeseries(session, ts_uri, property_uri, is_regular, is_cumulative, 
 
 def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estimation_method_uri, measurement_uri,
                   is_regular, is_cumulative, is_on_change, freq, agg_func, dt_ini, dt_end, ns_mappings):
-
     create_timeseries(session, sensor_uri, property_uri, is_regular, is_cumulative, is_on_change, freq,
                       agg_func, dt_ini, dt_end, ns_mappings)
 
     bigg = ns_mappings['bigg']
-    session.run(f"""
+    query = f"""
         MATCH (device: {bigg}__Device {{uri:"{device_uri}"}})
         MATCH (msu: {bigg}__MeasurementUnit {{uri:"{unit_uri}"}})
         MATCH (se: {bigg}__SensorEstimationMethod {{uri:"{estimation_method_uri}"}})
@@ -127,12 +127,12 @@ def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estim
         SET
             s : {bigg}__Sensor
         return s
-    """)
+    """
+    session.run(query)
 
 
 def create_tariffPrice(session, tariff_uri, tariffPrice_uri, unit_uri, property_uri, measurement_uri,
-                  is_regular, is_cumulative, is_on_change, freq, agg_func, dt_ini, dt_end, ns_mappings):
-
+                       is_regular, is_cumulative, is_on_change, freq, agg_func, dt_ini, dt_end, ns_mappings):
     create_timeseries(session, tariffPrice_uri, property_uri, is_regular, is_cumulative, is_on_change, freq,
                       agg_func, dt_ini, dt_end, ns_mappings)
 

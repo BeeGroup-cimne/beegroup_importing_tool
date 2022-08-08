@@ -158,7 +158,6 @@ def harmonize_building_emm(data, **kwargs):
 
 
 def harmonize_municipality_ts(data, **kwargs):
-    # TODO: TEST
     namespace = kwargs['namespace']
     n = Namespace(namespace)
     config = kwargs['config']
@@ -171,18 +170,18 @@ def harmonize_municipality_ts(data, **kwargs):
 
     df = pd.DataFrame(data)
     df['device_subject'] = df['Unique ID'].apply(partial(device_subject, source=config['source']))
-    df_c = df.iloc[:-1, :].copy()  # drop last row
 
-    available_years = [i for i in list(df_c.columns) if type(i) == int]
+    df = df[df['month'] < 13]
+
+    available_years = [i for i in list(df.columns) if type(i) == int]
 
     unique_id = df.iloc[0]['Unique ID']
     data_type = df.iloc[0]['data_type']
 
     for year in available_years:
-        sub_df = df_c[[year, 'Unique ID']].copy()
-        sub_df.dropna(inplace=True)
+        sub_df = df[[year, 'Unique ID', 'device_subject', 'month']].copy()
 
-        sub_df['date'] = sub_df.apply(lambda x: f"{year}/{int(x.name) + 1}/1", axis=1)
+        sub_df['date'] = sub_df.apply(lambda x: f"{year}/{int(x.month)}/1", axis=1)
         sub_df['ts'] = pd.to_datetime(sub_df['date'])
         sub_df['timestamp'] = sub_df['ts'].view(int) // 10 ** 9
 
@@ -198,8 +197,8 @@ def harmonize_municipality_ts(data, **kwargs):
         sub_df.set_index("ts", inplace=True)
         sub_df.sort_index(inplace=True)
 
-        dt_ini = sub_df.iloc[0]
-        dt_end = sub_df.iloc[-1]
+        dt_ini = sub_df.iloc[0].name
+        dt_end = sub_df.iloc[-1].name
 
         device_uri = n[sub_df.iloc[0]['device_subject']]
         sensor_id = sensor_subject(config['source'], unique_id, data_type, "RAW", freq)
@@ -209,33 +208,30 @@ def harmonize_municipality_ts(data, **kwargs):
         measurement_id = measurement_id.hexdigest()
         measurement_uri = str(n[measurement_id])
 
-        sub_df.reset_index(inplace=True)
-        final_df = sub_df[['ts', 'bucket', 'Unique ID', 'start', 'end', 'value', 'isReal']].copy()
-
         with neo.session() as session:
             create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
                           bigg_enums[data_type], bigg_enums.TrustedModel,
                           measurement_uri, False,
                           False, False, freq, "SUM", dt_ini, dt_end, settings.namespace_mappings)
 
-        final_df['listKey'] = measurement_id
+            df['listKey'] = measurement_id
 
-        device_table = harmonized_nomenclature(mode=HARMONIZED_MODE.ONLINE, data_type=data_type, R=False,
-                                               C=False, O=False, aggregation_function="SUM", freq=freq, user=user)
+            device_table = harmonized_nomenclature(mode=HARMONIZED_MODE.ONLINE, data_type=data_type, R=False,
+                                                   C=False, O=False, aggregation_function="SUM", freq=freq, user=user)
 
-        save_to_hbase(final_df.to_dict(orient="records"),
-                      device_table,
-                      hbase_conn,
-                      [("info", ['end', 'isReal']), ("v", ['value'])],
-                      row_fields=['bucket', 'listKey', 'start'])
+            save_to_hbase(df.to_dict(orient="records"),
+                          device_table,
+                          hbase_conn,
+                          [("info", ['end', 'isReal']), ("v", ['value'])],
+                          row_fields=['bucket', 'listKey', 'start'])
 
-        period_table = harmonized_nomenclature(mode=HARMONIZED_MODE.BATCH, data_type=data_type, R=False,
-                                               C=False, O=False, aggregation_function="SUM", freq=freq, user=user)
+            period_table = harmonized_nomenclature(mode=HARMONIZED_MODE.BATCH, data_type=data_type, R=False,
+                                                   C=False, O=False, aggregation_function="SUM", freq=freq, user=user)
 
-        save_to_hbase(final_df.to_dict(orient="records"),
-                      period_table, hbase_conn,
-                      [("info", ['end', 'isReal']), ("v", ['value'])],
-                      row_fields=['bucket', 'start', 'listKey'])
+            save_to_hbase(df.to_dict(orient="records"),
+                          period_table, hbase_conn,
+                          [("info", ['end', 'isReal']), ("v", ['value'])],
+                          row_fields=['bucket', 'start', 'listKey'])
 
 
 def harmonize_region_ts(data, **kwargs):
@@ -287,8 +283,8 @@ def harmonize_region_ts(data, **kwargs):
         sub_df.set_index("ts", inplace=True)
         sub_df.sort_index(inplace=True)
 
-        dt_ini = sub_df.iloc[0]
-        dt_end = sub_df.iloc[-1]
+        dt_ini = sub_df.iloc[0].name
+        dt_end = sub_df.iloc[-1].name
 
         device_uri = n[sub_df.iloc[0]['device_subject']]
         sensor_id = sensor_subject(config['source'], unique_id, data_type, "RAW", freq)
@@ -297,8 +293,6 @@ def harmonize_region_ts(data, **kwargs):
         measurement_id = sha256(sensor_uri.encode("utf-8"))
         measurement_id = measurement_id.hexdigest()
         measurement_uri = str(n[measurement_id])
-        sub_df.reset_index(inplace=True)
-        final_df = sub_df[['ts', 'bucket', 'Unique ID', 'start', 'end', 'value', 'isReal']].copy()
 
         with neo.session() as session:
             create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
@@ -306,12 +300,12 @@ def harmonize_region_ts(data, **kwargs):
                           measurement_uri, False,
                           False, False, freq, "SUM", dt_ini, dt_end, settings.namespace_mappings)
 
-        final_df['listKey'] = measurement_id
+        sub_df['listKey'] = measurement_id
 
         device_table = harmonized_nomenclature(mode=HARMONIZED_MODE.ONLINE, data_type=data_type, R=False,
                                                C=False, O=False, aggregation_function="SUM", freq=freq, user=user)
 
-        save_to_hbase(final_df.to_dict(orient="records"),
+        save_to_hbase(sub_df.to_dict(orient="records"),
                       device_table,
                       hbase_conn,
                       [("info", ['end', 'isReal']), ("v", ['value'])],
@@ -320,7 +314,7 @@ def harmonize_region_ts(data, **kwargs):
         period_table = harmonized_nomenclature(mode=HARMONIZED_MODE.BATCH, data_type=data_type, R=False,
                                                C=False, O=False, aggregation_function="SUM", freq=freq, user=user)
 
-        save_to_hbase(final_df.to_dict(orient="records"),
+        save_to_hbase(sub_df.to_dict(orient="records"),
                       period_table, hbase_conn,
                       [("info", ['end', 'isReal']), ("v", ['value'])],
                       row_fields=['bucket', 'start', 'listKey'])

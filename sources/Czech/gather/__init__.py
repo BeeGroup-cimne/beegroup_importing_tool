@@ -70,16 +70,17 @@ def gather(arguments, settings, config):
 
     if args.kind_of_file == 'municipality':
         freq = 'PT1M'
-        xl = pd.ExcelFile(args.files)
+        xl = pd.ExcelFile(args.file)
 
         for i in xl.sheet_names:
-            unique_id = args.files.split('/')[-1].split['_'][0]
+            unique_id = args.file.split('/')[-1].split('_')[0]
 
             if i == 'plyn':  # GAS
-                df = pd.read_excel(args.files, skiprows=5, sheet_name=i)
+                df = pd.read_excel(args.file, skiprows=5, sheet_name=i)
                 df.dropna(how='all', axis='columns', inplace=True)
                 df['Unique ID'] = unique_id
                 df['data_type'] = 'EnergyConsumptionGas'
+                df['month'] = [i for i in range(1, 14)]
 
                 save_data(data=df.to_dict(orient="records"), data_type="municipality_ts",
                           row_keys=["Unique ID"],
@@ -88,12 +89,12 @@ def gather(arguments, settings, config):
                                                       frequency=freq,
                                                       user=args.user, source=config['source']))
             elif i == 'elektřina':
-                df = pd.read_excel(args.files, sheet_name='elektřina',
+                df = pd.read_excel(args.file, sheet_name='elektřina',
                                    skiprows=6)
 
                 available_years = [i for i in list(df.columns) if type(i) == int]
 
-                df = pd.read_excel(args.files, sheet_name='elektřina',
+                df = pd.read_excel(args.file, sheet_name='elektřina',
                                    skiprows=7)
 
                 df.dropna(how='all', axis='columns', inplace=True)
@@ -109,6 +110,7 @@ def gather(arguments, settings, config):
 
                 df['Unique ID'] = unique_id
                 df['data_type'] = 'EnergyConsumptionGridElectricity'
+                df['month'] = [i for i in range(1, 14)]
 
                 save_data(data=df.to_dict(orient="records"), data_type="municipality_ts",
                           row_keys=["Unique ID"],
@@ -118,10 +120,10 @@ def gather(arguments, settings, config):
                                                       user=args.user, source=config['source']))
 
     if args.kind_of_file == 'region':
-        df = pd.read_excel(args.files, sheet_name='souhrn', skiprows=99)
+        df = pd.read_excel(args.file, sheet_name='souhrn', skiprows=99)
         df.dropna(how='all', axis='columns', inplace=True)
 
-        df['Unique ID'] = args.files.split('/')[-1]
+        df['Unique ID'] = args.file.split('/')[-1]
         save_data(data=df.to_dict(orient="records"), data_type="region_ts",
                   row_keys=["Unique ID"],
                   column_map=[("info", "all")], config=config, settings=settings, args=args,
