@@ -1,22 +1,67 @@
 # Datadis description
-Datadis(Datod de distribuïdora) is an application to obtain the energy consumption from the distribution company of spain.
+Datadis(Datos de distribuïdora) is an API that provides energy consumption from the distribution company of spain in 15 min and 1 h rate.
 
 ## Gathering tool
 This data source comes in the format of an [API](https://datadis.es/home), where different endpoints are available.
 The gathering tool of datadis, will make use of the [beedis](https://github.com/BeeGroup-cimne/beedis) python library to obtain the data.
 
+#### RUN import application
+To run the import application, execute the python script with the following parameters:
+
+```bash
+python3 -m gather -so Datadis -st <storage> -p <policy>
+```
+
+where policy can be "last" to obtain the last period of each supply, or "repair" to try to import missing periods skipped in the past.
+
 ## Raw Data Format
-The data imported will be stored in the Hbase table for each endpoint, the row key of each endpoint will be as follows.
+The data imported will be stored in the Hbase table, each endpoint that provides a different kind of information will have its own  row key, that will be generated as follows:
 
+ | endpoint  | Hbase key      |
+|-----------|----------------|
+ | supplies  | cups           |
+ | data_1h   | cups~time_ini  |
+| data_15m  | cups~time_ini  |
+| max_power | cups~time_ini  |
 
-| Source  | class     | Hbase key     |
-|---------|-----------|---------------|
-| Datadis | supplies  | cups          |
- | Datadis | data_1h   | cups~time_ini |
-| Datadis | data_15m  | cups~time_ini |
-| Datadis | max_power | cups~time_ini |
+*Mapping key from Datadis source where `time_ini` is the indicated time of the measure*
 
-*Mapping key from Datadis source*
+## Harmonization
+
+The harmonization of the data will be done with the following mapping:
+
+#### BuildingSpace =>
+| Origin | Harmonization     |
+|--------|-------------------|
+ |        | only link         | 
+
+#### LocationInfo =>
+| Origin              | Harmonization       |
+|---------------------|---------------------|
+ | fuzzy(province)     | hasAddressProvince  | 
+ | fuzzy(municipality) | hasAddressCity      | 
+ | postalCode          | addressPostalCode   | 
+ | address             | addressStreetName   | 
+
+#### UtilityPointOfDelivery =>
+| Origin  | Harmonization                     |
+|---------|-----------------------------------|
+| cups    | pointOfDeliveryIDFromOrganization |
+
+#### Device =>
+| Origin  | Harmonization  |
+|---------|----------------|
+ | cups    | deviceName     | 
+
+#### Consumptions =>
+
+| Hbase Row                 | Value           | isReal                         | table tyoe |
+|---------------------------|-----------------|--------------------------------|------------|
+| bucket~sensor_code~ts_ini | consumptionKWH  | True if `obtainMethod` is Real | Online     |
+| bucket~ts_ini~sensor_code | consumptionKWH  | True if `obtainMethod` is Real | Batch      |
+
+`bucket` is calculated with: `(ts_ini // 10000000 ) % 20`
+`sensor_code` is the hash `sha256` of the sensor URI
 
 ## Import script information
 
@@ -27,8 +72,8 @@ For each import run a log document will be stored in mongo:
     "user_datasource": "the nif of the user importing the data",
     "logs": {
       "gather" : "list with the logs of the import",
-      "logs.store" : "list with the logs of the store",
-      "logs.harmonize" : "list with the logs of the harmonization"
+      "store" : "list with the logs of the store",
+      "harmonize" : "list with the logs of the harmonization"
     },
     "log_exec": "timestamp of execution"
 }
@@ -52,9 +97,3 @@ chunks and the status of importation of each chunk.
 }
 ```
 
-## RUN import application
-To run the import application, execute the python script with the following parameters:
-
-```bash
-python3 -m gather -so Datadis -st <storage> -p <policy>
-```

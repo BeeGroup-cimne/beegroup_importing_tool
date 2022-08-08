@@ -25,7 +25,7 @@ Also, the information will be split by the different elements in the XML file
 
 ## Harmonization
 
-The harmonization of the file will be done with the following mapping, also it will be splitted depending on the elements on the XML
+The harmonization of the file will be done with the following mapping, also it will be split depending on the elements on the XML
 
 ####  "DatosDelCertificador" ==> NOT MAPPED
 ####  "IdentificacionEdificio" =>
