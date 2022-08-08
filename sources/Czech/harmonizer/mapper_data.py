@@ -23,11 +23,6 @@ from utils.utils import read_config
 
 
 def harmonize_building_info(data, **kwargs):
-    # namespace = 'https://czech.cz#'
-    # config = read_config('config.json')
-    # config.update({"source": "czech"})
-    # user = "czech"
-
     namespace = kwargs['namespace']
     user = kwargs['user']
     n = Namespace(namespace)
@@ -235,7 +230,6 @@ def harmonize_municipality_ts(data, **kwargs):
 
 
 def harmonize_region_ts(data, **kwargs):
-    # TODO: Test
     namespace = kwargs['namespace']
     n = Namespace(namespace)
     config = kwargs['config']
