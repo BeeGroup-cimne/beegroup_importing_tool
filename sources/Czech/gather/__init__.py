@@ -52,25 +52,31 @@ def gather(arguments, settings, config):
 
     if args.kind_of_file == 'building_data':
         for file in os.listdir(args.file):
-            df = pd.read_excel(f"{args.file}/{file}", skiprows=1)
-            df.rename(columns={"Unikátní kód": 'Unique ID'}, inplace=True)
-            save_data(data=df.to_dict(orient="records"), data_type="BuildingInfo",
-                      row_keys=["Unique ID"],
-                      column_map=[("info", "all")], config=config, settings=settings, args=args,
-                      table_name=raw_nomenclature(mode=RAW_MODE.STATIC, data_type="BuildingInfo", frequency="",
-                                                  user=args.user, source=config['source']))
+            try:
+                df = pd.read_excel(f"{args.file}/{file}", skiprows=1)
+                df.rename(columns={"Unikátní kód": 'Unique ID'}, inplace=True)
+                save_data(data=df.to_dict(orient="records"), data_type="BuildingInfo",
+                          row_keys=["Unique ID"],
+                          column_map=[("info", "all")], config=config, settings=settings, args=args,
+                          table_name=raw_nomenclature(mode=RAW_MODE.STATIC, data_type="BuildingInfo", frequency="",
+                                                      user=args.user, source=config['source']))
+            except Exception as ex:
+                log_string(ex)
 
     if args.kind_of_file == 'building_eem':
         for file in os.listdir(args.file):
-            df = pd.read_excel(f"{args.file}/{file}", skiprows=1, sheet_name=1)
-            df.rename(columns={"Unikátní kód": 'Unique ID'}, inplace=True)
+            try:
+                df = pd.read_excel(f"{args.file}/{file}", skiprows=1, sheet_name=1)
+                df.rename(columns={"Unikátní kód": 'Unique ID'}, inplace=True)
 
-            save_data(data=df.to_dict(orient="records"), data_type="EnergyEfficiencyMeasure",
-                      row_keys=["Unique ID"],
-                      column_map=[("info", "all")], config=config, settings=settings, args=args,
-                      table_name=raw_nomenclature(mode=RAW_MODE.STATIC, data_type="EnergyEfficiencyMeasure",
-                                                  frequency="",
-                                                  user=args.user, source=config['source']))
+                save_data(data=df.to_dict(orient="records"), data_type="EnergyEfficiencyMeasure",
+                          row_keys=["Unique ID"],
+                          column_map=[("info", "all")], config=config, settings=settings, args=args,
+                          table_name=raw_nomenclature(mode=RAW_MODE.STATIC, data_type="EnergyEfficiencyMeasure",
+                                                      frequency="",
+                                                      user=args.user, source=config['source']))
+            except Exception as ex:
+                log_string(ex)
 
     if args.kind_of_file == 'municipality':
         freq = 'PT1M'
@@ -83,60 +89,70 @@ def gather(arguments, settings, config):
                 unique_id = f"{file}".split('_')[0]
 
                 if i == 'plyn':  # GAS
-                    df = pd.read_excel(f"{args.file}/{file}", skiprows=5, sheet_name=i)
-                    df.dropna(how='all', axis='columns', inplace=True)
-                    df['Unique ID'] = unique_id
-                    df['data_type'] = 'EnergyConsumptionGas'
-                    df = df.iloc[:12]
-                    df['month'] = [i for i in range(1, 13)]
+                    try:
+                        df = pd.read_excel(f"{args.file}/{file}", skiprows=5, sheet_name=i)
+                        df.dropna(how='all', axis='columns', inplace=True)
+                        df['Unique ID'] = unique_id
+                        df['data_type'] = 'EnergyConsumptionGas'
+                        df = df.iloc[:12]
+                        df['month'] = [i for i in range(1, 13)]
 
-                    save_data(data=df.to_dict(orient="records"), data_type="municipality_ts",
-                              row_keys=["Unique ID"],
-                              column_map=[("info", "all")], config=config, settings=settings, args=args,
-                              table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES, data_type="municipality_ts_gas",
-                                                          frequency=freq,
-                                                          user=args.user, source=config['source']))
+                        save_data(data=df.to_dict(orient="records"), data_type="municipality_ts",
+                                  row_keys=["Unique ID"],
+                                  column_map=[("info", "all")], config=config, settings=settings, args=args,
+                                  table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES, data_type="municipality_ts_gas",
+                                                              frequency=freq,
+                                                              user=args.user, source=config['source']))
+                    except Exception as ex:
+                        log_string(ex)
+
                 elif i == 'elektřina':
-                    df = pd.read_excel(f"{args.file}/{file}", sheet_name='elektřina',
-                                       skiprows=6)
+                    try:
+                        df = pd.read_excel(f"{args.file}/{file}", sheet_name='elektřina',
+                                           skiprows=6)
 
-                    available_years = [i for i in list(df.columns) if type(i) == int]
+                        available_years = [i for i in list(df.columns) if type(i) == int]
 
-                    df = pd.read_excel(f"{args.file}/{file}", sheet_name='elektřina',
-                                       skiprows=7)
+                        df = pd.read_excel(f"{args.file}/{file}", sheet_name='elektřina',
+                                           skiprows=7)
 
-                    df.dropna(how='all', axis='columns', inplace=True)
+                        df.dropna(how='all', axis='columns', inplace=True)
 
-                    headers = ['Months']
+                        headers = ['Months']
 
-                    for year in available_years:
-                        headers.append(f'VT_{year}')
-                        headers.append(f'NT_{year}')
-                        headers.append(year)
+                        for year in available_years:
+                            headers.append(f'VT_{year}')
+                            headers.append(f'NT_{year}')
+                            headers.append(year)
 
-                    df.columns = headers
+                        df.columns = headers
 
-                    df['Unique ID'] = unique_id
-                    df['data_type'] = 'EnergyConsumptionGridElectricity'
-                    df = df.iloc[:12]
-                    df['month'] = [i for i in range(1, 13)]
+                        df['Unique ID'] = unique_id
+                        df['data_type'] = 'EnergyConsumptionGridElectricity'
+                        df = df.iloc[:12]
+                        df['month'] = [i for i in range(1, 13)]
 
-                    save_data(data=df.to_dict(orient="records"), data_type="municipality_ts",
-                              row_keys=["Unique ID"],
-                              column_map=[("info", "all")], config=config, settings=settings, args=args,
-                              table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES,
-                                                          data_type="municipality_ts_electricity",
-                                                          frequency=freq,
-                                                          user=args.user, source=config['source']))
+                        save_data(data=df.to_dict(orient="records"), data_type="municipality_ts",
+                                  row_keys=["Unique ID"],
+                                  column_map=[("info", "all")], config=config, settings=settings, args=args,
+                                  table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES,
+                                                              data_type="municipality_ts_electricity",
+                                                              frequency=freq,
+                                                              user=args.user, source=config['source']))
+                    except Exception as ex:
+                        log_string(ex)
 
     if args.kind_of_file == 'region':
         for file in os.listdir(args.file):
-            df = pd.read_excel(f"{args.file}/{file}", sheet_name='souhrn', skiprows=99)
-            df.dropna(how='all', axis='columns', inplace=True)
+            try:
+                df = pd.read_excel(f"{args.file}/{file}", sheet_name='souhrn', skiprows=99)
+                df.dropna(how='all', axis='columns', inplace=True)
 
-            df['Unique ID'] = file.split('_')[0]
-            save_data(data=df.to_dict(orient="records"), data_type="region_ts",
-                      row_keys=["Unique ID"],
-                      column_map=[("info", "all")], config=config, settings=settings, args=args,
-                      table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES, data_type="region_ts", frequency="",
-                                                  user=args.user, source=config['source']))
+                df['Unique ID'] = file.split('_')[0]
+                save_data(data=df.to_dict(orient="records"), data_type="region_ts",
+                          row_keys=["Unique ID"],
+                          column_map=[("info", "all")], config=config, settings=settings, args=args,
+                          table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES, data_type="region_ts", frequency="",
+                                                      user=args.user, source=config['source']))
+            except Exception as ex:
+                log_string(ex)
