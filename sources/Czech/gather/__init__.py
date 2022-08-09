@@ -1,4 +1,5 @@
 import argparse
+import os
 
 import pandas as pd
 
@@ -50,82 +51,92 @@ def gather(arguments, settings, config):
     args = ap.parse_args(arguments)
 
     if args.kind_of_file == 'building_data':
-        df = pd.read_excel(args.file, skiprows=1)
-        df.rename(columns={"Unikátní kód": 'Unique ID'}, inplace=True)
-        save_data(data=df.to_dict(orient="records"), data_type="BuildingInfo",
-                  row_keys=["Unique ID"],
-                  column_map=[("info", "all")], config=config, settings=settings, args=args,
-                  table_name=raw_nomenclature(mode=RAW_MODE.STATIC, data_type="BuildingInfo", frequency="",
-                                              user=args.user, source=config['source']))
+        for file in os.listdir(args.file):
+            df = pd.read_excel(f"{args.file}/{file}", skiprows=1)
+            df.rename(columns={"Unikátní kód": 'Unique ID'}, inplace=True)
+            save_data(data=df.to_dict(orient="records"), data_type="BuildingInfo",
+                      row_keys=["Unique ID"],
+                      column_map=[("info", "all")], config=config, settings=settings, args=args,
+                      table_name=raw_nomenclature(mode=RAW_MODE.STATIC, data_type="BuildingInfo", frequency="",
+                                                  user=args.user, source=config['source']))
 
     if args.kind_of_file == 'building_eem':
-        df = pd.read_excel(args.file, skiprows=1, sheet_name=1)
-        df.rename(columns={"Unikátní kód": 'Unique ID'}, inplace=True)
+        for file in os.listdir(args.file):
+            df = pd.read_excel(f"{args.file}/{file}", skiprows=1, sheet_name=1)
+            df.rename(columns={"Unikátní kód": 'Unique ID'}, inplace=True)
 
-        save_data(data=df.to_dict(orient="records"), data_type="EnergyEfficiencyMeasure",
-                  row_keys=["Unique ID"],
-                  column_map=[("info", "all")], config=config, settings=settings, args=args,
-                  table_name=raw_nomenclature(mode=RAW_MODE.STATIC, data_type="EnergyEfficiencyMeasure", frequency="",
-                                              user=args.user, source=config['source']))
+            save_data(data=df.to_dict(orient="records"), data_type="EnergyEfficiencyMeasure",
+                      row_keys=["Unique ID"],
+                      column_map=[("info", "all")], config=config, settings=settings, args=args,
+                      table_name=raw_nomenclature(mode=RAW_MODE.STATIC, data_type="EnergyEfficiencyMeasure",
+                                                  frequency="",
+                                                  user=args.user, source=config['source']))
 
     if args.kind_of_file == 'municipality':
         freq = 'PT1M'
-        xl = pd.ExcelFile(args.file)
+        for file in os.listdir(args.file):
+            log_string(f"File: {file}")
 
-        for i in xl.sheet_names:
-            unique_id = args.file.split('/')[-1].split('_')[0]
+            xl = pd.ExcelFile(f"{args.file}/{file}")
 
-            if i == 'plyn':  # GAS
-                df = pd.read_excel(args.file, skiprows=5, sheet_name=i)
-                df.dropna(how='all', axis='columns', inplace=True)
-                df['Unique ID'] = unique_id
-                df['data_type'] = 'EnergyConsumptionGas'
-                df['month'] = [i for i in range(1, 14)]
+            for i in xl.sheet_names:
+                unique_id = f"{file}".split('_')[0]
 
-                save_data(data=df.to_dict(orient="records"), data_type="municipality_ts",
-                          row_keys=["Unique ID"],
-                          column_map=[("info", "all")], config=config, settings=settings, args=args,
-                          table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES, data_type="municipality_ts_gas",
-                                                      frequency=freq,
-                                                      user=args.user, source=config['source']))
-            elif i == 'elektřina':
-                df = pd.read_excel(args.file, sheet_name='elektřina',
-                                   skiprows=6)
+                if i == 'plyn':  # GAS
+                    df = pd.read_excel(f"{args.file}/{file}", skiprows=5, sheet_name=i)
+                    df.dropna(how='all', axis='columns', inplace=True)
+                    df['Unique ID'] = unique_id
+                    df['data_type'] = 'EnergyConsumptionGas'
+                    df = df.iloc[:12]
+                    df['month'] = [i for i in range(1, 13)]
 
-                available_years = [i for i in list(df.columns) if type(i) == int]
+                    save_data(data=df.to_dict(orient="records"), data_type="municipality_ts",
+                              row_keys=["Unique ID"],
+                              column_map=[("info", "all")], config=config, settings=settings, args=args,
+                              table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES, data_type="municipality_ts_gas",
+                                                          frequency=freq,
+                                                          user=args.user, source=config['source']))
+                elif i == 'elektřina':
+                    df = pd.read_excel(f"{args.file}/{file}", sheet_name='elektřina',
+                                       skiprows=6)
 
-                df = pd.read_excel(args.file, sheet_name='elektřina',
-                                   skiprows=7)
+                    available_years = [i for i in list(df.columns) if type(i) == int]
 
-                df.dropna(how='all', axis='columns', inplace=True)
+                    df = pd.read_excel(f"{args.file}/{file}", sheet_name='elektřina',
+                                       skiprows=7)
 
-                headers = ['Months']
+                    df.dropna(how='all', axis='columns', inplace=True)
 
-                for year in available_years:
-                    headers.append(f'VT_{year}')
-                    headers.append(f'NT_{year}')
-                    headers.append(year)
+                    headers = ['Months']
 
-                df.columns = headers
+                    for year in available_years:
+                        headers.append(f'VT_{year}')
+                        headers.append(f'NT_{year}')
+                        headers.append(year)
 
-                df['Unique ID'] = unique_id
-                df['data_type'] = 'EnergyConsumptionGridElectricity'
-                df['month'] = [i for i in range(1, 14)]
+                    df.columns = headers
 
-                save_data(data=df.to_dict(orient="records"), data_type="municipality_ts",
-                          row_keys=["Unique ID"],
-                          column_map=[("info", "all")], config=config, settings=settings, args=args,
-                          table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES, data_type="municipality_ts_electricity",
-                                                      frequency=freq,
-                                                      user=args.user, source=config['source']))
+                    df['Unique ID'] = unique_id
+                    df['data_type'] = 'EnergyConsumptionGridElectricity'
+                    df = df.iloc[:12]
+                    df['month'] = [i for i in range(1, 13)]
+
+                    save_data(data=df.to_dict(orient="records"), data_type="municipality_ts",
+                              row_keys=["Unique ID"],
+                              column_map=[("info", "all")], config=config, settings=settings, args=args,
+                              table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES,
+                                                          data_type="municipality_ts_electricity",
+                                                          frequency=freq,
+                                                          user=args.user, source=config['source']))
 
     if args.kind_of_file == 'region':
-        df = pd.read_excel(args.file, sheet_name='souhrn', skiprows=99)
-        df.dropna(how='all', axis='columns', inplace=True)
+        for file in os.listdir(args.file):
+            df = pd.read_excel(f"{args.file}/{file}", sheet_name='souhrn', skiprows=99)
+            df.dropna(how='all', axis='columns', inplace=True)
 
-        df['Unique ID'] = args.file.split('/')[-1]
-        save_data(data=df.to_dict(orient="records"), data_type="region_ts",
-                  row_keys=["Unique ID"],
-                  column_map=[("info", "all")], config=config, settings=settings, args=args,
-                  table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES, data_type="region_ts", frequency="",
-                                              user=args.user, source=config['source']))
+            df['Unique ID'] = file.split('_')[0]
+            save_data(data=df.to_dict(orient="records"), data_type="region_ts",
+                      row_keys=["Unique ID"],
+                      column_map=[("info", "all")], config=config, settings=settings, args=args,
+                      table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES, data_type="region_ts", frequency="",
+                                                  user=args.user, source=config['source']))

@@ -207,12 +207,12 @@ def harmonize_municipality_ts(data, **kwargs):
                           measurement_uri, False,
                           False, False, freq, "SUM", dt_ini, dt_end, settings.namespace_mappings)
 
-            df['listKey'] = measurement_id
+            sub_df['listKey'] = measurement_id
 
             device_table = harmonized_nomenclature(mode=HARMONIZED_MODE.ONLINE, data_type=data_type, R=False,
                                                    C=False, O=False, aggregation_function="SUM", freq=freq, user=user)
 
-            save_to_hbase(df.to_dict(orient="records"),
+            save_to_hbase(sub_df.to_dict(orient="records"),
                           device_table,
                           hbase_conn,
                           [("info", ['end', 'isReal']), ("v", ['value'])],
@@ -221,7 +221,7 @@ def harmonize_municipality_ts(data, **kwargs):
             period_table = harmonized_nomenclature(mode=HARMONIZED_MODE.BATCH, data_type=data_type, R=False,
                                                    C=False, O=False, aggregation_function="SUM", freq=freq, user=user)
 
-            save_to_hbase(df.to_dict(orient="records"),
+            save_to_hbase(sub_df.to_dict(orient="records"),
                           period_table, hbase_conn,
                           [("info", ['end', 'isReal']), ("v", ['value'])],
                           row_fields=['bucket', 'start', 'listKey'])
