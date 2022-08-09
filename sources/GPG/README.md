@@ -5,7 +5,7 @@ belonging to the Generalitat de Catalunya.
 ## Gathering tool
 This data source comes in the format of an Excel file where each row is the information about a building. 
 
-## RUN import application
+#### RUN import application
 To run the import application, execute the python script with the following parameters:
 
 ```bash

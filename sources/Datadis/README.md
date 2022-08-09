@@ -53,12 +53,12 @@ The harmonization of the data will be done with the following mapping:
 |---------|----------------|
  | cups    | deviceName     | 
 
-#### Consumptions =>
+#### Measurements =>
 
 | Hbase Row                 | Value           | isReal                         | table tyoe |
 |---------------------------|-----------------|--------------------------------|------------|
-| bucket~sensor_code~ts_ini | consumptionKWH  | True if `obtainMethod` is Real | Online     |
-| bucket~ts_ini~sensor_code | consumptionKWH  | True if `obtainMethod` is Real | Batch      |
+| bucket~sensor_code~ts_ini | consumptionKWH  | True if `Tipo Lectura` is Real | Online     |
+| bucket~ts_ini~sensor_code | consumptionKWH  | True if `Tipo Lectura` is Real | Batch      |
 
 `bucket` is calculated with: `(ts_ini // 10000000 ) % 20`
 `sensor_code` is the hash `sha256` of the sensor URI
