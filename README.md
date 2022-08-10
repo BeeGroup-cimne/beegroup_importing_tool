@@ -42,10 +42,16 @@ python3 -m harmonizer
 The following links will provide information of each data source import tool:
 
 1. [GPG (Gestió de patrimoni de la generalitat)](sources/GPG/README.md)
-2. [Gemweb](sources/Gemweb/README.md)
-3. [Datadis](sources/Datadis/README.md)
-4. [Genercat](sources/genercat/README.md)
-5. [Weather](sources/Weather/README.md)
+2. [BIS (Building Information Source)](sources/BIS/README.md)
+3. [Bulgaria (Building renovation projects from bulgaria)](sources/Bulgaria/README.md)
+4. [CEEC3X (xml certificates)](sources/CEEC3X/README.md)
+5. [Datadis (Distributor electricity energy)](sources/Datadis/README.md)
+5. [Gemweb (Energy Management Platform)](sources/Gemweb/README.md)
+6. [Genercat (EEM excel from Generalitat)](sources/genercat/README.md)
+6. [Ixon (Infraestructures connection platform)](sources/Ixon/README.md)
+6. [Nedgia (Distributor gas energy)](sources/Nedgia/README.md)
+6. [SimpleTariff (Tarif excel with yearly data)](sources/SimpleTariff/README.md)
+7. [Weather](sources/Weather/README.md)
 
 
 
@@ -60,7 +66,8 @@ ASSERT r.uri IS UNIQUE;
 ```
 2. Create the graph configuration:
 ```
-CALL n10s.graphconfig.init();
+ CALL n10s.graphconfig.init({ keepLangTag: true, handleMultival:"ARRAY"});
+ # CALL n10s.graphconfig.init({ keepLangTag: true, handleMultival:"ARRAY", multivalPropList:["http://www.w3.org/2000/01/rdf-schema#label", "http://www.w3.org/2000/01/rdf-schema#comment", "http://www.geonames.org/ontology#officialName"]});
 ```
 3. Add the namespaces we will use:
 ```
@@ -83,7 +90,7 @@ The following are some scripts to automatically set up some of the features from
 
 ## Configuration
 
-The configuration file for running the applications consists of a config.json that must be placed in the root of the project
+The configuration file for running the applications consists of a config.json that must be placed in the root of the project and add the source specific configuration
 
 ```json
 {
