@@ -34,6 +34,7 @@ def create_tariff(data, **kwargs):
                         d.{bigg}__tariffName = ["{tariff_name}"] return d
                     """)
 
+
 def harmonize_data_ts(data, **kwargs):
     # Variables
     namespace = kwargs['namespace']
@@ -41,7 +42,6 @@ def harmonize_data_ts(data, **kwargs):
     config = kwargs['config']
     tariff_name = kwargs['tariff']
     tariff_name_uri = slugify(tariff_name)
-
     date_ini = kwargs['date_ini']
     date_end = kwargs['date_end']
     # Database connections
@@ -51,9 +51,13 @@ def harmonize_data_ts(data, **kwargs):
     neo = GraphDatabase.driver(**neo4j_connection)
 
     # Init dataframe
+    df_full = pd.DataFrame(data={"data": pd.date_range(datetime(2020, 1, 1, 0), datetime(2020, 12, 31, 23), freq="H",
+                                                       tz="UTC").values})
     df = pd.DataFrame.from_records(data)
     df = df.applymap(decode_hbase)
-    df.index = pd.date_range(datetime(2020, 1, 1, 0), datetime(2020, 12, 31, 23), freq="H", tz="UTC")
+    df.index = df.pos.astype(int).map(df_full.data)
+    df.sort_index(inplace=True)
+
     df['map'] = df.index.strftime("%m-%d-%H")
     ranged = pd.date_range(date_ini, date_end, freq="H", tz="UTC")
 
@@ -61,10 +65,11 @@ def harmonize_data_ts(data, **kwargs):
     tariff_df['map'] = tariff_df.index.strftime("%m-%d-%H")
 
     tariff_df['value'] = tariff_df.map.map({k['map']: k['value'] for k in df.to_dict(orient="records")})
+    tariff_df = tariff_df.dropna()
     tariff_df['start'] = tariff_df.index.astype('int') / 10 ** 9
     tariff_df['start'] = tariff_df['start'].astype('int')
     tariff_df['end'] = tariff_df['start'] + 3600
-    tariff_df['isReal'] = False
+    tariff_df['isReal'] = True
 
     tariff_df['bucket'] = (tariff_df['start'] // settings.ts_buckets) % settings.buckets
 

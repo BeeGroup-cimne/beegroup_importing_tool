@@ -56,7 +56,7 @@ def harmonize_data(data, **kwargs):
             measurement_uri = str(n[measurement_id])
             with neo.session() as session:
                 create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
-                              bigg_enums.EnergyConsumptionGridElectricity, bigg_enums.TrustedModel,
+                              bigg_enums.EnergyConsumptionGridElectricity, bigg_enums.Profiled,
                               measurement_uri, True,
                               False, False, freq, "SUM", dt_ini, dt_end, settings.namespace_mappings)
 

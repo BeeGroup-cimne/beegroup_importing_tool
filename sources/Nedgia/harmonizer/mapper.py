@@ -83,7 +83,7 @@ def harmonize_data_ts(data, **kwargs):
             measurement_uri = str(n[measurement_id])
             with neo.session() as session:
                 create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
-                              bigg_enums.EnergyConsumptionGas, bigg_enums.TrustedModel,
+                              bigg_enums.EnergyConsumptionGas, bigg_enums.Naive,
                               measurement_uri, False,
                               False, False, "", "SUM", dt_ini, dt_end, settings.namespace_mappings)
 

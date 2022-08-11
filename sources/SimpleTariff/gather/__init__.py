@@ -35,6 +35,7 @@ def gather(arguments, config=None, settings=None):
     tariff.loc[:, 'row_index'] = tariff.apply(lambda x:
                                               f"{args.tariff}-{date_ini.strftime('%Y%m%d')}-{date_end.strftime('%Y%m%d')}~{x.name}",
                                               axis=1)
+    tariff.loc[:, 'pos'] = tariff.index
     if args.store == "kafka":
         try:
             utils.utils.log_string(f"saving to kafka", mongo=False)
@@ -57,7 +58,7 @@ def gather(arguments, config=None, settings=None):
                 "date_end": date_end,
                 "tariff": args.tariff,
                 "logger": mongo_logger.export_log(),
-                "data": [{"values": tariff.to_dict(orient="records")}]
+                "data": tariff.to_dict(orient="records")
             }
             k_harmonize_topic = config["kafka"]["topic"]
             utils.kafka.save_to_kafka(topic=k_harmonize_topic, info_document=kafka_message_create_tariff,

@@ -59,6 +59,10 @@ class Mapper(object):
                     "energyEfficiencyMeasureInvestment": {
                         "key": f"measurement_{column}_Investments",
                         "operations": []
+                    },
+                    "energyEfficiencyMeasureOperationalDate": {
+                        "key": f"epc_date",
+                        "operations": []
                     }
                 },
             },
@@ -331,6 +335,10 @@ class Mapper(object):
                 },
                 "element": {
                     "type": Bigg.isAssociatedWithElement,
+                    "link": "subject"
+                },
+                "device": {
+                    "type": Bigg.isObservedByDevice,
                     "link": "subject"
                 }
             }

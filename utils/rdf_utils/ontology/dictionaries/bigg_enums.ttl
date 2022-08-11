@@ -2837,22 +2837,29 @@ bigg:WindSpeed a bigg:MeasuredProperty, skos:Concept;
 bigg:BoilerModulationLevel a bigg:MeasuredProperty, skos:Concept;
   rdfs:comment "Boiler modulation level" .
 
-bigg:Naive a bigg:SensorEstimationMethod, skos:Concept .
+bigg:Naive a bigg:SensorEstimationMethod, skos:Concept;
+  bigg:considerEstimatedValues false .
 
-bigg:Profiled a bigg:SensorEstimationMethod, skos:Concept .
+bigg:Profiled a bigg:SensorEstimationMethod, skos:Concept;
+  bigg:considerEstimatedValues false .
 
-bigg:Interpolated a bigg:SensorEstimationMethod, skos:Concept .
+bigg:Interpolated a bigg:SensorEstimationMethod, skos:Concept ;
+  bigg:considerEstimatedValues false .
 
-bigg:TrustedModel a bigg:SensorEstimationMethod, skos:Concept .
+bigg:TrustedModel a bigg:SensorEstimationMethod, skos:Concept ;
+  bigg:considerEstimatedValues true .
 
 bigg:TrustedModel.RegressionModel a bigg:SensorEstimationMethod, skos:Concept;
-  skos:broader bigg:TrustedModel .
+  skos:broader bigg:TrustedModel ;
+  bigg:considerEstimatedValues true .
 
 bigg:TrustedModel.ClassificationModel a bigg:SensorEstimationMethod, skos:Concept;
-  skos:broader bigg:TrustedModel .
+  skos:broader bigg:TrustedModel ;
+  bigg:considerEstimatedValues true .
 
 bigg:TrustedModel.Other a bigg:SensorEstimationMethod, skos:Concept;
-  skos:broader bigg:TrustedModel .
+  skos:broader bigg:TrustedModel ;
+  bigg:considerEstimatedValues true .
 
 bigg:SafetyAndHealth a bigg:NonEnergyBenefitType, skos:Concept .
 
