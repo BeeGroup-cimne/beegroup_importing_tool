@@ -82,7 +82,8 @@ def align_qudt(qudt_file):
     # EnergyEfficiencyMeasureInvestmentCurrency, ProjectInvestmentCurrency
     c_query = """SELECT DISTINCT ?s WHERE{ ?s qudt:hasQuantityKind quantitykind:Currency}"""
     units = align_to_bigg(units, c_query,
-                          [BIGG['EnergyEfficiencyMeasureInvestmentCurrency'], BIGG['ProjectInvestmentCurrency']])
+                          [BIGG['EnergyEfficiencyMeasureInvestmentCurrency'], BIGG['ProjectInvestmentCurrency'],
+                           BIGG['TariffCurrency']])
     # AreaUnits
     a_query = """SELECT DISTINCT ?s WHERE{ ?s qudt:hasQuantityKind quantitykind:Area}"""
     units = align_to_bigg(units, a_query, [BIGG['AreaUnitOfMeasurement']])
