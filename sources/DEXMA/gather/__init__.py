@@ -2,6 +2,7 @@ import argparse
 from enum import Enum
 
 import pandas as pd
+from dateutil.parser import parse
 from dexma.device import Device
 from dexma.location import Location
 from dexma.reading import Reading
@@ -9,7 +10,7 @@ from dexma.supply import Supply
 
 from utils.hbase import save_to_hbase
 from utils.kafka import save_to_kafka
-from utils.nomenclature import raw_nomenclature
+from utils.nomenclature import raw_nomenclature, RAW_MODE
 from utils.utils import log_string
 
 
@@ -19,16 +20,25 @@ class SupplyEnum(Enum):
     GAS = 'GAS'
 
 
-def gather_static_data(config, settings, args):
+def gather_devices(config, settings, args):
     count = 0
     limit = 500
 
     while True:
-        devices = Device().get_devices({"start": count * limit, "limit": limit}).json()
+        res = Device().get_devices({"start": count * limit, "limit": limit})
+
+        devices = res.json()
+        save_data(data=devices, data_type='Devices',
+                  row_keys=['id'], column_map=[("info", "all")],
+                  config=config, settings=settings, args=args, raw_mode=RAW_MODE.STATIC)
 
         for index, row in pd.DataFrame(devices).iterrows():
             if row['location']:
-                location = gather_location(row['location']['id']).json()
+                location = [gather_location(row['location']['id']).json()]
+
+                save_data(data=location, data_type='Location',
+                          row_keys=['id'], column_map=[("info", "all")],
+                          config=config, settings=settings, args=args, raw_mode=RAW_MODE.STATIC)
 
         if len(devices) == limit:
             count += 1
@@ -36,26 +46,44 @@ def gather_static_data(config, settings, args):
             break
 
 
-def gather_reads(device_id, date_init, date_end):
-    try:
-        r = Reading()
-        res = r.get_readings_by_parameter_key({"device_id": device_id,
-                                               "parameter_key": 'CURRENT',
-                                               "operation": "RAW",
-                                               "resolution": 'H',
-                                               "from": date_init,
-                                               "to": date_end})
-        return res
-    except Exception as ex:
-        print(f"{ex}")
+def gather_reads(args, settings, config):
+    count = 0
+    limit = 500
+
+    while True:
+        res = Device().get_devices({"start": count * limit, "limit": limit})
+
+        devices = res.json()
+
+        for device in devices:
+            try:
+                r = Reading()
+                res = r.get_readings_by_parameter_key({"device_id": device['id'],
+                                                       "parameter_key": 'CURRENT',
+                                                       "operation": "RAW",
+                                                       "resolution": 'H',
+                                                       "from": parse(args.date_init),
+                                                       "to": parse(args.date_end)})
+                return res
+            except Exception as ex:
+                print(f"{ex}")
+
+        if len(devices) == limit:
+            count += 1
+        else:
+            break
 
 
-def gather_supplies(supply_type: SupplyEnum):
+def gather_supplies(args, settings, config, supply_type: SupplyEnum):
     limit = 20
     count = 0
     while True:
         supplies = Supply().get_energy_source_supplies(supply_type.value,
                                                        {"start": count * limit, "limit": limit}).json()
+
+        save_data(data=supplies, data_type='Supplies',
+                  row_keys=['id'], column_map=[("info", "all")],
+                  config=config, settings=settings, args=args, raw_mode=RAW_MODE.STATIC)
 
         if len(supplies) == limit:
             count += 1
@@ -105,9 +133,24 @@ def gather(arguments, settings, config):
     ap.add_argument("--namespace", "-n", help="The subjects namespace uri", required=True)
     ap.add_argument("-st", "--store", required=True, help="Where to store the data", choices=["kafka", "hbase"])
 
-    ap.add_argument("-k", "--kind_of_data", required=True, help="Where to store the data",
-                    choices=["devices", "location", "parameter", "supplies", "reading", "all"])
+    ap.add_argument("-di", "--date_init", required=True, help="Where to store the data", choices=["kafka", "hbase"])
+    ap.add_argument("-de", "--date_end", required=True, help="Where to store the data", choices=["kafka", "hbase"])
+
+    ap.add_argument("-dt", "--data_type", required=True, help="Where to store the data",
+                    choices=["devices", "location", "supplies", "reading", "all"])
+
     args = ap.parse_args(arguments)
 
-    # if args.kind_of_data == "devices" or args.kind_of_data == "all":
-    #     gather_devices(arguments, settings, config)
+    if (args.data_type != 'reading' or args.data_type != 'all') and args.date_init and args.date_end:
+        ap.error('--dump-format can only be set when --action=dump.')
+
+    if args.kind_of_data == "devices" or args.kind_of_data == "all":
+        gather_devices(args, settings, config)
+
+    if args.kind_of_data == "supplies" or args.kind_of_data == "all":
+        gather_supplies(args, settings, config, SupplyEnum.ELECTRICITY)
+        gather_supplies(args, settings, config, SupplyEnum.WATER)
+        gather_supplies(args, settings, config, SupplyEnum.GAS)
+
+    if args.kind_of_data == "reads" or args.kind_of_data == "all":
+        gather_reads(args, settings, config)
