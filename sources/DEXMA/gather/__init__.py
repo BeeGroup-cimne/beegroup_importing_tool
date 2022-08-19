@@ -62,8 +62,8 @@ def gather_reads(args, settings, config):
                                                        "parameter_key": 'CURRENT',
                                                        "operation": "RAW",
                                                        "resolution": 'H',
-                                                       "from": parse(args.date_init),
-                                                       "to": parse(args.date_end)})
+                                                       "from": parse(args.date_init).isoformat(),
+                                                       "to": parse(args.date_end).isoformat()})
                 return res
             except Exception as ex:
                 print(f"{ex}")
@@ -153,4 +153,15 @@ def gather(arguments, settings, config):
         gather_supplies(args, settings, config, SupplyEnum.GAS)
 
     if args.kind_of_data == "reads" or args.kind_of_data == "all":
-        gather_reads(args, settings, config)
+        date_init = parse(args.date_init)
+        date_end = parse(args.date_end)
+
+        if date_init < date_end:
+            if abs((date_init - date_end).days) <= 365:
+                gather_reads(args, settings, config)
+            else:
+                raise Exception(
+                    "The difference between dates must be less than a year.")
+        else:
+            raise Exception(
+                "Date init must be less than date end.")
