@@ -9,25 +9,23 @@ import utils
 def gather(arguments, config=None, settings=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("-f", "--file", required=True, help="Excel file path to parse")
-    ap.add_argument("--user", "-u", help="The user importing the data", required=True)
-    ap.add_argument("--date_ini", "-di", help="The data where the tariff starts", required=True)
-    ap.add_argument("--date_end", "-de", help="The data where the tariff ends", required=True)
-    ap.add_argument("--tariff_uid", "-tar", help="The id to identify the tariff", required=True)
+    ap.add_argument("--date_ini", "-di", help="The data where the co2 emissions starts", required=True)
+    ap.add_argument("--date_end", "-de", help="The data where the co2 emissions ends", required=True)
+    ap.add_argument("--co2_uid", "-co2", help="The id to identify the co2 emissions", required=True)
     ap.add_argument("--measured_property", "-mp", help="the type of the timeseries", required=True)
-    ap.add_argument("--priced_property", "-pp", help="The property that the price is related", required=True)
-    ap.add_argument("--priced_property_unit", "-ppu", help="the unit of the priced property", required=True)
-    ap.add_argument("--currency_unit", "-cu", help="the currency unit", required=True)
+    ap.add_argument("--co2_property", "-cp", help="The property that the co2 is related", required=True)
+    ap.add_argument("--co2_property_unit", "-cpu", help="the unit of the co2 related property", required=True)
+    ap.add_argument("--unit", "-u", help="the co2 unit", required=True)
     ap.add_argument("--namespace", "-n", help="The subjects namespace uri", required=True)
     ap.add_argument("-st", "--store", required=True, help="Where to store the data", choices=["kafka", "hbase"])
     args = ap.parse_args(arguments)
     mongo_logger = utils.mongo.mongo_logger
-    mongo_logger.create(config['mongo_db'], config['data_sources'][config['source']]['log'], 'gather', user=args.user,
+    mongo_logger.create(config['mongo_db'], config['data_sources'][config['source']]['log'], 'gather', user="",
                         log_exec=datetime.utcnow())
 
     """
-python3 -m gather -so SimpleTariff -f data/Tariff/Tariff_ELEC_test01.xlsx -u icaen -di 2015-01-01 -de 2030-01-01 -tar electricdefault -mp "http://bigg-project.eu/ontology#Price.EnergyPriceGridElectricity" -pp "http://bigg-project.eu/ontology#EnergyConsumptionGridElectricity" -ppu "http://qudt.org/vocab/unit/KiloW-HR" -cu "http://qudt.org/vocab/unit/Euro" -n "https://icaen.cat#" -st kafka
-python3 -m gather -so SimpleTariff -f data/Tariff/Tariff_GASNAT_test01.xlsx -u icaen -di 2015-01-01 -de 2030-01-01 -tar gasdefault -mp "http://bigg-project.eu/ontology#Price.EnergyPriceGas" -pp "http://bigg-project.eu/ontology#EnergyConsumptionGas" -ppu "http://qudt.org/vocab/unit/KiloW-HR" -cu "http://qudt.org/vocab/unit/Euro" -n "https://icaen.cat#" -st kafka 
- 
+python3 -m gather -so CO2Emissions -f data/CO2Emissions/EMISSIONS_FACT_ELECSP_test01.xlsx -di 2015-01-01 -de 2030-01-01 --co2_uid cataloniaElectric -mp "http://bigg-project.eu/ontology#CO2Emissions" -cp "http://bigg-project.eu/ontology#EnergyConsumptionGridElectricity" -cpu "http://qudt.org/vocab/unit/KiloW-HR" -u "http://qudt.org/vocab/unit/KiloGM" -n "https://weather.beegroup-cimne.com#" -st kafka 
+python3 -m gather -so CO2Emissions -f data/CO2Emissions/EMISSIONS_FACT_GASNAT_test01.xlsx -di 2015-01-01 -de 2030-01-01 --co2_uid cataloniaGas -mp "http://bigg-project.eu/ontology#CO2Emissions" -cp "http://bigg-project.eu/ontology#EnergyConsumptionGas" -cpu "http://qudt.org/vocab/unit/KiloW-HR" -u "http://qudt.org/vocab/unit/KiloGM" -n "https://weather.beegroup-cimne.com#" -st kafka 
     """
     try:
         tariff = pd.read_excel(args.file, engine="openpyxl")
@@ -42,7 +40,7 @@ python3 -m gather -so SimpleTariff -f data/Tariff/Tariff_GASNAT_test01.xlsx -u i
     date_ini = datetime.fromisoformat(args.date_ini)
     date_end = datetime.fromisoformat(args.date_end)
     tariff.loc[:, 'row_index'] = tariff.apply(lambda x:
-                                              f"{args.tariff_uid}-{date_ini.strftime('%Y%m%d')}-{date_end.strftime('%Y%m%d')}~{x.name}",
+                                              f"{args.co2_uid}-{date_ini.strftime('%Y%m%d')}-{date_end.strftime('%Y%m%d')}~{x.name}",
                                               axis=1)
     tariff.loc[:, 'pos'] = tariff.index
     if args.store == "kafka":
@@ -50,17 +48,16 @@ python3 -m gather -so SimpleTariff -f data/Tariff/Tariff_GASNAT_test01.xlsx -u i
             utils.utils.log_string(f"saving to kafka", mongo=False)
             kafka_message = {
                 "namespace": args.namespace,
-                "user": args.user,
-                "collection_type": "tariff_ts",
+                "collection_type": "co2_ts",
                 "source": config['source'],
                 "row_keys": ["row_index"],
                 "date_ini": date_ini,
                 "date_end": date_end,
-                "tariff": args.tariff_uid,
+                "co2_uid": args.co2_uid,
                 "measured_property": args.measured_property,
-                "priced_property": args.priced_property,
-                "priced_property_unit": args.priced_property_unit,
-                "currency_unit": args.currency_unit,
+                "co2_property": args.co2_property,
+                "co2_property_unit": args.co2_property_unit,
+                "unit": args.unit,
                 "logger": mongo_logger.export_log(),
                 "data": tariff.to_dict(orient="records")
             }
@@ -72,7 +69,7 @@ python3 -m gather -so SimpleTariff -f data/Tariff/Tariff_GASNAT_test01.xlsx -u i
     elif args.store == "hbase":
         utils.utils.log_string(f"saving to hbase", mongo=False)
         try:
-            h_table_name = f"raw_simpletariff_ts_tariff_PT1H_{args.user}"
+            h_table_name = f"raw_co2emissions_ts_co2_PT1H_"
             utils.hbase.save_to_hbase(tariff.to_dict(orient="records"), h_table_name, config['hbase_store_raw_data'],
                                       [("info", "all")],
                                       row_fields=["row_index"])

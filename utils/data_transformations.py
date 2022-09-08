@@ -129,8 +129,20 @@ def sensor_subject(device_source, device_key, measured_property, sensor_type, fr
     return f"SENSOR-{device_source}-{device_key}-{measured_property}-{sensor_type}-{freq}"
 
 
-def tariff_subject(device_source, device_key, measured_property, sensor_type, freq):
-    return f"TARIFF-{device_source}-{device_key}-{measured_property}-{sensor_type}-{freq}"
+def tariff_subject(tariff_source, user, tariff_name):
+    return f"TARIFF-{tariff_source}-{user}-{tariff_name}"
+
+
+def co2_subject(tariff_name):
+    return f"CO2EMISIONS-{tariff_name}"
+
+
+def tariff_component_subject(tariff_source, tariff_key,  measured_property, tariff_type, freq):
+    return f"TARIFF-{tariff_source}-{tariff_key}-{measured_property}-{tariff_type}-{freq}"
+
+
+def co2_list_subject(co2_source, co2_key,  measured_property, co2_type, freq):
+    return f"CO2-{co2_source}-{co2_key}-{measured_property}-{co2_type}-{freq}"
 
 
 def delivery_subject(key):

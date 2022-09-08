@@ -36,7 +36,58 @@ echo "datadis source"
 python3 -m set_up.DataSources -u "icaen" -n "https://icaen.cat#" -f data/DataSources/datadis.xls -d DatadisSource
 echo "nedgia source"
 python3 -m set_up.DataSources -u "icaen" -n "https://icaen.cat#" -f data/DataSources/nedgia.xls -d NedgiaSource
+echo "simpleTariff source"
+python3 -m set_up.DataSources -u "icaen" -n "https://icaen.cat#" -f data/DataSources/simpleTariff.xls -d SimpleTariffSource
+# create a new Tariff for this source and organization
+"""
+Match (o:bigg__Organization{userID:"icaen"})
+Match (s:SimpleTariffSource) where (s)<-[:hasSource]-(o)
+Merge (t:bigg__Tariff{bigg__tariffCompany:"CIMNE", bigg__tariffName: "electricdefault", uri: "https://icaen.cat#TARIFF-SimpleTariffSource-icaen-electricdefault"})-[:importedFromSource]->(s)
+return t;
+Match (o:bigg__Organization{userID:"icaen"})
+Match (s:SimpleTariffSource) where (s)<-[:hasSource]-(o)
+Merge (t:bigg__Tariff{bigg__tariffCompany:"CIMNE", bigg__tariffName: "gasdefault", uri: "https://icaen.cat#TARIFF-SimpleTariffSource-icaen-gasdefault"})-[:importedFromSource]->(s)
+return t;
+"""
+#
+# link all buildings to tariff
+"""
+Match (bigg__Organization{userID:"icaen"})-[:hasSource]->(:SimpleTariffSource)<-[:importedFromSource]-(t:bigg__Tariff{bigg__tariffName:"electricdefault"})
+Match (dt {uri:"http://bigg-project.eu/ontology#Electricity"})
+Match (bigg__Organization{userID:"icaen"})-[:bigg__hasSubOrganization*]->()-[:bigg__managesBuilding]->()-[:bigg__hasSpace]->()-[:bigg__hasUtilityPointOfDelivery]->(s)-[:bigg__hasUtilityType]->(dt)
+Merge (c:bigg__ContractedTariff:Resource{bigg__contractStartDate: datetime("2000-01-01T00:00:00.000+0100"), bigg__contractName:"electricdefault", uri: s.uri+"_tariff"})
+Merge (s)-[:bigg__hasContractedTariff]->(c)
+Merge (c)-[:bigg__hastariff]->(t)
+return t;
+Match (bigg__Organization{userID:"icaen"})-[:hasSource]->(:SimpleTariffSource)<-[:importedFromSource]-(t:bigg__Tariff{bigg__tariffName:"gasdefault"})
+Match (dt {uri:"http://bigg-project.eu/ontology#Gas"})
+Match (bigg__Organization{userID:"icaen"})-[:bigg__hasSubOrganization*]->()-[:bigg__managesBuilding]->()-[:bigg__hasSpace]->()-[:bigg__hasUtilityPointOfDelivery]->(s)-[:bigg__hasUtilityType]->(dt)
+Merge (c:bigg__ContractedTariff:Resource{bigg__contractStartDate: datetime("2000-01-01T00:00:00.000+0100"), bigg__contractName:"gasdefault", uri: s.uri+"_tariff"})
+Merge (s)-[:bigg__hasContractedTariff]->(c)
+Merge (c)-[:bigg__hastariff]->(t)
+return t;
+"""
+# create general Emissions node.
+"""
+Merge (t:bigg__CO2EmissionsFactor:Resource{bigg__CO2EmissionsStation:"cataloniaElectric", wgs__lon:40.959, wsg__lat:1.485, uri: "https://weather.beegroup-cimne.com#CO2EMISIONS-cataloniaElectric"})
+return t;
+Merge (t:bigg__CO2EmissionsFactor:Resource{bigg__CO2EmissionsStation:"cataloniaGas", wgs__lon:40.959, wsg__lat:1.485, uri: "https://weather.beegroup-cimne.com#CO2EMISIONS-cataloniaGas"})
+return t;
+"""
 
+# link all supplies to CO2Emissions
+"""
+Match (co2:bigg__CO2EmissionsFactor{bigg__CO2EmissionsStation:"cataloniaElectric"})
+Match (dt {uri:"http://bigg-project.eu/ontology#Electricity"})
+Match (bigg__Organization{userID:"icaen"})-[:bigg__hasSubOrganization*]->()-[:bigg__managesBuilding]->()-[:bigg__hasSpace]->()-[:bigg__hasUtilityPointOfDelivery]->(s)-[:bigg__hasUtilityType]->(dt)
+Merge (s)-[:bigg__hasCO2EmissionsFactor]->(co2)
+return co2;
+Match (co2:bigg__CO2EmissionsFactor{bigg__CO2EmissionsStation:"cataloniaGas"})
+Match (dt {uri:"http://bigg-project.eu/ontology#Gas"})
+Match (bigg__Organization{userID:"icaen"})-[:bigg__hasSubOrganization*]->()-[:bigg__managesBuilding]->()-[:bigg__hasSpace]->()-[:bigg__hasUtilityPointOfDelivery]->(s)-[:bigg__hasUtilityType]->(dt)
+Merge (s)-[:bigg__hasCO2EmissionsFactor]->(co2)
+return co2;
+"""
 
 # LOAD DATA HBASE
 echo "GPG"
@@ -49,7 +100,7 @@ echo "Datadis static"
 python3 -m harmonizer -so Datadis -n "https://icaen.cat#" -u icaen -t static -c
 python3 -m harmonizer -so CEEC3X -n "https://icaen.cat#" -u icaen -c
 
-
+-
 echo "Link WS with Buildings"
 python3 -m set_up.Weather -f data/Weather/cpcat.json -n "https://weather.beegroup-cimne.com#" -u
 
