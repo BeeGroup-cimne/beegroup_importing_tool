@@ -64,7 +64,14 @@ def gather_reads(args, settings, config):
                                                        "resolution": 'H',
                                                        "from": parse(args.date_init).isoformat(),
                                                        "to": parse(args.date_end).isoformat()})
-                return res
+                df = pd.DataFrame([res.json()])
+
+                df[
+                    'id'] = f"{device['id']}~{int(parse(args.date_init).timestamp())}~{int(parse(args.date_end).timestamp())}"
+
+                save_data(data=df.to_dict(orient='records'), data_type='ts',
+                          row_keys=['id'], column_map=[("info", "all")],
+                          config=config, settings=settings, args=args, raw_mode=RAW_MODE.TIMESERIES)
             except Exception as ex:
                 print(f"{ex}")
 
@@ -133,16 +140,17 @@ def gather(arguments, settings, config):
     ap.add_argument("--namespace", "-n", help="The subjects namespace uri", required=True)
     ap.add_argument("-st", "--store", required=True, help="Where to store the data", choices=["kafka", "hbase"])
 
-    ap.add_argument("-di", "--date_init", required=True, help="Where to store the data", choices=["kafka", "hbase"])
-    ap.add_argument("-de", "--date_end", required=True, help="Where to store the data", choices=["kafka", "hbase"])
+    ap.add_argument("-di", "--date_init", help="Where to store the data", choices=["kafka", "hbase"])
+    ap.add_argument("-de", "--date_end", help="Where to store the data", choices=["kafka", "hbase"])
 
     ap.add_argument("-dt", "--data_type", required=True, help="Where to store the data",
-                    choices=["devices", "location", "supplies", "reading", "all"])
+                    choices=["devices", "supplies", "reading", "all"])
 
     args = ap.parse_args(arguments)
 
+    # Handle missing parameters
     if (args.data_type != 'reading' or args.data_type != 'all') and args.date_init and args.date_end:
-        ap.error('--dump-format can only be set when --action=dump.')
+        ap.error('--date_init and --date_end format can only be set when --data_type= [ reading | all ] .')
 
     if args.kind_of_data == "devices" or args.kind_of_data == "all":
         gather_devices(args, settings, config)
@@ -152,7 +160,7 @@ def gather(arguments, settings, config):
         gather_supplies(args, settings, config, SupplyEnum.WATER)
         gather_supplies(args, settings, config, SupplyEnum.GAS)
 
-    if args.kind_of_data == "reads" or args.kind_of_data == "all":
+    if args.data_type == "reading" or args.kind_of_data == "all":
         date_init = parse(args.date_init)
         date_end = parse(args.date_end)
 
