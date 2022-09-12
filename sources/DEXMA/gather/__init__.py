@@ -20,7 +20,7 @@ class SupplyEnum(Enum):
     GAS = 'GAS'
 
 
-def gather_devices(config, settings, args):
+def gather_devices(args, settings, config):
     count = 0
     limit = 500
 
@@ -69,7 +69,7 @@ def gather_reads(args, settings, config):
                 df[
                     'id'] = f"{device['id']}~{int(parse(args.date_init).timestamp())}~{int(parse(args.date_end).timestamp())}"
 
-                save_data(data=df.to_dict(orient='records'), data_type='ts',
+                save_data(data=df.to_dict(orient='records'), data_type='TimeSeries',
                           row_keys=['id'], column_map=[("info", "all")],
                           config=config, settings=settings, args=args, raw_mode=RAW_MODE.TIMESERIES)
             except Exception as ex:
@@ -152,15 +152,15 @@ def gather(arguments, settings, config):
     if (args.data_type != 'reading' or args.data_type != 'all') and args.date_init and args.date_end:
         ap.error('--date_init and --date_end format can only be set when --data_type= [ reading | all ] .')
 
-    if args.kind_of_data == "devices" or args.kind_of_data == "all":
+    if args.data_type == "devices" or args.data_type == "all":
         gather_devices(args, settings, config)
 
-    if args.kind_of_data == "supplies" or args.kind_of_data == "all":
+    if args.data_type == "supplies" or args.data_type == "all":
         gather_supplies(args, settings, config, SupplyEnum.ELECTRICITY)
         gather_supplies(args, settings, config, SupplyEnum.WATER)
         gather_supplies(args, settings, config, SupplyEnum.GAS)
 
-    if args.data_type == "reading" or args.kind_of_data == "all":
+    if args.data_type == "reading" or args.data_type == "all":
         date_init = parse(args.date_init)
         date_end = parse(args.date_end)
 
