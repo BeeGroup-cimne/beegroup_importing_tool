@@ -97,7 +97,7 @@ def __area_subject__(key, a_type, a_source):
     return f"AREA-{a_type}-{a_source}-{key}"
 
 
-gross_area_subject = partial(__area_subject__, a_type="GrossFloorArea")
+gross_area_subject: partial = partial(__area_subject__, a_type="GrossFloorArea")
 gross_area_subject_above = partial(__area_subject__, a_type="GrossFloorAreaAboveGround")
 gross_area_subject_under = partial(__area_subject__, a_type="GrossFloorAreaUnderGround")
 net_area_subject = partial(__area_subject__, a_type="NetFloorArea")

@@ -39,11 +39,13 @@ def gather_devices(args, settings, config):
                 save_data(data=location, data_type='Location',
                           row_keys=['id'], column_map=[("info", "all")],
                           config=config, settings=settings, args=args, raw_mode=RAW_MODE.STATIC)
+                break
+        break
 
-        if len(devices) == limit:
-            count += 1
-        else:
-            break
+        # if len(devices) == limit:
+        #     count += 1
+        # else:
+        #     break
 
 
 def gather_reads(args, settings, config):
