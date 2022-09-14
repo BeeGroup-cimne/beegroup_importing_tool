@@ -69,7 +69,9 @@ def harmonize_data_ts(data, **kwargs):
         devices_neo = list(get_co2_from_datasource(session, str(n[co2_uri]), settings.namespace_mappings))
     for device in devices_neo:
         co2_uri = device['d'].get("uri")
-        co2_list_id = co2_list_subject("CO2EmissionsSource", co2_uid, "CO2Emissions", "RAW", "PT1H")
+        prop = str(measured_property).split("#")[1]
+
+        co2_list_id = co2_list_subject("CO2EmissionsSource", co2_uid, prop, "RAW", "PT1H")
         co2_list_uri = str(n[co2_list_id])
         measurement_id = hashlib.sha256(co2_list_uri.encode("utf-8"))
         measurement_id = measurement_id.hexdigest()
@@ -81,14 +83,14 @@ def harmonize_data_ts(data, **kwargs):
                                  co2_uri=co2_uri, related_prop=co2_property, related_unit=co2_property_unit,
                                  unit=unit, ns_mappings=settings.namespace_mappings)
         co2_df['listKey'] = measurement_id
-        device_table = f"harmonized_online_CO2Emissions_100_SUM_PT1H_"
+        device_table = f"harmonized_online_{prop}_100_SUM_PT1H_public"
 
         save_to_hbase(co2_df.to_dict(orient="records"),
                       device_table,
                       hbase_conn2,
                       [("info", ['end', 'isReal']), ("v", ['value'])],
                       row_fields=['bucket', 'listKey', 'start'])
-        period_table = f"harmonized_batch_CO2Emissions_100_SUM_PT1H_"
+        period_table = f"harmonized_batch_{prop}_100_SUM_PT1H_public"
         save_to_hbase(co2_df.to_dict(orient="records"),
                       period_table, hbase_conn2,
                       [("info", ['end', 'isReal']), ("v", ['value'])],

@@ -69,9 +69,9 @@ return t;
 """
 # create general Emissions node.
 """
-Merge (t:bigg__CO2EmissionsFactor:Resource{bigg__CO2EmissionsStation:"cataloniaElectric", wgs__lon:40.959, wsg__lat:1.485, uri: "https://weather.beegroup-cimne.com#CO2EMISIONS-cataloniaElectric"})
+Merge (t:bigg__CO2EmissionsFactor:Resource{bigg__CO2EmissionsStation:"cataloniaElectric", wgs__lon:40.959, wgs__lat:1.485, uri: "https://weather.beegroup-cimne.com#CO2EMISIONS-cataloniaElectric"})
 return t;
-Merge (t:bigg__CO2EmissionsFactor:Resource{bigg__CO2EmissionsStation:"cataloniaGas", wgs__lon:40.959, wsg__lat:1.485, uri: "https://weather.beegroup-cimne.com#CO2EMISIONS-cataloniaGas"})
+Merge (t:bigg__CO2EmissionsFactor:Resource{bigg__CO2EmissionsStation:"cataloniaGas", wgs__lon:40.959, wgs__lat:1.485, uri: "https://weather.beegroup-cimne.com#CO2EMISIONS-cataloniaGas"})
 return t;
 """
 
@@ -114,6 +114,16 @@ python3 -m harmonizer -so Nedgia -n "https://icaen.cat#" -u icaen -tz "Europe/Ma
 # General TS
 echo "Weather ts"
 python3 -m harmonizer -so Weather -n "https://weather.beegroup-cimne.com#" -t fast-ts -c
+
+echo "Datadis TS"
+python3 -m harmonizer -so Datadis -n "https://icaen.cat#" -u icaen -t ts -c
+echo "Nedgia"
+python3 -m harmonizer -so Nedgia -n "https://icaen.cat#" -u icaen -tz "Europe/Madrid" -t ts -c
+
+# General TS
+echo "Weather ts"
+python3 -m harmonizer -so Weather -n "https://weather.beegroup-cimne.com#" -t ts -c
+
 
 # create Device AGGREGATORS
 

@@ -297,24 +297,6 @@ class BuildingSystemElement(BIGGObjects):
         self.hasBuildingSystemElementType = hasBuildingSystemElementType
         
         
-class EnergyEfficiencyMeasure(BIGGObjects):
-    __rdf_type__ = ['Bigg.EnergyEfficiencyMeasure', 'Bigg.NonEnergyBenefitProducingItem', 'Bigg.SavingProducingItem', 'Bigg.KPICalculationItem', 'Bigg.Thing']
-
-    def __init__(self, subject, comment=None,label=None,affectsElement=None,hasEnergyEfficiencyMeasureInvestmentCurrency=None,hasEnergyEfficiencyMeasureType=None,producesNonEnergyBenefit=None,producesSaving=None,assessesSingleKPI=None,groupsForAnalytics=None,hasAnalyticalModel=None,hasKPI=None):
-        super().__init__(subject)
-        self.comment = comment
-        self.label = label
-        self.affectsElement = affectsElement
-        self.hasEnergyEfficiencyMeasureInvestmentCurrency = hasEnergyEfficiencyMeasureInvestmentCurrency
-        self.hasEnergyEfficiencyMeasureType = hasEnergyEfficiencyMeasureType
-        self.producesNonEnergyBenefit = producesNonEnergyBenefit
-        self.producesSaving = producesSaving
-        self.assessesSingleKPI = assessesSingleKPI
-        self.groupsForAnalytics = groupsForAnalytics
-        self.hasAnalyticalModel = hasAnalyticalModel
-        self.hasKPI = hasKPI
-        
-        
 class BuildingElement(BIGGObjects):
     __rdf_type__ = ['Bigg.BuildingElement', 'Bigg.Element', 'Bigg.Thing']
 
@@ -337,6 +319,34 @@ class BuildingElement(BIGGObjects):
         self.isContainedInSpace = isContainedInSpace
         self.maintainsElement = maintainsElement
         self.isContainedInSystem = isContainedInSystem
+        
+        
+class EnergyEfficiencyMeasure(BIGGObjects):
+    __rdf_type__ = ['Bigg.EnergyEfficiencyMeasure', 'Bigg.NonEnergyBenefitProducingItem', 'Bigg.SavingProducingItem', 'Bigg.KPICalculationItem', 'Bigg.Thing']
+
+    def __init__(self, subject, comment=None,label=None,energyEfficiencyMeasureCO2Reduction=None,energyEfficiencyMeasureCurrencyExchangeRate=None,energyEfficiencyMeasureDescription=None,energyEfficiencyMeasureFinancialSavings=None,energyEfficiencyMeasureInvestment=None,energyEfficiencyMeasureLifetime=None,energyEfficiencyMeasureOperationalDate=None,energyEfficiencyMeasureSavingsToInvestmentRatio=None,energySourcePriceEscalationRate=None,shareOfAffectedElement=None,affectsElement=None,hasEnergyEfficiencyMeasureInvestmentCurrency=None,hasEnergyEfficiencyMeasureType=None,producesNonEnergyBenefit=None,producesSaving=None,assessesSingleKPI=None,groupsForAnalytics=None,hasAnalyticalModel=None,hasKPI=None):
+        super().__init__(subject)
+        self.comment = comment
+        self.label = label
+        self.energyEfficiencyMeasureCO2Reduction = energyEfficiencyMeasureCO2Reduction
+        self.energyEfficiencyMeasureCurrencyExchangeRate = energyEfficiencyMeasureCurrencyExchangeRate
+        self.energyEfficiencyMeasureDescription = energyEfficiencyMeasureDescription
+        self.energyEfficiencyMeasureFinancialSavings = energyEfficiencyMeasureFinancialSavings
+        self.energyEfficiencyMeasureInvestment = energyEfficiencyMeasureInvestment
+        self.energyEfficiencyMeasureLifetime = energyEfficiencyMeasureLifetime
+        self.energyEfficiencyMeasureOperationalDate = energyEfficiencyMeasureOperationalDate
+        self.energyEfficiencyMeasureSavingsToInvestmentRatio = energyEfficiencyMeasureSavingsToInvestmentRatio
+        self.energySourcePriceEscalationRate = energySourcePriceEscalationRate
+        self.shareOfAffectedElement = shareOfAffectedElement
+        self.affectsElement = affectsElement
+        self.hasEnergyEfficiencyMeasureInvestmentCurrency = hasEnergyEfficiencyMeasureInvestmentCurrency
+        self.hasEnergyEfficiencyMeasureType = hasEnergyEfficiencyMeasureType
+        self.producesNonEnergyBenefit = producesNonEnergyBenefit
+        self.producesSaving = producesSaving
+        self.assessesSingleKPI = assessesSingleKPI
+        self.groupsForAnalytics = groupsForAnalytics
+        self.hasAnalyticalModel = hasAnalyticalModel
+        self.hasKPI = hasKPI
         
         
 class CO2EmissionsPoint(BIGGObjects):
@@ -365,23 +375,6 @@ class TariffComponentPoint(BIGGObjects):
         self.value = value
         
         
-class CO2EmissionsFactorList(BIGGObjects):
-    __rdf_type__ = ['Bigg.CO2EmissionsFactorList', 'Bigg.TimeSeriesList', 'Bigg.Thing']
-
-    def __init__(self, subject, comment=None,label=None,timeSeriesEnd=None,timeSeriesFrequency=None,timeSeriesIsCumulative=None,timeSeriesIsOnChange=None,timeSeriesIsRegular=None,timeSeriesStart=None,timeSeriesTimeAggregationFunction=None,hasCO2EmissionsFactorValue=None):
-        super().__init__(subject)
-        self.comment = comment
-        self.label = label
-        self.timeSeriesEnd = timeSeriesEnd
-        self.timeSeriesFrequency = timeSeriesFrequency
-        self.timeSeriesIsCumulative = timeSeriesIsCumulative
-        self.timeSeriesIsOnChange = timeSeriesIsOnChange
-        self.timeSeriesIsRegular = timeSeriesIsRegular
-        self.timeSeriesStart = timeSeriesStart
-        self.timeSeriesTimeAggregationFunction = timeSeriesTimeAggregationFunction
-        self.hasCO2EmissionsFactorValue = hasCO2EmissionsFactorValue
-        
-        
 class ContractedTariff(BIGGObjects):
     __rdf_type__ = ['Bigg.ContractedTariff', 'Bigg.Contract', 'Bigg.Thing']
 
@@ -393,6 +386,26 @@ class ContractedTariff(BIGGObjects):
         self.comment = comment
         self.label = label
         self.hasTariff = hasTariff
+        
+        
+class CO2EmissionsFactorList(BIGGObjects):
+    __rdf_type__ = ['Bigg.CO2EmissionsFactorList', 'Bigg.TimeSeriesList', 'Bigg.Thing']
+
+    def __init__(self, subject, comment=None,label=None,timeSeriesEnd=None,timeSeriesFrequency=None,timeSeriesIsCumulative=None,timeSeriesIsOnChange=None,timeSeriesIsRegular=None,timeSeriesStart=None,timeSeriesTimeAggregationFunction=None,hasC02MeasuredUnit=None,hasC02RelatedMeasuredProperty=None,hasC02RelatedMeasuredUnit=None,hasCO2EmissionsFactorValue=None):
+        super().__init__(subject)
+        self.comment = comment
+        self.label = label
+        self.timeSeriesEnd = timeSeriesEnd
+        self.timeSeriesFrequency = timeSeriesFrequency
+        self.timeSeriesIsCumulative = timeSeriesIsCumulative
+        self.timeSeriesIsOnChange = timeSeriesIsOnChange
+        self.timeSeriesIsRegular = timeSeriesIsRegular
+        self.timeSeriesStart = timeSeriesStart
+        self.timeSeriesTimeAggregationFunction = timeSeriesTimeAggregationFunction
+        self.hasC02MeasuredUnit = hasC02MeasuredUnit
+        self.hasC02RelatedMeasuredProperty = hasC02RelatedMeasuredProperty
+        self.hasC02RelatedMeasuredUnit = hasC02RelatedMeasuredUnit
+        self.hasCO2EmissionsFactorValue = hasCO2EmissionsFactorValue
         
         
 class TariffComponentList(BIGGObjects):

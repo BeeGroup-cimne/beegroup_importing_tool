@@ -68,8 +68,9 @@ python3 -m gather -so CO2Emissions -f data/CO2Emissions/EMISSIONS_FACT_GASNAT_te
             utils.utils.log_string(f"error when sending message: {e}")
     elif args.store == "hbase":
         utils.utils.log_string(f"saving to hbase", mongo=False)
+        prop = str(args.measured_property).split('#')[1]
         try:
-            h_table_name = f"raw_co2emissions_ts_co2_PT1H_"
+            h_table_name = f"raw_co2emissions_{prop}_co2_PT1H_"
             utils.hbase.save_to_hbase(tariff.to_dict(orient="records"), h_table_name, config['hbase_store_raw_data'],
                                       [("info", "all")],
                                       row_fields=["row_index"])

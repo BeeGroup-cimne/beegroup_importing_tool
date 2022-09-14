@@ -71,8 +71,9 @@ python3 -m gather -so SimpleTariff -f data/Tariff/Tariff_GASNAT_test01.xlsx -u i
             utils.utils.log_string(f"error when sending message: {e}")
     elif args.store == "hbase":
         utils.utils.log_string(f"saving to hbase", mongo=False)
+        prop = str(args.measured_property).split('#')[1]
         try:
-            h_table_name = f"raw_simpletariff_ts_tariff_PT1H_{args.user}"
+            h_table_name = f"raw_simpletariff_ts_{prop}_PT1H_{args.user}"
             utils.hbase.save_to_hbase(tariff.to_dict(orient="records"), h_table_name, config['hbase_store_raw_data'],
                                       [("info", "all")],
                                       row_fields=["row_index"])

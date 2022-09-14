@@ -133,8 +133,9 @@ def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estim
         MATCH (msu: {bigg}__MeasurementUnit {{uri:"{unit_uri}"}})
         MATCH (s {{uri:"{sensor_uri}"}})   
         MERGE (s)<-[:{bigg}__hasSensor]-(device)
+        MERGE (ms: {bigg}__Measurement:Resource:{bigg}__TimeSeriesPoint{{uri: "{measurement_uri}"}})
         Merge(s)-[:{bigg}__hasMeasurementUnit]->(msu)
-        Merge(s)-[:{bigg}__hasMeasurement]->(ms: {bigg}__Measurement:Resource{{uri: "{measurement_uri}"}})
+        Merge(s)-[:{bigg}__hasMeasurement]->(ms)
         SET
             s : {bigg}__Sensor
         return s
@@ -172,7 +173,8 @@ def create_tariff_component(session, tariff_component_uri, property_uri, estimat
     Merge(tc)-[:{bigg}__hasTariffCurrencyUnit]->(cur_unit)
     Merge(tc)-[:{bigg}__hasTariffMeasuredUnit]->(prop_unit)
     Merge(tc)-[:{bigg}__hasTariffMeasuredProperty]->(mes_prop)
-    Merge(tc)-[:{bigg}__hasTariffComponentPoint]->(ms: {bigg}__TariffComponentPoint:Resource{{uri: "{measurement_uri}"}})
+    Merge(ms: {bigg}__TariffComponentPoint:Resource:{bigg}__TimeSeriesPoint{{uri: "{measurement_uri}"}})
+    Merge(tc)-[:{bigg}__hasTariffComponentPoint]->(ms)
     SET
         tc : {bigg}__TariffComponentList
     return tc""")
@@ -196,7 +198,8 @@ def create_co2_component(session, co2_factor_list_uri, property_uri, estimation_
     Merge(tc)-[:{bigg}__hasC02MeasuredUnit]->(unit)
     Merge(tc)-[:{bigg}__hasC02RelatedMeasuredUnit]->(prop_unit)
     Merge(tc)-[:{bigg}__hasC02RelatedMeasuredProperty]->(mes_prop)
-    Merge(tc)-[:{bigg}__hasCO2EmissionsFactorValue]->(ms: {bigg}__CO2EmissionsPoint:Resource{{uri: "{measurement_uri}"}})
+    Merge(ms: {bigg}__CO2EmissionsPoint:Resource:{bigg}__TimeSeriesPoint{{uri: "{measurement_uri}"}})
+    Merge(tc)-[:{bigg}__hasCO2EmissionsFactorValue]->(ms)
     SET
         tc : {bigg}__CO2EmissionsFactorList
     return tc""")

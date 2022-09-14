@@ -4,7 +4,7 @@ import pandas as pd
 import utils
 from harmonizer.cache import Cache
 from utils.utils import log_string
-from .mapper import create_tariff, harmonize_data_ts
+from .mapper import harmonize_data_ts
 
 
 def harmonize_command_line(arguments, config=None, settings=None):
