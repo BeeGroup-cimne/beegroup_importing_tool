@@ -42,9 +42,8 @@ def fuzzy_dictionary_match(text, map_dict, default):
 
 def get_taxonomy_mapping(taxonomy_file, default):
     # Transformation function
-    taxonomy_dict = pd.read_excel(taxonomy_file,  index_col="SOURCE").to_dict()["TAXONOMY"]
+    taxonomy_dict = pd.read_excel(taxonomy_file, index_col="SOURCE").to_dict()["TAXONOMY"]
     return defaultdict(lambda: default, taxonomy_dict)
-
 
 
 def to_object_property(text, namespace):
@@ -69,6 +68,7 @@ def zfill_param(key, num):
         return key.zfill(num)
     except:
         return None
+
 
 id_zfill = partial(zfill_param, num=5)
 
@@ -97,7 +97,7 @@ def __area_subject__(key, a_type, a_source):
     return f"AREA-{a_type}-{a_source}-{key}"
 
 
-gross_area_subject: partial = partial(__area_subject__, a_type="GrossFloorArea")
+gross_area_subject = partial(__area_subject__, a_type="GrossFloorArea")
 gross_area_subject_above = partial(__area_subject__, a_type="GrossFloorAreaAboveGround")
 gross_area_subject_under = partial(__area_subject__, a_type="GrossFloorAreaUnderGround")
 net_area_subject = partial(__area_subject__, a_type="NetFloorArea")

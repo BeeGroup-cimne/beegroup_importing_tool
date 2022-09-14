@@ -20,32 +20,38 @@ class SupplyEnum(Enum):
     GAS = 'GAS'
 
 
+def gather_locations(args, settings, config):
+    count = 0
+    limit = 500
+
+    while True:
+        locations = Location().get_locations({"start": count * limit, "limit": limit}).json()
+
+        save_data(data=locations, data_type='Locations',
+                  row_keys=['id'], column_map=[("info", "all")],
+                  config=config, settings=settings, args=args, raw_mode=RAW_MODE.STATIC)
+
+        if len(locations) == limit:
+            count += 1
+        else:
+            break
+
+
 def gather_devices(args, settings, config):
     count = 0
     limit = 500
 
     while True:
-        res = Device().get_devices({"start": count * limit, "limit": limit})
+        devices = Device().get_devices({"start": count * limit, "limit": limit}).json()
 
-        devices = res.json()
         save_data(data=devices, data_type='Devices',
                   row_keys=['id'], column_map=[("info", "all")],
                   config=config, settings=settings, args=args, raw_mode=RAW_MODE.STATIC)
 
-        for index, row in pd.DataFrame(devices).iterrows():
-            if row['location']:
-                location = [gather_location(row['location']['id']).json()]
-
-                save_data(data=location, data_type='Location',
-                          row_keys=['id'], column_map=[("info", "all")],
-                          config=config, settings=settings, args=args, raw_mode=RAW_MODE.STATIC)
-                break
-        break
-
-        # if len(devices) == limit:
-        #     count += 1
-        # else:
-        #     break
+        if len(devices) == limit:
+            count += 1
+        else:
+            break
 
 
 def gather_reads(args, settings, config):
@@ -100,10 +106,6 @@ def gather_supplies(args, settings, config, supply_type: SupplyEnum):
             break
 
 
-def gather_location(id):
-    return Location().get_location(id)
-
-
 def save_data(data, data_type, row_keys, column_map, config, settings, args, raw_mode):
     if args.store == "kafka":
         try:
@@ -146,13 +148,16 @@ def gather(arguments, settings, config):
     ap.add_argument("-de", "--date_end", help="Where to store the data", choices=["kafka", "hbase"])
 
     ap.add_argument("-dt", "--data_type", required=True, help="Where to store the data",
-                    choices=["devices", "supplies", "reading", "all"])
+                    choices=["locations", "devices", "supplies", "reading", "all"])
 
     args = ap.parse_args(arguments)
 
     # Handle missing parameters
     if (args.data_type != 'reading' or args.data_type != 'all') and args.date_init and args.date_end:
         ap.error('--date_init and --date_end format can only be set when --data_type= [ reading | all ] .')
+
+    if args.data_type == "locations" or args.data_type == "all":
+        gather_locations(args, settings, config)
 
     if args.data_type == "devices" or args.data_type == "all":
         gather_devices(args, settings, config)
