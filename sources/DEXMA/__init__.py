@@ -11,7 +11,9 @@ class Plugin(SourcePlugin):
         gather(arguments, settings=self.settings, config=self.config)
 
     def get_mapper(self, message):
-        return harmonize_ts if message["collection_type"] == "TimeSeries" else harmonize_static
+        list_to_map = ['TimeSeries', 'Devices-Joined', 'Devices-None', 'Supplies']
+        if message["collection_type"] in list_to_map:
+            return harmonize_ts if message["collection_type"] == "TimeSeries" else harmonize_static
 
     def get_kwargs(self, message):
         return {
@@ -22,8 +24,10 @@ class Plugin(SourcePlugin):
         }
 
     def get_store_table(self, message):
+        list_to_save = ['Devices', 'Locations', 'Supplies', 'TimeSeries']
         mode = RAW_MODE.TIMESERIES if message['collection_type'] == 'TimeSeries' else RAW_MODE.STATIC
 
-        return raw_nomenclature(source=self.source_name, mode=mode,
-                                data_type=message['collection_type'],
-                                user=message['user'])
+        if message['collection_type'] in list_to_save:
+            return raw_nomenclature(source=self.source_name, mode=mode,
+                                    data_type=message['collection_type'],
+                                    user=message['user'])

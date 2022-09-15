@@ -84,8 +84,11 @@ python3 -m gather -so Weather
 
 #INFRAESTRUCTURES ORGANIZATION "https://infraestructures.cat#"
 # SET UP
+echo "ORGANIZATION"
 python3 -m set_up.Organizations -f data/Organizations/infraestructures-organizations.xls -name "Infraestructures.cat" -u "icat" -n "https://infraestructures.cat#"
+echo "DEXMA Source"
 
+python3 -m set_up.DataSources -u "icat" -n "https://infraestructures.cat#" -f data/DataSources/dexma.xlsx -d DEXMASource
 # LOAD DATA HBASE
 python3 -m harmonizer -so BIS -u "icat" -n "https://infraestructures.cat#" -c
 

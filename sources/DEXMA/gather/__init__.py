@@ -24,9 +24,11 @@ def gather_locations(args, settings, config):
     count = 0
     limit = 500
 
+    list_locations = []
+
     while True:
         locations = Location().get_locations({"start": count * limit, "limit": limit}).json()
-
+        list_locations.append(locations)
         save_data(data=locations, data_type='Locations',
                   row_keys=['id'], column_map=[("info", "all")],
                   config=config, settings=settings, args=args, raw_mode=RAW_MODE.STATIC)
@@ -36,15 +38,37 @@ def gather_locations(args, settings, config):
         else:
             break
 
+    return list_locations
 
-def gather_devices(args, settings, config):
+
+def gather_devices(locations, args, settings, config):
     count = 0
     limit = 500
 
     while True:
         devices = Device().get_devices({"start": count * limit, "limit": limit}).json()
 
+        # Save Raw Data
         save_data(data=devices, data_type='Devices',
+                  row_keys=['id'], column_map=[("info", "all")],
+                  config=config, settings=settings, args=args, raw_mode=RAW_MODE.STATIC)
+
+        # To Harmonize
+        df_loc = pd.json_normalize(locations, sep='_')
+        df_loc['id'] = df_loc['id'].astype(float)
+
+        df_dev = pd.json_normalize(devices, sep='_')
+
+        df_dev_none = df_dev[df_dev['location_id'].isnull()].copy()
+        save_data(data=df_dev_none.to_dict(orient='records'), data_type='Devices-None',
+                  row_keys=['id'], column_map=[("info", "all")],
+                  config=config, settings=settings, args=args, raw_mode=RAW_MODE.STATIC)
+
+        df_dev_full = df_dev[df_dev['location_id'].notnull()].copy()
+
+        df_joined = pd.merge(df_loc, df_dev_full, left_on=['id'], right_on=['location_id'])
+
+        save_data(data=df_joined.to_dict(orient='records'), data_type='Devices-Joined',
                   row_keys=['id'], column_map=[("info", "all")],
                   config=config, settings=settings, args=args, raw_mode=RAW_MODE.STATIC)
 
@@ -148,7 +172,7 @@ def gather(arguments, settings, config):
     ap.add_argument("-de", "--date_end", help="Where to store the data", choices=["kafka", "hbase"])
 
     ap.add_argument("-dt", "--data_type", required=True, help="Where to store the data",
-                    choices=["locations", "devices", "supplies", "reading", "all"])
+                    choices=["devices", "supplies", "reading", "all"])
 
     args = ap.parse_args(arguments)
 
@@ -156,11 +180,9 @@ def gather(arguments, settings, config):
     if (args.data_type != 'reading' or args.data_type != 'all') and args.date_init and args.date_end:
         ap.error('--date_init and --date_end format can only be set when --data_type= [ reading | all ] .')
 
-    if args.data_type == "locations" or args.data_type == "all":
-        gather_locations(args, settings, config)
-
     if args.data_type == "devices" or args.data_type == "all":
-        gather_devices(args, settings, config)
+        locations = gather_locations(args, settings, config)
+        gather_devices(locations, args, settings, config)
 
     if args.data_type == "supplies" or args.data_type == "all":
         gather_supplies(args, settings, config, SupplyEnum.ELECTRICITY)
