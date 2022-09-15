@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
                     session.run(f"""
                     Match(n{{uri:"{s}"}})
-                    SET n.{namespaces_i[ns]}__{f}={o_value if len(o_value) > 1 and lan else '"' + str(o_value[0]) + '"'}
+                    SET n.{namespaces_i[ns]}__{f}={o_value if len(o_value) >= 1 and lan else '"' + str(o_value[0]) + '"'}
                     """)
             #
             # v = v.replace("'", "`")
