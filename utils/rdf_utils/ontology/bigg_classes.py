@@ -680,7 +680,7 @@ class Building(BIGGObjects):
 class LocationInfo(BIGGObjects):
     __rdf_type__ = ['Bigg.LocationInfo', 'Bigg.Thing']
 
-    def __init__(self, subject, addressAltitude=None,addressLatitude=None,addressLongitude=None,addressPostalCode=None,addressStreetName=None,addressStreetNumber=None,comment=None,label=None,hasAddressCity=None,hasAddressClimateZone=None,hasAddressCountry=None,hasAddressProvince=None):
+    def __init__(self, subject, addressAltitude=None,addressLatitude=None,addressLongitude=None,addressPostalCode=None,addressStreetName=None,addressStreetNumber=None,addressTimeZone=None,comment=None,label=None,hasAddressCity=None,hasAddressClimateZone=None,hasAddressCountry=None,hasAddressProvince=None):
         super().__init__(subject)
         self.addressAltitude = addressAltitude
         self.addressLatitude = addressLatitude
@@ -688,6 +688,7 @@ class LocationInfo(BIGGObjects):
         self.addressPostalCode = addressPostalCode
         self.addressStreetName = addressStreetName
         self.addressStreetNumber = addressStreetNumber
+        self.addressTimeZone = addressTimeZone
         self.comment = comment
         self.label = label
         self.hasAddressCity = hasAddressCity

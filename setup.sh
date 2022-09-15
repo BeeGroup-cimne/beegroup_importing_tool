@@ -56,13 +56,13 @@ python3 -m set_up.Weather -f data/Weather/cpcat.json -n "https://weather.beegrou
 
 # load TS
 echo "Datadis TS"
-python3 -m harmonizer -so Datadis -n "https://icaen.cat#" -u icaen -t ts -c
+python3 -m harmonizer -so Datadis -n "https://icaen.cat#" -u icaen -t fast-ts -c
 echo "Nedgia"
-python3 -m harmonizer -so Nedgia -n "https://icaen.cat#" -u icaen -tz "Europe/Madrid" -c
+python3 -m harmonizer -so Nedgia -n "https://icaen.cat#" -u icaen -tz "Europe/Madrid" -t fast-ts -c
 
 # General TS
 echo "Weather ts"
-python3 -m harmonizer -so Weather -n "https://weather.beegroup-cimne.com#" -c
+python3 -m harmonizer -so Weather -n "https://weather.beegroup-cimne.com#" -t fast-ts -c
 
 # create Device AGGREGATORS
 

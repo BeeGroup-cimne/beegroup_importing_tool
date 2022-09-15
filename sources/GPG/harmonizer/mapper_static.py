@@ -52,7 +52,7 @@ def _get_fuzz_params(user_id, neo4j_conn):
         organization_names = s.run(f"""
          MATCH 
          (m:{bigg}__Organization {{userID: "{user_id}"}})-[:{bigg}__hasSubOrganization *]->
-         (n:{bigg}__Organization{{{bigg}__organizationDivisionType: ["Department"]}})
+         (n:{bigg}__Organization{{{bigg}__organizationDivisionType: "Department"}})
          RETURN n.uri
          """)
         dep_uri = {x.value().split("#")[1]: x.value().split("#")[1] for x in organization_names}

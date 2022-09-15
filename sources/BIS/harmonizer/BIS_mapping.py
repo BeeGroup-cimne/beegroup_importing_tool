@@ -116,6 +116,9 @@ class Mapper(object):
                 "origin": "row"
             },
             "params": {
+                "raw": {
+                    "addressTimeZone": "EuropeMadrid"
+                },
                 "mapping": {
                     "subject": {
                         "key": "location_info",

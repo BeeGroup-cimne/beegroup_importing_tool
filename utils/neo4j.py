@@ -6,7 +6,7 @@ def get_cups_id_link(session, user, ns_mappings):
               (o:{bigg}__Organization{{userID:"{user}"}}) 
         RETURN u.{bigg}__pointOfDeliveryIDFromOrganization as CUPS, b.{bigg}__buildingIDFromOrganization as NumEns
     """)
-    return {x['CUPS'][0]: x['NumEns'][0] for x in cups_device}
+    return {x['CUPS']: x['NumEns'] for x in cups_device}
 
 
 def get_all_linked_weather_stations(session, ns_mappings):
@@ -36,7 +36,7 @@ def get_device_from_datasource(session, user, device_id, source, ns_mappings):
     device_neo = session.run(f"""
                 MATCH ({bigg}__Organization{{userID:'{user}'}})-[:{bigg}__hasSubOrganization*0..]->(o:{bigg}__Organization)-
                 [:hasSource]->(s:{source})<-[:importedFromSource]-(d)
-                WHERE d.source = "{source}" AND d.{bigg}__deviceName = ["{device_id}"] return d            
+                WHERE d.source = "{source}" AND d.{bigg}__deviceName = "{device_id}" return d            
                 """)
     return device_neo
 
@@ -46,7 +46,7 @@ def get_tariff_from_datasource(session, user, device_id, source, ns_mappings):
     tariff_neo = session.run(f"""
                 MATCH ({bigg}__Organization{{userID:'{user}'}})-[:{bigg}__hasSubOrganization*0..]->(o:{bigg}__Organization)-
                 [:hasSource]->(s:{source})<-[:importedFromSource]-(d)
-                WHERE d.source = "{source}" AND d.{bigg}__tariffName = ["{device_id}"] return d            
+                WHERE d.source = "{source}" AND d.{bigg}__tariffName = "{device_id}" return d            
                 """)
     return tariff_neo
 
@@ -63,10 +63,10 @@ def get_all_buildings_id_from_datasource(session, source_id, ns_mappings):
     bigg = ns_mappings['bigg']
     buildings_neo = session.run(f"""
         MATCH (n:{bigg}__Building)<-[:{bigg}__managesBuilding]-()<-[:{bigg}__hasSubOrganization *0..]-
-                (o:{bigg}__Organization)-[:hasSource]->(s:GemwebSource) 
+                (o:{bigg}__Organization)-[:hasSource]->(s) 
                     Where id(s)={source_id} 
                     return n.{bigg}__buildingIDFromOrganization""")
-    return list(set([x[0][0] for x in buildings_neo.values()]))
+    return list(set([x[0] for x in buildings_neo.values()]))
 
 
 def create_timeseries(session, ts_uri, property_uri, is_regular, is_cumulative, is_on_change, freq, agg_func, dt_ini, dt_end,
@@ -87,22 +87,22 @@ def create_timeseries(session, ts_uri, property_uri, is_regular, is_cumulative, 
            }})
            Merge(s)-[:{bigg}__hasMeasuredProperty]->(mp)
            SET
-               s.{bigg}__timeSeriesIsCumulative= [{is_cumulative}],
-               s.{bigg}__timeSeriesIsRegular= [{is_regular}],
-               s.{bigg}__timeSeriesIsOnChange= [{is_on_change}],
-               s.{bigg}__timeSeriesFrequency= ["{freq}"],
-               s.{bigg}__timeSeriesTimeAggregationFunction= ["{agg_func}"],
+               s.{bigg}__timeSeriesIsCumulative= {is_cumulative},
+               s.{bigg}__timeSeriesIsRegular= {is_regular},
+               s.{bigg}__timeSeriesIsOnChange= {is_on_change},
+               s.{bigg}__timeSeriesFrequency= "{freq}",
+               s.{bigg}__timeSeriesTimeAggregationFunction= "{agg_func}",
                s.{bigg}__timeSeriesStart = CASE 
-                   WHEN s.{bigg}__timeSeriesStart[0] < 
+                   WHEN s.{bigg}__timeSeriesStart < 
                     datetime("{convert(dt_ini).to_pydatetime().isoformat()}") 
                        THEN s.{bigg}__timeSeriesStart
-                       ELSE [datetime("{convert(dt_ini).to_pydatetime().isoformat()}")] 
+                       ELSE datetime("{convert(dt_ini).to_pydatetime().isoformat()}") 
                    END,
                s.{bigg}__timeSeriesEnd = CASE 
-                   WHEN s.{bigg}__timeSeriesEnd[0] >
+                   WHEN s.{bigg}__timeSeriesEnd >
                     datetime("{convert(dt_end).to_pydatetime().isoformat()}") 
                        THEN s.{bigg}__timeSeriesEnd
-                       ELSE [datetime("{convert(dt_end).to_pydatetime().isoformat()}")]
+                       ELSE datetime("{convert(dt_end).to_pydatetime().isoformat()}")
                    END  
            return s
        """)
@@ -116,7 +116,7 @@ def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estim
 
     bigg = ns_mappings['bigg']
     session.run(f"""
-        MATCH (device: {bigg}__Device {{uri:"{device_uri}"}})
+        MATCH (device {{uri:"{device_uri}"}})
         MATCH (msu: {bigg}__MeasurementUnit {{uri:"{unit_uri}"}})
         MATCH (se: {bigg}__SensorEstimationMethod {{uri:"{estimation_method_uri}"}})
         MATCH (s {{uri:"{sensor_uri}"}})   

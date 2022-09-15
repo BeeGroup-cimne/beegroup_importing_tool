@@ -2,8 +2,6 @@ import pandas as pd
 
 from harmonizer.cache import Cache
 from utils.utils import log_string
-from .mapper_static import harmonize_data as map_data_static
-
 import argparse
 import re
 import utils
