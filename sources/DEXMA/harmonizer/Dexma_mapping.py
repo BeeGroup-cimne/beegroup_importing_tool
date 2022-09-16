@@ -1,4 +1,3 @@
-
 from utils.rdf_utils.ontology.bigg_classes import Device, LocationInfo, Building, BuildingSpace, Area
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums, units, countries
 
@@ -11,6 +10,7 @@ class Mapper(object):
         Building.set_namespace(namespace)
         BuildingSpace.set_namespace(namespace)
         Area.set_namespace(namespace)
+        Device.set_namespace(namespace)
 
     def get_mappings(self, group):
         location = {
@@ -29,15 +29,15 @@ class Mapper(object):
                         "operations": []
                     },
                     "addressLatitude": {
-                        "key": "addressLatitude",
+                        "key": "address_coordinates_latitude",
                         "operations": []
                     },
                     "addressLongitude": {
-                        "key": "addressLongitude",
+                        "key": "address_coordinates_longitude",
                         "operations": []
                     },
                     "addressPostalCode": {
-                        "key": "addressPostalCode",
+                        "key": "address_country_code",
                         "operations": []
                     },
                     "addressStreetName": {
@@ -77,7 +77,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "hasSpace": {
-                        "key": "hasSpace",
+                        "key": "building_space_uri",
                         "operations": []
                     },
                 }
@@ -132,7 +132,7 @@ class Mapper(object):
         }
 
         devices = {
-            "name": "device",
+            "name": "devices",
             "class": Device,
             "type": {
                 "origin": "row"
@@ -147,15 +147,15 @@ class Mapper(object):
                         "operations": []
                     },
                     "deviceIDFromOrganization": {
-                        "key": "Standard Naming Complex",
+                        "key": "id_y",
                         "operations": []
                     },
                     "deviceName": {
-                        "key": "BACnet Name",
+                        "key": "name_y",
                         "operations": []
                     },
-                    "observesSpace": {
-                        "key": "observesSpace",
+                    "isAssociatedWithSpace": {
+                        "key": "building_space_uri",
                         "operations": []
                     },
                     "hasSensor": {
@@ -171,8 +171,7 @@ class Mapper(object):
         }
 
         grouped_modules = {
-            "all": [devices],
-            "Location": [location, building, building_space, gross_floor_area],
-            "Devices": [devices],
+            "Devices-Joined": [location, building, building_space, gross_floor_area, devices],
+            "Devices-None": [devices],
         }
         return grouped_modules[group]
