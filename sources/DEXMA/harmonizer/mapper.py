@@ -51,14 +51,6 @@ def get_source_id(session, source_name):
     return session.run(f"""MATCH (n:{source_name}) RETURN id(n)""").data()[0]['id(n)']
 
 
-def clean_devices_without_location(data, source):
-    df = pd.DataFrame(data)
-    df['device_subject'] = df['id'].apply(partial(device_subject, source=source))
-    df['source_id'] = source
-
-    return df
-
-
 def harmonize_static(data, **kwargs):
     # import utils
     # config = utils.utils.read_config('config.json')
@@ -78,7 +70,9 @@ def harmonize_static(data, **kwargs):
             with neo.session() as session:
                 source_id = get_source_id(session, f"{config['source']}Source")  # TODO: Change
 
-            df = clean_devices_without_location(data, source_id)
+            df = pd.DataFrame(data)
+            df['device_subject'] = df['id'].apply(partial(device_subject, source=config['source']))
+            df['source_id'] = source_id
             link_devices_with_source(df, n, config['neo4j'])
         except Exception as ex:
             log_string(f"{ex}", mongo=False)
@@ -94,3 +88,6 @@ def harmonize_static(data, **kwargs):
 
         except Exception as ex:
             log_string(f"{ex}", mongo=False)
+
+    if kwargs['collection_type'] == 'Supplies':
+        pass

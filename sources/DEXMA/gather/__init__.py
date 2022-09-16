@@ -28,10 +28,10 @@ def gather_locations(args, settings, config):
 
     while True:
         locations = Location().get_locations({"start": count * limit, "limit": limit}).json()
-        list_locations.append(locations)
-        save_data(data=locations, data_type='Locations',
-                  row_keys=['id'], column_map=[("info", "all")],
-                  config=config, settings=settings, args=args, raw_mode=RAW_MODE.STATIC)
+        list_locations += locations
+        # save_data(data=locations, data_type='Locations',
+        #           row_keys=['id'], column_map=[("info", "all")],
+        #           config=config, settings=settings, args=args, raw_mode=RAW_MODE.STATIC)
 
         if len(locations) == limit:
             count += 1

@@ -166,7 +166,7 @@ def save_rdf_with_source(graph, source, connection):
 
 
 def link_devices_with_source(df, ns, neo4j_connection):
-    df_temp = df[["source_id", "device_subject"]]
+    df_temp = df[["source_id", "device_subject"]].copy()
     df_temp.loc[:, "device_subject"] = df_temp["device_subject"].apply(ns.__getattr__).apply(str)
     for limit in range(0, len(df_temp), 200):
         links_dict = df_temp.iloc[limit:limit+200][["source_id", "device_subject"]].to_dict(orient="records")
