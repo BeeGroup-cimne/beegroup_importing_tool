@@ -29,9 +29,9 @@ def gather_locations(args, settings, config):
     while True:
         locations = Location().get_locations({"start": count * limit, "limit": limit}).json()
         list_locations += locations
-        # save_data(data=locations, data_type='Locations',
-        #           row_keys=['id'], column_map=[("info", "all")],
-        #           config=config, settings=settings, args=args, raw_mode=RAW_MODE.STATIC)
+        save_data(data=locations, data_type='Locations',
+                  row_keys=['id'], column_map=[("info", "all")],
+                  config=config, settings=settings, args=args, raw_mode=RAW_MODE.STATIC)
 
         if len(locations) == limit:
             count += 1
@@ -47,6 +47,10 @@ def gather_devices(locations, args, settings, config):
 
     while True:
         devices = Device().get_devices({"start": count * limit, "limit": limit}).json()
+        if len(devices) == limit:
+            count += 1
+        else:
+            break
 
         # Save Raw Data
         save_data(data=devices, data_type='Devices',
@@ -114,7 +118,7 @@ def gather_reads(args, settings, config):
 
 
 def gather_supplies(args, settings, config, supply_type: SupplyEnum):
-    limit = 20
+    limit = 500
     count = 0
     while True:
         supplies = Supply().get_energy_source_supplies(supply_type.value,

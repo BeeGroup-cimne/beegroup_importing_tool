@@ -73,7 +73,7 @@ def harmonize_static(data, **kwargs):
             df = pd.DataFrame(data)
             df['device_subject'] = df['id'].apply(partial(device_subject, source=config['source']))
             df['source_id'] = source_id
-            link_devices_with_source(df, n, config['neo4j'])
+            link_devices_with_source(df, n, config['neo4j'])  # TODO: something is wrong
         except Exception as ex:
             log_string(f"{ex}", mongo=False)
 
@@ -90,4 +90,7 @@ def harmonize_static(data, **kwargs):
             log_string(f"{ex}", mongo=False)
 
     if kwargs['collection_type'] == 'Supplies':
-        pass
+        df = pd.json_normalize(data, sep='_')
+
+        # Device
+
