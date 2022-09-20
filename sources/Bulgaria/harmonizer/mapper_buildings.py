@@ -6,6 +6,7 @@ import pandas as pd
 import rdflib
 from neo4j import GraphDatabase
 from rdflib import Namespace
+from slugify import slugify
 from thefuzz import process
 
 import settings
@@ -17,7 +18,7 @@ from utils.hbase import save_to_hbase
 from utils.neo4j import create_sensor
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums, units
 from utils.rdf_utils.rdf_functions import generate_rdf
-from utils.rdf_utils.save_rdf import save_rdf_with_source
+from utils.rdf_utils.save_rdf import save_rdf_with_source, link_devices_with_source
 
 
 def set_taxonomy(df):
@@ -45,10 +46,11 @@ def set_municipality(df):
 def clean_dataframe_building_info(df_orig, source):
     df = df_orig.copy(deep=True)
     df['subject'] = df['filename'] + '-' + df['id'].astype(str)
+    df['location_org_subject'] = df['municipality'].apply(slugify).apply(building_department_subject)
     df['organization_subject'] = df['subject'].apply(building_department_subject)
     df['building_subject'] = df['subject'].apply(building_subject)
-    df['building_name'] = df.apply(lambda x: f"{x.name}-{x.municipality}-{x.type_of_building}", axis=1)
-
+    df['building_name'] = df.apply(lambda x: f"{x.municipality}:{x.name}-{x.type_of_building}", axis=1)
+    df['building_id'] = df['filename'].str.slice(-5) + '-' + df['id'].astype(str)
     df['location_subject'] = df['subject'].apply(location_info_subject)
     df['epc_date_before'] = pd.to_datetime(df['epc_date']) - timedelta(days=365)
     df['epc_before_subject'] = df['subject'].apply(lambda x: x + '-before').apply(epc_subject)
@@ -58,14 +60,9 @@ def clean_dataframe_building_info(df_orig, source):
     df['gross_floor_area_subject'] = df['subject'].apply(partial(gross_area_subject, a_source=source))
     df['element_subject'] = df['subject'].apply(construction_element_subject)
     df['device_subject'] = df['subject'].apply(partial(device_subject, source=source))
+    df['utility_subject'] = df['subject'].apply(delivery_subject)
     df['project_subject'] = df['subject'].apply(project_subject)
-    return df[['subject', 'organization_subject', 'building_subject', 'building_name', 'location_subject',
-               'hasAddressProvince', 'epc_date_before', 'epc_before_subject', 'epc_energy_class_before',
-               'annual_energy_consumption_before_total_consumption', 'epc_after_subject',
-               'epc_energy_class_after', 'project_subject', 'epc_date', 'total_savings_Investments',
-               'building_space_subject', 'buildingSpaceUseType', 'gross_floor_area_subject', 'gross_floor_area',
-               'element_subject', 'device_subject',
-               ]]
+    return df
 
 
 def clean_dataframe_eem_savings(df_orig, eems_parted, start_column):
@@ -105,19 +102,28 @@ def clean_dataframe_project(df_orig):
               [x for x in df.columns if re.match("project_energy_saving_subject_.*", x)]]
 
 
+def set_source_id(df, user, connection):
+    neo = GraphDatabase.driver(**connection)
+    with neo.session() as session:
+        source_id = session.run(f"""Match(bigg__Organization{{userID:"{user}"}})-[:hasSource]->(s) return id(s) as id""").data()[0]['id']
+    df['source_id'] = source_id
+
 
 def harmonize_static(data, **kwargs):
     namespace = kwargs['namespace']
+    user = kwargs['user']
     n = Namespace(namespace)
     config = kwargs['config']
     df = pd.DataFrame.from_records(data)
     df = df.applymap(decode_hbase)
+    set_source_id(df, user, config['neo4j'])
     set_taxonomy(df)
     set_municipality(df)
     mapper = Mapper(config['source'], n)
     df_building = clean_dataframe_building_info(df, config['source'])
     g = generate_rdf(mapper.get_mappings("building_info"), df_building)
     save_rdf_with_source(g, config['source'], config['neo4j'])
+    link_devices_with_source(df_building, n, config['neo4j'])
     parts_eem = 2
     parts_saving = 2
     start_column_eem = 0

@@ -114,7 +114,9 @@ def clean_dataframe(df, source):
         apply(id_zfill).apply(partial(gross_area_subject_under, a_source=source))
 
     df['building_element'] = df['Num_Ens_Inventari'].apply(id_zfill).apply(construction_element_subject)
-
+    # remove strange buildings
+    df = df[~((df.hasBuildingSpaceUseType == rdflib.URIRef('http://bigg-project.eu/ontology#Other')) & (
+            df.Sup_const_total.astype(float) == 0))]
 
 def harmonize_data(data, **kwargs):
     namespace = kwargs['namespace']

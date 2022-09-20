@@ -10,7 +10,7 @@ from thefuzz import process
 def load_dic(dictionary_list):
     dicty = rdflib.Graph()
     for d in dictionary_list:
-        dicty.load(d, format="ttl")
+        dicty.parse(d, format="ttl")
     return dicty
 
 

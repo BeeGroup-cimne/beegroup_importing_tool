@@ -19,6 +19,12 @@ bigg = settings.namespace_mappings['bigg']
 
 def clean_prepare_all_df(df):
     df['device_subject'] = df.dev_gem_id.apply(partial(device_subject, source="GemwebSource"))
+    utility_type_taxonomy = get_taxonomy_mapping(
+        taxonomy_file="sources/Gemweb/harmonizer/EnergyTypeTaxonomy.xls",
+        default="")
+    df['hasDeviceType'] = df.tipus_submin.map(utility_type_taxonomy). \
+        apply(lambda x: f"Meter.EnergyMeter.{x}" if x else f"Meter.EnergyMeter").\
+        apply(partial(to_object_property, namespace=bigg_enums))
 
 
 def clean_prepare_linked_df(df):

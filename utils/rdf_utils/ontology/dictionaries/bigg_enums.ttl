@@ -1003,6 +1003,14 @@ bigg:Meter.IfcFlowMeter a bigg:DeviceType, skos:Concept;
 bigg:Meter.EnergyMeter a bigg:DeviceType, skos:Concept;
   skos:broader bigg:Meter .
 
+bigg:Meter.EnergyMeter.Electricity a bigg:DeviceType, skos:Concept;
+  rdfs:comment "An energy meter used to measure the electricity consumption";
+  skos:broader bigg:Meter.EnergyMeter .
+
+bigg:Meter.EnergyMeter.Gas a bigg:DeviceType, skos:Concept;
+  rdfs:comment "An energy meter used to measure the gas consumption";
+  skos:broader bigg:Meter.EnergyMeter .
+
 bigg:Meter.EnergyMeter.SmartMeter a bigg:DeviceType, skos:Concept;
   rdfs:comment "A smart meter is usually an electronic device that records consumption of electric energy in intervals of an hour or less and communicates that information at least daily back to the utility for monitoring and billing.";
   skos:broader bigg:Meter.EnergyMeter .
@@ -2835,9 +2843,6 @@ bigg:WindSpeed a bigg:MeasuredProperty, skos:Concept;
   rdfs:comment "The speed of wind for the site at a height of 10 meter" .
 
 bigg:BoilerModulationLevel a bigg:MeasuredProperty, skos:Concept;
-  rdfs:comment "Boiler modulation level" .
-
-bigg:CO2Emissions a bigg:MeasuredProperty, skos:Concept;
   rdfs:comment "Boiler modulation level" .
 
 bigg:Naive a bigg:EstimationMethod, skos:Concept;
