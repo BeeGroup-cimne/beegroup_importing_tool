@@ -30,11 +30,11 @@ def fuzz_params(dicty, fields, filter_query=None):
     return {o[1]: o[0] for o in obj}
 
 
-def fuzzy_dictionary_match(text, map_dict, default):
+def fuzzy_dictionary_match(text, map_dict, default, fix_score=90):
     if not map_dict:
         return default
     match, score = process.extractOne(text, list(map_dict.keys()))
-    if score > 90:
+    if score > fix_score:
         return map_dict[match]
     else:
         return default
@@ -42,9 +42,8 @@ def fuzzy_dictionary_match(text, map_dict, default):
 
 def get_taxonomy_mapping(taxonomy_file, default):
     # Transformation function
-    taxonomy_dict = pd.read_excel(taxonomy_file,  index_col="SOURCE").to_dict()["TAXONOMY"]
+    taxonomy_dict = pd.read_excel(taxonomy_file, index_col="SOURCE").to_dict()["TAXONOMY"]
     return defaultdict(lambda: default, taxonomy_dict)
-
 
 
 def to_object_property(text, namespace):
@@ -69,6 +68,7 @@ def zfill_param(key, num):
         return key.zfill(num)
     except:
         return None
+
 
 id_zfill = partial(zfill_param, num=5)
 
@@ -137,11 +137,11 @@ def co2_subject(tariff_name):
     return f"CO2EMISIONS-{tariff_name}"
 
 
-def tariff_component_subject(tariff_source, tariff_key,  measured_property, tariff_type, freq):
+def tariff_component_subject(tariff_source, tariff_key, measured_property, tariff_type, freq):
     return f"TARIFF-{tariff_source}-{tariff_key}-{measured_property}-{tariff_type}-{freq}"
 
 
-def co2_list_subject(co2_source, co2_key,  measured_property, co2_type, freq):
+def co2_list_subject(co2_source, co2_key, measured_property, co2_type, freq):
     return f"CO2-{co2_source}-{co2_key}-{measured_property}-{co2_type}-{freq}"
 
 

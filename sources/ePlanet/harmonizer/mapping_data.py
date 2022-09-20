@@ -6,6 +6,7 @@ from neo4j import GraphDatabase
 from rdflib import Namespace
 
 import settings
+from harmonizer.cache import Cache
 from sources.ePlanet.harmonizer.Mapper import Mapper
 from utils.data_transformations import decode_hbase, building_subject, fuzzy_dictionary_match, fuzz_params, \
     location_info_subject, building_space_subject, device_subject, delivery_subject, sensor_subject
@@ -16,7 +17,7 @@ from utils.rdf_utils.ontology.namespaces_definition import units, bigg_enums
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.rdf_utils.save_rdf import save_rdf_with_source
 
-STATIC_COLUMNS = ['Year', 'Month', 'Region', 'Municipality', 'Municipal unit', 'City or municipal community',
+STATIC_COLUMNS = ['Year', 'Month', 'Region',
                   'Street name', 'Street number', 'Name of the building or public lighting', 'Meter number']
 
 TS_COLUMNS = ['Year', 'Month', 'Meter number', 'Current record', 'Previous record', 'Variable', 'Recording date',
@@ -42,8 +43,29 @@ def clean_static_data(df: pd.DataFrame, **kwargs):
     # Location
     df['location_subject'] = df['Meter number'].apply(location_info_subject)
     df['hasLocationInfo'] = df['location_subject'].apply(lambda x: n[x])
-    # fuzzy_location(Cache.province_dic, df, 'Municipality Unit', 'hasAddressProvince')
-    # fuzzy_location(Cache.municipality_dic, df, 'Municipality', 'hasAddressCity')
+
+    # Municipality
+    municipality_dic = Cache.municipality_dic_GR
+    municipality_fuzz = partial(fuzzy_dictionary_match,
+                                map_dict=fuzz_params(municipality_dic, ['ns1:alternateName']),
+                                default=None, fix_score=75)
+
+    unique_municipality = df['Municipality'].unique()
+    mun_map = {k: municipality_fuzz(k) for k in unique_municipality}
+    df['hasAddressCity'] = df['Municipality'].map(mun_map)
+
+    # Municipality Unit
+
+    # City or municipal community
+    province_dic = Cache.province_dic_GR
+
+    province_fuzz = partial(fuzzy_dictionary_match,
+                            map_dict=fuzz_params(province_dic, ['ns1:alternateName', 'ns1:officialName']),
+                            default=None, fix_score=75)
+
+    unique_prov = df['City or municipal community'].unique()
+
+    prov_map = {k: province_fuzz(k) for k in unique_prov}
 
     # Device
     df['device_subject'] = df['Meter number'].apply(partial(device_subject, source=config['source']))
@@ -172,9 +194,20 @@ def harmonize_data(data, **kwargs):
 
 
 def harmonize_static_data(config, df, kwargs, n):
+    if 'Municipality unit' in df.columns:
+        STATIC_COLUMNS.append('Municipality unit')
+
+    if 'Municipality' in df.columns:
+        STATIC_COLUMNS.append('Municipality')
+
+    if 'City or municipal community' in df.columns:
+        STATIC_COLUMNS.append('City or municipal community')
+
     df_static = df[STATIC_COLUMNS].copy()
     df_static = clean_static_data(df_static, **kwargs)
+
     mapper = Mapper(config['source'], n)
+
     g = generate_rdf(mapper.get_mappings("static"), df_static)
     g.serialize('output.ttl', format="ttl")
     save_rdf_with_source(g, config['source'], config['neo4j'])
