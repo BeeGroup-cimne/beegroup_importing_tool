@@ -59,6 +59,10 @@ class Mapper(object):
                     "energyEfficiencyMeasureInvestment": {
                         "key": f"measurement_{column}_Investments",
                         "operations": []
+                    },
+                    "energyEfficiencyMeasureOperationalDate": {
+                        "key": f"epc_date",
+                        "operations": []
                     }
                 },
             },
@@ -202,7 +206,8 @@ class Mapper(object):
             },
             "params": {
                 "raw": {
-                    "hasAddressCountry": countries["732800/"]
+                    "hasAddressCountry": countries["732800/"],
+                    "addressTimeZone": "Europe/Madrid"
                 },
                 "mapping": {
                     "subject": {
@@ -330,6 +335,10 @@ class Mapper(object):
                 },
                 "element": {
                     "type": Bigg.isAssociatedWithElement,
+                    "link": "subject"
+                },
+                "device": {
+                    "type": Bigg.isObservedByDevice,
                     "link": "subject"
                 }
             }

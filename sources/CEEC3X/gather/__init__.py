@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 from datetime import datetime
 import utils
 from .read_xml_file import read_xml_certificate
@@ -17,8 +18,10 @@ def gather(arguments, config=None, settings=None):
                         log_exec=datetime.utcnow())
     try:
         cert = read_xml_certificate(args.file)
+        file_id = hashlib.md5(bytes(args.file.split("/")[-1], encoding="utf-8")).hexdigest()
     except Exception as e:
         cert = {}
+        file_id = None
         utils.utils.log_string(f"could not parse file: {e}")
         exit(1)
 
@@ -29,7 +32,7 @@ def gather(arguments, config=None, settings=None):
 
     for k, v in cert.items():
         v['building_organization_code'] = args.building
-
+        v['certificate_unique_code'] = file_id
         if args.store == "kafka":
             utils.utils.log_string(f"saving to kafka", mongo=False)
             try:
@@ -38,7 +41,7 @@ def gather(arguments, config=None, settings=None):
                     "user": args.user,
                     "collection_type": k,
                     "source": config['source'],
-                    "row_keys": ["building_organization_code"],
+                    "row_keys": ["certificate_unique_code", "building_organization_code"],
                     "logger": mongo_logger.export_log(),
                     "data": [v]
                 }
@@ -52,7 +55,7 @@ def gather(arguments, config=None, settings=None):
             try:
                 h_table_name = f"raw_ceec3x_static_{k}__{args.user}"
                 utils.hbase.save_to_hbase([v], h_table_name, config['hbase_store_raw_data'], [("info", "all")],
-                                          row_fields=["building_organization_code"])
+                                          row_fields=["certificate_unique_code", "building_organization_code"])
             except Exception as e:
                 utils.utils.log_string(f"error saving to hbase: {e}")
         else:

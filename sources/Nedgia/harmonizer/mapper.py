@@ -83,7 +83,7 @@ def harmonize_data_ts(data, **kwargs):
             measurement_uri = str(n[measurement_id])
             with neo.session() as session:
                 create_sensor(session, device_uri, sensor_uri, units["KiloW-HR"],
-                              bigg_enums.EnergyConsumptionGas, bigg_enums.TrustedModel,
+                              bigg_enums.EnergyConsumptionGas, bigg_enums.Naive,
                               measurement_uri, False,
                               False, False, "", "SUM", dt_ini, dt_end, settings.namespace_mappings)
 
@@ -117,7 +117,6 @@ def harmonize_data_device(data, **kwargs):
     config = kwargs['config']
 
     neo = GraphDatabase.driver(**config['neo4j'])
-    n = Namespace(namespace)
     log_string("creating df", mongo=False)
     df = pd.DataFrame.from_records(data)
     log_string("preparing df", mongo=False)
@@ -133,13 +132,13 @@ def harmonize_data_device(data, **kwargs):
     linked_supplies = df[df["NumEns"].isna() == False]
     unlinked_supplies = df[df["NumEns"].isna()]
 
-    for linked, df in [("linked", linked_supplies), ("unlinked", unlinked_supplies)]:
+    for linked, df_t in [("linked", linked_supplies), ("unlinked", unlinked_supplies)]:
         if linked == "linked":
-            prepare_df_clean_linked(df)
+            prepare_df_clean_linked(df_t)
         n = Namespace(namespace)
         log_string("mapping df", mongo=False)
         mapping = Mapping(config['source'], n)
-        g = generate_rdf(mapping.get_mappings(linked), df)
+        g = generate_rdf(mapping.get_mappings(linked), df_t)
         log_string("saving df", mongo=False)
         save_rdf_with_source(g, config['source'], config['neo4j'])
     log_string("linking df", mongo=False)

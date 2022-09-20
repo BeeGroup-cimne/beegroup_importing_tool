@@ -28,8 +28,8 @@ def clean_dataframe(df, source):
     unique_country = df['Country'].unique()
     country_map = {k: country_fuzz(k) for k in unique_country}
     df['hasAddressCountry'] = df['Country'].map(country_map)
-    province_dic = Cache.province_dic
-    municipality_dic = Cache.municipality_dic
+    province_dic = Cache.province_dic_ES
+    municipality_dic = Cache.municipality_dic_ES
     province_fuzz = partial(fuzzy_dictionary_match,
                             map_dict=fuzz_params(
                                 province_dic,

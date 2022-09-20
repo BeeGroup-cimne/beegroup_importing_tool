@@ -30,7 +30,10 @@ def harmonize_command_line(arguments, config=None, settings=None):
                 for k, v in x.items():
                     k1 = re.sub("^info:", "", k.decode())
                     item[k1] = v
-                item.update({"building_organization_code": b_c})
+                item.update({
+                    "building_organization_code": b_c.decode().split("~")[1],
+                    "certificate_unique_code": b_c.decode().split("~")[0]}
+                )
                 dic_list.append(item)
             print("parsed. Mapping...")
             i += len(dic_list)

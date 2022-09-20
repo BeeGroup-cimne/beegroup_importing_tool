@@ -1,12 +1,16 @@
+BAC0==21.2.25
+bacpypes==0.18.6
 beautifulsoup4==4.10.0
 beemeteo @ git+https://github.com/BeeGroup-cimne/beemeteo@v0.2.1
 bs4==0.0.1
 certifi==2021.10.8
 charset-normalizer==2.0.11
 click==8.1.3
+colorama==0.4.5
 datadis @ git+https://github.com/BeeGroup-cimne/beedis@v1.0.4
 et-xmlfile==1.1.0
 happybase==1.2.0
+html5lib==1.1
 idna==3.3
 importlib-metadata==4.11.0
 isodate==0.6.1
@@ -18,6 +22,7 @@ numpy==1.21.5
 openpyxl==3.0.9
 pandas==1.4.3
 ply==3.11
+psutil==5.9.0
 pycryptodome==3.14.1
 pymongo==3.11.0
 pyparsing==3.0.7
@@ -28,20 +33,18 @@ python-Levenshtein==0.12.2
 python-slugify==5.0.2
 pytz==2021.3
 PyYAML==6.0
-rdflib==6.1.1
+rdflib==6.2.0
 requests==2.27.1
 responses==0.18.0
 shellescape==3.8.1
 six==1.16.0
 soupsieve==2.3.1
 text-unidecode==1.3
+thefuzz==0.19.0
 thriftpy2==0.4.14
 timezonefinder==5.2.0
 typing_extensions==4.1.1
 urllib3==1.26.8
 xlrd==2.0.1
+xmltodict==0.13.0
 zipp==3.7.0
-thefuzz~=0.19.0
-python-Levenshtein==0.12.2
-BAC0==21.2.25
-psutil==5.9.0

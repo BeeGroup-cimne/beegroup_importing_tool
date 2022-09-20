@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 import rdflib
 from neo4j import GraphDatabase
 from rdflib import Graph, RDF, URIRef
-
+import settings
 from utils.rdf_utils.ontology.namespaces_definition import Bigg
 
 
@@ -15,8 +15,6 @@ multi_value_classes = {
     Bigg.BuildingSpace: {Bigg.hasBuildingSpaceUseType: None, Bigg.hasIndoorQualityPerception: None,
                          Bigg.hasArea: Bigg.hasAreaType}
 }
-sources = ["GPG", "BIS", "gemweb", "DatadisSource", "Genercat", "Nedgia", "Weather"]
-
 
 # def __neo4j_with_source(ses, source, data_links={}):
 #     for subject, links in data_links.items():
@@ -53,7 +51,7 @@ def __set_source_link(neo, source, data_link, prop_node):
     for cln, lp in prop_node.items():
         for l in lp:
             elem_list = [l]
-            elem_list += [f"{l}@{x}" for x in sources]
+            elem_list += [f"{l}@{x}" for x in settings.sources_priorities]
             with neo.session() as session:
                 session.run(f"""
                 call{{ 
@@ -70,7 +68,7 @@ def __set_source_link(neo, source, data_link, prop_node):
     for k, v in namespaces.items():
         namespaces_i[v] = k
 
-    source_order = "CASE r.source " + " ".join([f"WHEN '{s}' THEN {i}" for i, s in enumerate(sources)]) + " END as sort"
+    source_order = "CASE r.source " + " ".join([f"WHEN '{s}' THEN {i}" for i, s in enumerate(settings.sources_priorities)]) + " END as sort"
 
     for class_, attr_list in multi_value_classes.items():
         cls_ns, cls = class_.split('#')
@@ -106,6 +104,8 @@ def __neo4j_import__(ses, v):
 
 
 def save_rdf_with_source(graph, source, connection):
+    if source not in settings.sources_priorities:
+        raise Exception("Error, add source to priority list in settings")
     neo = GraphDatabase.driver(**connection)
     with neo.session() as session:
         namespaces = session.run(f"""

@@ -27,7 +27,7 @@ def set_taxonomy(df):
 
 
 def set_municipality(df):
-    province_dic = Cache.province_dic
+    province_dic = Cache.province_dic_BG
     province_fuzz = partial(fuzzy_dictionary_match,
                             map_dict=fuzz_params(
                                 province_dic,

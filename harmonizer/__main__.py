@@ -23,7 +23,6 @@ def start_harmonizer():
     Cache.load_cache()
     try:
         for x in consumer:
-            print(x.value)
             start = time.time()
             message = x.value
             df = pd.DataFrame.from_records(message['data'])
