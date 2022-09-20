@@ -9,30 +9,21 @@ from utils.kafka import save_to_kafka
 from utils.nomenclature import RAW_MODE
 from utils.utils import log_string
 
-COLUMN_NAMES = ['Year', 'Month', 'Code', 'Municipality Unit', 'Municipality', 'Region', 'Office', 'Meter num',
-                'Bill num', 'Bill num 2', 'Name', 'Street', 'Street num', 'City', 'Bill Issuing Day', 'Month1', 'Year1',
-                'Meter Code', 'Type Of Billing', 'Current Record', 'Previous Record', 'Variable', 'Recording Date',
-                'Previous Recording Date', 'Electricity Consumption', 'Electricity Cost', 'VAT', 'Other',
-                'Prev payment',
-                'Energy Value', 'VAT Prev Payment', 'EPT', 'Out service', 'Debit/Credit', 'ETMEAR', 'VAT ETMEAR',
-                'Special TAX', 'TAX', 'Low VAT',
-                'High VAT', 'Intermediate Value', 'Total Energy Value', 'Total VAT of electricity',
-                'Total VAT Services', 'Total VAT', 'Total ERT', 'Municipal TAX', 'Total TAP',
-                'EETIDE', 'Total Account', 'Total Current Month', 'Account Type',
-                'Municipality Unit 1']
-
 
 def gather_data(config, settings, args):
     for file in os.listdir(args.file):
         if file.endswith('.xlsx'):
             path = f"{args.file}/{file}"
-            df = pd.read_excel(path,
-                               skiprows=7, header=None, names=COLUMN_NAMES, usecols="A:BA")
-            df = df.dropna(axis=0, how='all')
+            list_sheets = pd.ExcelFile(path).sheet_names
 
-            save_data(data=df.to_dict(orient='records'), data_type="BuildingInfo",
-                      row_keys=["Year", "Month", 'Code'],
-                      column_map=[("info", "all")], config=config, settings=settings, args=args)
+            for sheet_name in list_sheets:
+                if sheet_name.isdigit():
+                    df = pd.read_excel(path, skiprows=4, sheet_name=sheet_name)
+                    df = df.iloc[2:].copy()
+
+                    save_data(data=df.to_dict(orient='records'), data_type="BuildingInfo",
+                              row_keys=["Year", "Month", 'Meter number'],
+                              column_map=[("info", "all")], config=config, settings=settings, args=args)
 
 
 def save_data(data, data_type, row_keys, column_map, config, settings, args):
