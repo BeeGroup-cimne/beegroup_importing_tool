@@ -29,6 +29,10 @@ class Mapper(object):
                         "key": "building_subject",
                         "operations": []
                     },
+                    "buildingName": {
+                        "key": "Name of the building or public lighting",
+                        "operations": []
+                    },
                     "buildingIDFromOrganization": {
                         "key": "Code",
                         "operations": []
@@ -39,10 +43,6 @@ class Mapper(object):
                     },
                     "hasSpace": {
                         "key": "hasSpace",
-                        "operations": []
-                    },
-                    "buildingName": {
-                        "key": "Name",
                         "operations": []
                     },
                     # "pertainsToOrganization": {

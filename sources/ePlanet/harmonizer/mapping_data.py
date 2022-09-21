@@ -44,8 +44,9 @@ def clean_static_data(df: pd.DataFrame, **kwargs):
     df['location_subject'] = df['Meter number'].apply(location_info_subject)
     df['hasLocationInfo'] = df['location_subject'].apply(lambda x: n[x])
 
-    # Municipality
     municipality_dic = Cache.municipality_dic_GR
+
+    # Municipality
     municipality_fuzz = partial(fuzzy_dictionary_match,
                                 map_dict=fuzz_params(municipality_dic, ['ns1:alternateName']),
                                 default=None, fix_score=75)
@@ -53,19 +54,6 @@ def clean_static_data(df: pd.DataFrame, **kwargs):
     unique_municipality = df['Municipality'].unique()
     mun_map = {k: municipality_fuzz(k) for k in unique_municipality}
     df['hasAddressCity'] = df['Municipality'].map(mun_map)
-
-    # Municipality Unit
-
-    # City or municipal community
-    province_dic = Cache.province_dic_GR
-
-    province_fuzz = partial(fuzzy_dictionary_match,
-                            map_dict=fuzz_params(province_dic, ['ns1:alternateName', 'ns1:officialName']),
-                            default=None, fix_score=75)
-
-    unique_prov = df['City or municipal community'].unique()
-
-    prov_map = {k: province_fuzz(k) for k in unique_prov}
 
     # Device
     df['device_subject'] = df['Meter number'].apply(partial(device_subject, source=config['source']))
@@ -165,20 +153,6 @@ def clean_general_data(df: pd.DataFrame):
     return df
 
 
-def fuzzy_location(location_cache, df, df_label, relation):
-    fuzz = partial(fuzzy_dictionary_match,
-                   map_dict=fuzz_params(
-                       location_cache,
-                       ['ns1:name']
-                   ),
-                   default=None
-                   )
-
-    unique_province = df[df_label].unique()
-    province_map = {k: fuzz(k) for k in unique_province}
-    df.loc[:, relation] = df[df_label].map(province_map)
-
-
 def harmonize_data(data, **kwargs):
     namespace = kwargs['namespace']
     config = kwargs['config']
@@ -194,16 +168,17 @@ def harmonize_data(data, **kwargs):
 
 
 def harmonize_static_data(config, df, kwargs, n):
+    AUX_STATIC = []
     if 'Municipality unit' in df.columns:
-        STATIC_COLUMNS.append('Municipality unit')
+        AUX_STATIC.append('Municipality unit')
 
     if 'Municipality' in df.columns:
-        STATIC_COLUMNS.append('Municipality')
+        AUX_STATIC.append('Municipality')
 
     if 'City or municipal community' in df.columns:
-        STATIC_COLUMNS.append('City or municipal community')
+        AUX_STATIC.append('City or municipal community')
 
-    df_static = df[STATIC_COLUMNS].copy()
+    df_static = df[STATIC_COLUMNS + AUX_STATIC].copy()
     df_static = clean_static_data(df_static, **kwargs)
 
     mapper = Mapper(config['source'], n)
