@@ -184,6 +184,12 @@ python3 -m harmonizer -so BIS -u "icat" -n "https://infraestructures.cat#" -c
 ```bash
 python3 -m gather -so BIS -f "data/BIS/BIS-infraestructures.xls" -u "icat" -n "https://infraestructures.cat#" -st kafka
 ```
+### 3. Link building with the closest Weather Station
+```bash
+echo "Link WS with Buildings"
+python3 -m set_up.Weather -f data/Weather/cpcat.json -n "https://weather.beegroup-cimne.com#" -u
+```
+
 ----
 ## BULGARIA ORGANIZATION 
  - namespace: `https://bulgaria.bg#`

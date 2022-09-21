@@ -237,7 +237,7 @@ class Mapper(object):
             "params": {
                 "raw": {
                     "hasAddressCountry": countries["732800/"],
-                    "addressTimeZone": "Europe/Madrid"
+                    "addressTimeZone": "Europe/Sofia"
                 },
                 "mapping": {
                     "subject": {
