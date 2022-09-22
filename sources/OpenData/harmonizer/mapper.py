@@ -10,6 +10,8 @@ class Mapper(object):
         CadastralInfo.set_namespace(namespace)
         Building.set_namespace(namespace)
         BuildingSpace.set_namespace(namespace)
+        EnergyPerformanceCertificate.set_namespace(namespace)
+        Project.set_namespace(namespace)
 
     def get_mappings(self, group):
         location = {
@@ -88,7 +90,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "hasSpace": {
-                        "key": "building_uri",
+                        "key": "building_space_uri",
                         "operations": []
                     },
                     "hasCadastralInfo": {
@@ -96,7 +98,11 @@ class Mapper(object):
                         "operations": []
                     },
                     "hasEPC": {
-                        "key": "building_uri",
+                        "key": "epc_uri",
+                        "operations": []
+                    },
+                    "hasProject": {
+                        "key": "project_uri",
                         "operations": []
                     }
                 }
@@ -135,8 +141,8 @@ class Mapper(object):
                         "key": "project_subject",
                         "operations": []
                     },
-                    "hasBuildingSpaceUseType": {
-                        "key": "hasBuildingSpaceUseType",
+                    "hasProjectMotivation": {
+                        "key": "hasProjectMotivation",
                         "operations": []
                     }
                 }
@@ -153,6 +159,18 @@ class Mapper(object):
                 "mapping": {
                     "subject": {
                         "key": "epc_subject",
+                        "operations": []
+                    },
+                    "energyPerformanceCertificateReferenceNumber": {
+                        "key": "num_cas",
+                        "operations": []
+                    },
+                    "energyPerformanceCertificateClass": {
+                        "key": "qualificacio_d_emissions",
+                        "operations": []
+                    },
+                    "energyPerformanceCertificateCertificationTool": {
+                        "key": "eina_de_certificacio",
                         "operations": []
                     }
                 }

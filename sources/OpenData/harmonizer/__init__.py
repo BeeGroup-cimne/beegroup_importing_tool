@@ -47,15 +47,16 @@ def clean_data(data, n):
 
     # EPC
     df['epc_subject'] = df['num_cas'].apply(epc_subject)
+    df['epc_uri'] = df['epc_subject'].apply(lambda x: n[x])
 
     # Project
     df['project_subject'] = df['num_cas'].apply(project_subject)
+    df['project_uri'] = df['project_subject'].apply(lambda x: n[x])
+
     df['hasProjectMotivation'] = df['motiu_de_la_certificacio'].map(
         get_taxonomy_mapping('sources/OpenData/harmonizer/tax.xlsx', default='Other',
                              sheet_name='hasProjectMotivation')).apply(
         partial(to_object_property, namespace=bigg_enums))
-
-    # qualificacio_d_emissions , emissions_de_co2
 
     return df
 
