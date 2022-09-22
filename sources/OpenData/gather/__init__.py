@@ -12,12 +12,12 @@ def gather_data(config, settings, args):
     offset = 0
 
     while True:
-        res = CEEE().query(limit=limit, offset=offset * limit)
+        df = CEEE().query(limit=limit, offset=offset * limit)
 
-        save_data(data=res.to_dict(orient="records"), data_type='EnergyPerformanceCertificate',
+        save_data(data=df.to_dict(orient="records"), data_type='EnergyPerformanceCertificate',
                   row_keys=['num_cas'], column_map=[("info", "all")],
                   config=config, settings=settings, args=args)
-        if len(res.index) == limit:
+        if len(df.index) == limit:
             offset += 1
         else:
             break

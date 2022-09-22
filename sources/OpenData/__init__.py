@@ -1,5 +1,6 @@
 from sources import SourcePlugin
 from sources.OpenData.gather import gather
+from sources.OpenData.harmonizer import harmonize_data
 from utils.nomenclature import raw_nomenclature, RAW_MODE
 
 
@@ -11,8 +12,7 @@ class Plugin(SourcePlugin):
 
     def get_mapper(self, message):
         if message["collection_type"] == 'EnergyPerformanceCertificate':
-            return harmonize_data_device
-
+            return harmonize_data
 
     def get_kwargs(self, message):
         return {
