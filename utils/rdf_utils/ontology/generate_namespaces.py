@@ -153,7 +153,7 @@ class {class_d.split("#")[1]}(BIGGObjects):
 def get_rdf(path, rdf_file):
     name = rdf_file.split(".")[0]
     rdf = rdflib.graph.Graph()
-    rdf.load(f"{path}/{rdf_file}", format="ttl")
+    rdf.parse(f"{path}/{rdf_file}", format="ttl")
     return name, rdf
 
 

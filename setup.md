@@ -129,15 +129,23 @@ Merge (s)-[:bigg__hasCO2EmissionsFactor]->(co2)
 return co2;
 ```
 
-### 5. Link building with the closest Weather Station
+### 5. load tariff and co2 timeseries
+```bash
+python3 -m harmonizer -so SimpleTariff -u icaen -mp "http://bigg-project.eu/ontology#Price.EnergyPriceGridElectricity" -pp "http://bigg-project.eu/ontology#EnergyConsumptionGridElectricity" -ppu "http://qudt.org/vocab/unit/KiloW-HR" -unit "http://qudt.org/vocab/unit/Euro" -n "https://icaen.cat#" -c 
+python3 -m harmonizer -so SimpleTariff -u icaen -mp "http://bigg-project.eu/ontology#Price.EnergyPriceGas" -pp "http://bigg-project.eu/ontology#EnergyConsumptionGas" -ppu "http://qudt.org/vocab/unit/KiloW-HR" -unit "http://qudt.org/vocab/unit/Euro" -n "https://icaen.cat#" -c 
+python3 -m harmonizer -so CO2Emissions -mp "http://bigg-project.eu/ontology#CO2Emissions" -p "http://bigg-project.eu/ontology#EnergyConsumptionGridElectricity" -pu "http://qudt.org/vocab/unit/KiloW-HR" -u "http://qudt.org/vocab/unit/KiloGM" -n "https://icaen.cat#" -c 
+python3 -m harmonizer -so CO2Emissions -mp "http://bigg-project.eu/ontology#CO2Emissions" -p "http://bigg-project.eu/ontology#EnergyConsumptionGas" -pu "http://qudt.org/vocab/unit/KiloW-HR" -u "http://qudt.org/vocab/unit/KiloGM" -n "https://icaen.cat#" -c 
+
+```
+### 6. Link building with the closest Weather Station
 ```bash
 echo "Link WS with Buildings"
 python3 -m set_up.Weather -f data/Weather/cpcat.json -n "https://weather.beegroup-cimne.com#" -u
 ```
 
-### 6. Load Timeseries Data
+### 7. Load Timeseries Data
 
-6.1. Load TS (only links)
+7.1. Load TS (only links)
 ```bash
 echo "Datadis TS"
 python3 -m harmonizer -so Datadis -n "https://icaen.cat#" -u icaen -t fast-ts -c
@@ -146,7 +154,7 @@ python3 -m harmonizer -so Nedgia -n "https://icaen.cat#" -u icaen -tz "Europe/Ma
 echo "Weather ts"
 python3 -m harmonizer -so Weather -n "https://weather.beegroup-cimne.com#" -t fast-ts -c
 ```
-6.2. Load TS (harmonize full timeseries)
+7.2. Load TS (harmonize full timeseries)
 ```bash
 echo "Datadis TS"
 python3 -m harmonizer -so Datadis -n "https://icaen.cat#" -u icaen -t ts -c
@@ -156,7 +164,7 @@ echo "Weather ts"
 python3 -m harmonizer -so Weather -n "https://weather.beegroup-cimne.com#" -t ts -c
 ```
 
-### 7. Create Device AGGREGATORS
+### 8. Create Device AGGREGATORS
 ```bash
 echo "DeviceAggregators datadis"
 python3 -m set_up.DeviceAggregator -t "totalElectricityConsumption"

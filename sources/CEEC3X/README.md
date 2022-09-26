@@ -117,6 +117,40 @@ ComunidadAutonoma
     NivelDeAcondicionamiento
     PerfilDeUso
 ```
+------
+#### Demanda =>
+###### EnergyPerformanceCertificate =>
+
+| Origin        | Harmonization                   |
+|---------------|---------------------------------|
+ | Calefaccion   | annualHeatingEnergyDemand       |
+ | Refrigeracion | annualCoolingEnergyDemand       |
+
+###### NO =>
+``` 
+    Global
+    ACS
+```
+
+------
+
+#### Calificacion =>
+###### EnergyPerformanceCertificate =>
+
+| Origin                                   | Harmonization              |
+|------------------------------------------|----------------------------|
+ | Demanda>Calefaccion                      | heatingEnergyDemandClass   |
+ | Demanda>Refrigeracion                    | coolingEnergyDemandClass   |
+ | EnergiaPrimariaNoRenovable>Refrigeracion | coolingEnergyDemandClass   |
+ | EnergiaPrimariaNoRenovable>Refrigeracion | coolingEnergyDemandClass   |
+
+###### NO =>
+``` 
+    Global
+    ACS
+```
+
+
 
 ## Import script information
 
