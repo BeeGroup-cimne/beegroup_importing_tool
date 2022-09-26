@@ -25,6 +25,7 @@ def gather_data(config, settings, args):
                 break
         except Exception as ex:
             log_string(f"Error during the gathering process: {ex}")
+            break
 
 
 def save_data(data, data_type, row_keys, column_map, config, settings, args):
