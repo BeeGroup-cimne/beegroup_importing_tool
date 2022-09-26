@@ -24,7 +24,7 @@ def clean_data(data, n, neo):
 
     df = pd.merge(left=building_df, right=_df, left_on='cadastral_ref',
                   right_on='referencia_cadastral')
-    # [{'building_id': '02058', 'cadastral_ref': '08016A011000200000TH', 'num_cas': '5CQWHG9LX', 'adre_a': 'Carretera DEL PARC (CENTRE PISCÍCOLA)', 'numero': 'S/N', 'codi_postal': '08695', 'poblacio': 'Bagà', 'comarca': 'Berguedà', 'nom_provincia': 'Barcelona', 'codi_poblacio': '08016', 'codi_comarca': '14', 'codi_provincia': '08', 'referencia_cadastral': '08016A011000200000TH', 'zona_climatica': 'E1', 'metres_cadastre': '514', 'us_edifici': 'Terciari', 'qualificaci_de_consum_d': 'A', 'energia_prim_ria_no_renovable': '33.61', 'qualificacio_d_emissions': 'A', 'emissions_de_co2': '7.27', 'vehicle_electric': 'NO', 'solar_termica': 'NO', 'solar_fotovoltaica': 'NO', 'sistema_biomassa': 'SI', 'xarxa_districte': 'NO', 'energia_geotermica': 'NO', 'eina_de_certificacio': 'CE3X', 'motiu_de_la_certificacio': 'Edifici existent de l’administració pública', 'valor_aillaments_cte': '0.55', 'valor_finestres_cte': '2.5', 'normativa_construcci': 'NRE-AT-87', 'tipus_tramit': 'Edificis existents', 'data_entrada': '2022-07-06T00:00:00.000', 'rehabilitacio_energetica': 'NO', 'actuacions_rehabilitacio': nan, 'escala': nan, 'pis': nan, 'porta': nan, 'consum_d_energia_final': '143.43', 'cost_anual_aproximat_d_energia': '5.56', 'valor_aillaments': '2.38', 'valor_finestres': '3.54', 'tipus_terciari': 'Altres', 'ventilacio_us_residencial': nan}]
+
     if not df.empty:
         # print(df.to_dict(orient='records'))
 
@@ -59,11 +59,6 @@ def clean_data(data, n, neo):
 
 
 def harmonize_data(data, **kwargs):
-    # import utils.utils
-    # config = utils.utils.read_config('config.json')
-    # config.update({"source": 'opendata'})
-    # namespace = "https://opendata.cat#"
-
     namespace = kwargs['namespace']
     config = kwargs['config']
     n = Namespace(namespace)
