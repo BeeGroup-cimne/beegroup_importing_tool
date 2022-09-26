@@ -1,5 +1,5 @@
-from utils.rdf_utils.ontology.bigg_classes import LocationInfo, CadastralInfo, Building, BuildingSpace, Project, \
-    EnergyPerformanceCertificate
+from utils.rdf_utils.ontology.bigg_classes import LocationInfo, CadastralInfo, Building, EnergyPerformanceCertificate, \
+    EnergyPerformanceCertificateAdditionalInfo
 from utils.rdf_utils.ontology.namespaces_definition import countries
 
 
@@ -9,9 +9,8 @@ class Mapper(object):
         LocationInfo.set_namespace(namespace)
         CadastralInfo.set_namespace(namespace)
         Building.set_namespace(namespace)
-        BuildingSpace.set_namespace(namespace)
         EnergyPerformanceCertificate.set_namespace(namespace)
-        Project.set_namespace(namespace)
+        EnergyPerformanceCertificateAdditionalInfo.set_namespace(namespace)
 
     def get_mappings(self, group):
         location = {
@@ -39,6 +38,22 @@ class Mapper(object):
                     },
                     "addressPostalCode": {
                         "key": "codi_postal",
+                        "operations": []
+                    },
+                    "addressLongitude": {
+                        "key": "longitud",
+                        "operations": []
+                    },
+                    "addressLatitude": {
+                        "key": "latitud",
+                        "operations": []
+                    },
+                    "hasAddressProvince": {
+                        "key": "hasAddressProvince",
+                        "operations": []
+                    },
+                    "hasAddressCity": {
+                        "key": "hasAddressProvince",
                         "operations": []
                     },
                 }
@@ -89,60 +104,12 @@ class Mapper(object):
                         "key": "location_uri",
                         "operations": []
                     },
-                    "hasSpace": {
-                        "key": "building_space_uri",
-                        "operations": []
-                    },
                     "hasCadastralInfo": {
                         "key": "cadastral_uri",
                         "operations": []
                     },
                     "hasEPC": {
                         "key": "epc_uri",
-                        "operations": []
-                    },
-                    "hasProject": {
-                        "key": "project_uri",
-                        "operations": []
-                    }
-                }
-            }
-        }
-
-        building_space = {
-            "name": "building_space",
-            "class": BuildingSpace,
-            "type": {
-                "origin": "row"
-            },
-            "params": {
-                "mapping": {
-                    "subject": {
-                        "key": "building_space_subject",
-                        "operations": []
-                    },
-                    "hasBuildingSpaceUseType": {
-                        "key": "hasBuildingSpaceUseType",
-                        "operations": []
-                    }
-                }
-            }
-        }
-
-        project = {
-            "name": "project",
-            "class": Project,
-            "type": {
-                "origin": "row"
-            },
-            "params": {
-                "mapping": {
-                    "subject": {
-                        "key": "project_subject",
-                        "operations": []
-                    },
-                    "hasProjectMotivation": {
-                        "key": "hasProjectMotivation",
                         "operations": []
                     }
                 }
@@ -166,11 +133,127 @@ class Mapper(object):
                         "operations": []
                     },
                     "energyPerformanceCertificateClass": {
+                        "key": "qualificaci_de_consum_d",
+                        "operations": []
+                    },
+                    "C02EmissionsClass": {
                         "key": "qualificacio_d_emissions",
+                        "operations": []
+                    },
+                    "annualC02Emissions": {
+                        "key": "emissions_de_co2",
+                        "operations": []
+                    },
+                    "annualEnergyCost": {
+                        "key": "cost_anual_aproximat_d_energia",
+                        "operations": []
+                    },
+                    "annualFinalEnergyConsumption": {
+                        "key": "consum_d_energia_final",
                         "operations": []
                     },
                     "energyPerformanceCertificateCertificationTool": {
                         "key": "eina_de_certificacio",
+                        "operations": []
+                    },
+                    "annualCoolingCO2Emissions": {
+                        "key": "emissions_refrigeraci",
+                        "operations": []
+                    },
+                    "coolingCO2EmissionsClass": {
+                        "key": "qualificaci_emissions_1",
+                        "operations": []
+                    },
+                    "annualHeatingCO2Emissions": {
+                        "key": "emissions_calefacci",
+                        "operations": []
+                    }, "heatingCO2EmissionsClass": {
+                        "key": "qualificaci_emissions",
+                        "operations": []
+                    },
+                    "annualHotWaterCO2Emissions": {
+                        "key": "emissions_acs",
+                        "operations": []
+                    },
+                    "hotWaterCO2EmissionsClass": {
+                        "key": "qualificaci_emissions_acs",
+                        "operations": []
+                    },
+                    "annualLightingCO2Emissions": {
+                        "key": "emissions_enllumenament",
+                        "operations": []
+                    },
+                    "lightingCO2EmissionsClass": {
+                        "key": "qualificaci_emissions_2",
+                        "operations": []
+                    },
+                    "hotWaterPrimaryEnergyClass": {
+                        "key": "qualificaci_energia_acs",
+                        "operations": []
+                    },
+                    "lightingPrimaryEnergyClass": {
+                        "key": "qualificaci_energia_1",
+                        "operations": []
+                    },
+                    "heatingEnergyDemandClass": {
+                        "key": "qualificaci_energia_calefacci_1",
+                        "operations": []
+                    },
+                    "energyPerformanceCertificateCertificationMotivation": {
+                        "key": "motiu_de_la_certificacio",
+                        "operations": []
+                    },
+                    "hasAdditionalInfo": {
+                        "key": "additional_epc_uri",
+                        "operations": []
+                    },
+
+                }
+            }
+        }
+
+        additional_epc = {
+            "name": "additional_epc",
+            "class": EnergyPerformanceCertificateAdditionalInfo,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "additional_epc_subject",
+                        "operations": []
+                    },
+                    "electricVehicleChargerPresence": {
+                        "key": "vehicle_electric",
+                        "operations": []
+                    },
+                    "solarThermalSystemPresence": {
+                        "key": "solar_termica",
+                        "operations": []
+                    },
+                    "solarPVSystemPresence": {
+                        "key": "solar_fotovoltaica",
+                        "operations": []
+                    },
+                    "biomassSystemPresence": {
+                        "key": "sistema_biomassa",
+                        "operations": []
+                    },
+                    "districtHeatingOrCoolingConnection": {
+                        "key": "xarxa_districte",
+                        "operations": []
+                    },
+                    "geothermalSystemPresence": {
+                        "key": "energia_geotermica",
+                        "operations": []
+                    },
+                    "averageWindowsTransmittance": {
+                        "key": "valor_finestres",
+                        "operations": []
+                    },
+                    "averageFacadeTransmittance": {
+                        "key": "valor_aillaments",
                         "operations": []
                     }
                 }
@@ -178,6 +261,6 @@ class Mapper(object):
         }
 
         grouped_modules = {
-            "all": [location, cad_ref, building, building_space, project, epc]
+            "all": [location, cad_ref, building, epc, additional_epc],
         }
         return grouped_modules[group]
