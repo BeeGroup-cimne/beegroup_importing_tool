@@ -1,5 +1,5 @@
 from utils.data_transformations import to_object_property
-from utils.rdf_utils.ontology.bigg_classes import Building, LocationInfo, BuildingSpace, Organization, Device, \
+from utils.rdf_utils.ontology.bigg_classes import Building, LocationInfo, BuildingSpace, Device, \
     UtilityPointOfDelivery
 from utils.rdf_utils.ontology.namespaces_definition import countries, bigg_enums
 
@@ -10,7 +10,6 @@ class Mapper(object):
         Building.set_namespace(namespace)
         LocationInfo.set_namespace(namespace)
         BuildingSpace.set_namespace(namespace)
-        Organization.set_namespace(namespace)
         Device.set_namespace(namespace)
         UtilityPointOfDelivery.set_namespace(namespace)
 

@@ -34,7 +34,9 @@ def clean_static_data(df: pd.DataFrame, **kwargs):
     #     lambda x: building_department_subject(sha256(x.encode('utf-8')).hexdigest()))
 
     # Building
-    df['building_subject'] = df['Meter number'].apply(building_subject)
+    # call {match (n:bigg__Building) where n.uri contains "eplanet" return n  limit 1} match (n)-[r*]->(o) where o.uri contains "eplanet" return n,r,o
+    df['building_subject'] = df['Meter number'].apply(
+        building_subject)  # TODO : change meter number to unique id, to identify building
 
     # Building Space
     df['building_space_subject'] = df['Meter number'].apply(building_space_subject)
@@ -65,7 +67,7 @@ def clean_static_data(df: pd.DataFrame, **kwargs):
     return df
 
 
-def harmonize_ts_data(raw_df: pd.DataFrame, **kwargs):
+def harmonize_ts_data(raw_df: pd.DataFrame, kwargs):
     namespace = kwargs['namespace']
     config = kwargs['config']
     user = kwargs['user']
@@ -96,12 +98,12 @@ def harmonize_ts_data(raw_df: pd.DataFrame, **kwargs):
         df['value'] = df['aux_value']
         df['isReal'] = True
 
-        df['device_subject'] = df['Meter Code'].apply(partial(device_subject, source=config['source']))
+        df['device_subject'] = df['Meter number'].apply(partial(device_subject, source=config['source']))
 
         with neo.session() as session:
             for index, row in df.iterrows():
                 device_uri = str(n[row['device_subject']])
-                sensor_id = sensor_subject(config['source'], row['Meter Code'],
+                sensor_id = sensor_subject(config['source'], row['Meter number'],
                                            'EnergyConsumptionGridElectricity', "RAW", "")
 
                 sensor_uri = str(n[sensor_id])
@@ -166,13 +168,13 @@ def harmonize_data(data, **kwargs):
     df = pd.DataFrame(data)
     df = clean_general_data(df)
 
-    harmonize_static_data(config, df, kwargs, n)
+    harmonize_static_data(df, config, kwargs, n)
 
     df_ts = df[TS_COLUMNS].copy()
-    harmonize_ts_data(df_ts)
+    harmonize_ts_data(df_ts, kwargs)
 
 
-def harmonize_static_data(config, df, kwargs, n):
+def harmonize_static_data(df, config, kwargs, n):
     AUX_STATIC = []
     if 'Municipality unit' in df.columns:
         AUX_STATIC.append('Municipality unit')
