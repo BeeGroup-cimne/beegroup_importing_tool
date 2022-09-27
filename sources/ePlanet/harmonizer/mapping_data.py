@@ -77,7 +77,13 @@ def harmonize_ts_data(raw_df: pd.DataFrame, **kwargs):
 
     hbase_conn = config['hbase_store_harmonized_data']
 
-    for unique_value, df in raw_df.groupby('Meter number'):
+    # calc
+    aux_df = raw_df[raw_df['Current record'].str.isdigit()].copy()
+    aux_df['aux_value'] = (aux_df['Current record'].astype(float) - aux_df['Previous record'].astype(float)) * aux_df[
+        'Variable'].astype(float)
+    aux_df = aux_df[aux_df['aux_value'] >= 0]
+
+    for unique_value, df in aux_df.groupby('Meter number'):
         dt_ini = df.iloc[0]['StartDate']
         dt_end = df.iloc[-1]['EndDate']
 
@@ -87,7 +93,7 @@ def harmonize_ts_data(raw_df: pd.DataFrame, **kwargs):
         df["bucket"] = (df['timestamp'].apply(float) // settings.ts_buckets) % settings.buckets
         df['start'] = df['timestamp'].apply(decode_hbase)
         df['end'] = df['EndDate'].view(int) // 10 ** 9
-        df['value'] = df['Electricity Consumption']
+        df['value'] = df['aux_value']
         df['isReal'] = True
 
         df['device_subject'] = df['Meter Code'].apply(partial(device_subject, source=config['source']))
@@ -95,9 +101,8 @@ def harmonize_ts_data(raw_df: pd.DataFrame, **kwargs):
         with neo.session() as session:
             for index, row in df.iterrows():
                 device_uri = str(n[row['device_subject']])
-                sensor_id = sensor_subject(config['source'], row['Meter Code'], 'EnergyConsumptionGridElectricity',
-                                           "RAW",
-                                           "")
+                sensor_id = sensor_subject(config['source'], row['Meter Code'],
+                                           'EnergyConsumptionGridElectricity', "RAW", "")
 
                 sensor_uri = str(n[sensor_id])
                 measurement_id = sha256(sensor_uri.encode("utf-8"))
@@ -164,7 +169,7 @@ def harmonize_data(data, **kwargs):
     harmonize_static_data(config, df, kwargs, n)
 
     df_ts = df[TS_COLUMNS].copy()
-    # harmonize_ts_data(df_ts)
+    harmonize_ts_data(df_ts)
 
 
 def harmonize_static_data(config, df, kwargs, n):
