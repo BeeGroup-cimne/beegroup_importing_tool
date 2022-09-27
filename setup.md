@@ -79,6 +79,8 @@ python3 -m harmonizer -so CEEC3X -n "https://icaen.cat#" -u icaen -c
 python3 -m gather -so GPG -f "data/GPG/Llistat immobles alta inventari (13-04-2021).xls" -n "https://icaen.cat#" -st kafka -u icaen
 python3 -m gather -so Gemweb -st kafka
 python3 -m gather -so Genercat -f data/genercat/data2.xls -u icaen -n "https://icaen.cat#" -st kafka
+python3 -m gather -so CEEC3X -f "data/CEEC3X/ceec3x-01639-2TX229LJ9.xml" -b 01639 -id 2TX229LJ9 -n "https://icaen.cat#" -u icaen  -st kafka
+
 python3 -m gather -so Datadis # MR-Job
 python3 -m gather -so Weather # MR-Job
 ```
