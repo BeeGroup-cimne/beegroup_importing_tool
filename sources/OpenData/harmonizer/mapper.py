@@ -53,7 +53,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "hasAddressCity": {
-                        "key": "hasAddressProvince",
+                        "key": "hasAddressCity",
                         "operations": []
                     },
                 }
