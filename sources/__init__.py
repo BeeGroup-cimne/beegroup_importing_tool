@@ -12,19 +12,19 @@ class SourcePlugin(object):
         self.config['source'] = self.source_name
 
     def gather(self, arguments):
-        raise NotImplemented
+        raise NotImplementedError
 
     def harmonizer_command_line(self, arguments):
-        raise NotImplemented
+        raise NotImplementedError
 
     def get_mapper(self, message):
-        raise NotImplemented
+        raise NotImplementedError
 
     def get_kwargs(self, message):
-        raise NotImplemented
+        raise NotImplementedError
 
     def get_store_table(self, message):
-        raise NotImplemented
+        raise NotImplementedError
 
     def transform_df(self, df):
         return df

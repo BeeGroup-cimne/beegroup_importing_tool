@@ -73,6 +73,7 @@ python3 -m harmonizer -so Genercat -u "icaen" -n "https://icaen.cat#" -c
 echo "Datadis static"
 python3 -m harmonizer -so Datadis -n "https://icaen.cat#" -u icaen -t static -c
 python3 -m harmonizer -so CEEC3X -n "https://icaen.cat#" -u icaen -c
+python3 -m harmonizer -so OpenData -n "https://icaen.cat#" -u icaen -c
 ```
 2.2 Load from KAFKA
 ```bash
@@ -83,6 +84,8 @@ python3 -m gather -so CEEC3X -f "data/CEEC3X/ceec3x-01639-2TX229LJ9.xml" -b 0163
 
 python3 -m gather -so Datadis # MR-Job
 python3 -m gather -so Weather # MR-Job
+python3 -m gather -so OpenData -n "https://icaen.cat#" -u icaen -c
+
 ```
 ### 3. Create a new Tariff and co2Emissions for the organization
 ```cypher
