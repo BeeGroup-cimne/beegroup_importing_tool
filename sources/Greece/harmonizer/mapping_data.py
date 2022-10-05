@@ -8,8 +8,8 @@ from rdflib import Namespace
 import settings
 from harmonizer.cache import Cache
 from sources.ePlanet.harmonizer.Mapper import Mapper
-from utils.data_transformations import decode_hbase, building_subject, fuzzy_dictionary_match, fuzz_params, \
-    location_info_subject, building_space_subject, device_subject, delivery_subject, sensor_subject
+from utils.data_transformations import decode_hbase, building_subject, location_info_subject, building_space_subject, \
+    device_subject, delivery_subject, sensor_subject, fuzz_location
 from utils.hbase import save_to_hbase
 from utils.neo4j import create_sensor
 from utils.nomenclature import harmonized_nomenclature, HARMONIZED_MODE
@@ -46,15 +46,10 @@ def clean_static_data(df: pd.DataFrame, **kwargs):
     df['location_subject'] = df['Meter number'].apply(location_info_subject)
     df['hasLocationInfo'] = df['location_subject'].apply(lambda x: n[x])
 
-    municipality_dic = Cache.municipality_dic_GR
-
     # Municipality
-    municipality_fuzz = partial(fuzzy_dictionary_match,
-                                map_dict=fuzz_params(municipality_dic, ['ns1:alternateName']),
-                                default=None, fix_score=75)
+    mun_map = fuzz_location(location_dict=Cache.municipality_dic_GR, list_prop=['ns1:alternateName'],
+                            unique_values=df['Municipality'].unique(), fix_score=75)
 
-    unique_municipality = df['Municipality'].unique()
-    mun_map = {k: municipality_fuzz(k) for k in unique_municipality}
     df['hasAddressCity'] = df['Municipality'].map(mun_map)
 
     # Device

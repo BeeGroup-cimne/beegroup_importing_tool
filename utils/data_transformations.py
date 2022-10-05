@@ -10,7 +10,7 @@ from thefuzz import process
 def load_dic(dictionary_list):
     dicty = rdflib.Graph()
     for d in dictionary_list:
-        dicty.load(d, format="ttl")
+        dicty.parse(d, format="ttl")
     return dicty
 
 
@@ -167,6 +167,12 @@ def validate_ref_cadastral(value):
 
 def epc_subject(key):
     return f"EPC-{key}"
+
+
+def fuzz_location(location_dict, list_prop, unique_values, fix_score=90):
+    fuzz = partial(fuzzy_dictionary_match, map_dict=fuzz_params(location_dict, list_prop), fix_score=fix_score,
+                   default=None)
+    return {k: fuzz(k) for k in unique_values}
 
 
 def additional_epc_subject(key):

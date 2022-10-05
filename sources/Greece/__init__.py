@@ -1,11 +1,11 @@
 from sources import SourcePlugin
-from sources.ePlanet.gather import gather
-from sources.ePlanet.harmonizer.mapping_data import harmonize_data
+from sources.Greece.gather import gather
+from sources.Greece.harmonizer.mapping_data import harmonize_data
 from utils.nomenclature import raw_nomenclature, RAW_MODE
 
 
 class Plugin(SourcePlugin):
-    source_name = "ePlanet"
+    source_name = "Greece"
 
     def gather(self, arguments):
         gather(arguments, settings=self.settings, config=self.config)

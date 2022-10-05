@@ -1,6 +1,6 @@
 from utils.rdf_utils.ontology.bigg_classes import Building, LocationInfo, BuildingSpace, Area, \
-    EnergyPerformanceCertificate, AreaType, AreaUnitOfMeasurement, RenovationProject, BuildingOwnership, Device, \
-    Element, EnergyEfficiencyMeasure, EnergySaving
+    EnergyPerformanceCertificate, AreaType, AreaUnitOfMeasurement, BuildingOwnership, Device, \
+    Element, EnergyEfficiencyMeasure, EnergySaving, Project
 from utils.rdf_utils.ontology.namespaces_definition import countries, bigg_enums, units
 
 
@@ -15,7 +15,7 @@ class Mapper(object):
         EnergyPerformanceCertificate.set_namespace(namespace)
         AreaType.set_namespace(namespace)
         AreaUnitOfMeasurement.set_namespace(namespace)
-        RenovationProject.set_namespace(namespace)
+        Project.set_namespace(namespace)
         Element.set_namespace(namespace)
         Device.set_namespace(namespace)
         EnergyEfficiencyMeasure.set_namespace(namespace)
@@ -145,11 +145,11 @@ class Mapper(object):
                         "key": "PostalCode",
                         "operations": []
                     },
-                    # "hasAddressCity": {
+                    # "hasAddressCity": { TODO: Map keys according to the respective variables.
                     #     "key": "PostalCode",
                     #     "operations": []
                     # },
-                    # "hasAddressProvince": {
+                    # "hasAddressProvince": { TODO: Map keys according to the respective variables.
                     #     "key": "PostalCode",
                     #     "operations": []
                     # }
@@ -223,7 +223,7 @@ class Mapper(object):
 
         project = {
             "name": "project",
-            "class": RenovationProject,
+            "class": Project,
             "type": {
                 "origin": "row"
             },
