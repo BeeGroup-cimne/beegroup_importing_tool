@@ -93,6 +93,10 @@ def cadastral_info_subject(key):
     return f"CADASTRALINFO-{key}"
 
 
+def owner_subject(key):
+    return f"OWNER-{key}"
+
+
 def __area_subject__(key, a_type, a_source):
     return f"AREA-{a_type}-{a_source}-{key}"
 
