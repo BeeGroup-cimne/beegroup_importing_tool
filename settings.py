@@ -1,7 +1,5 @@
 import os
-
 from dotenv import load_dotenv
-
 load_dotenv()
 conf_file = os.getenv("CONFIG_FILE")
 kafka_message_size = 10
