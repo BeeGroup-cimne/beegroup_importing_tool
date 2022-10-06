@@ -1,6 +1,6 @@
 from utils.rdf_utils.ontology.bigg_classes import Building, LocationInfo, BuildingSpace, Area, \
     EnergyPerformanceCertificate, AreaType, AreaUnitOfMeasurement, BuildingOwnership, Device, \
-    Element, EnergyEfficiencyMeasure, EnergySaving, Project
+    Element, EnergyEfficiencyMeasure, EnergySaving, Project, EnergyPerformanceCertificateAdditionalInfo
 from utils.rdf_utils.ontology.namespaces_definition import countries, bigg_enums, units
 
 
@@ -19,6 +19,7 @@ class Mapper(object):
         Element.set_namespace(namespace)
         Device.set_namespace(namespace)
         EnergyEfficiencyMeasure.set_namespace(namespace)
+        EnergyPerformanceCertificateAdditionalInfo.set_namespace(namespace)
         EnergySaving.set_namespace(namespace)
 
     def get_mappings(self, group):
@@ -216,6 +217,10 @@ class Mapper(object):
                     "energyPerformanceCertificateClass": {
                         "key": "EnergyCertificateQualification",
                         "operations": []
+                    },
+                    "hasAdditionalInfo": {
+                        "key": "energy_performance_certificate_additional_uri",
+                        "operations": []
                     }
                 }
             }
@@ -346,9 +351,34 @@ class Mapper(object):
             }
         }
 
+        epc_add = {
+            "name": "epc_add",
+            "class": EnergyPerformanceCertificateAdditionalInfo,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "energy_performance_certificate_additional_subject",
+                        "operations": []
+                    }, "solarPVSystemPresence": {
+                        "key": "solarPVSystemPresence",
+                        "operations": []
+                    }, "solarThermalSystemPresence": {
+                        "key": "solarThermalSystemPresence",
+                        "operations": []
+                    }, "hasEnergySavingType": {
+                        "key": "hasEnergySavingType",
+                        "operations": []
+                    }
+                },
+            }
+        }
+
         grouped_modules = {
             "building_info": [buildings, building_space, location_info, gross_floor_area, owner,
-                              energy_performance_certificate, project, devices, element],
+                              energy_performance_certificate, project, devices, element, epc_add],
             "emm": [eem, energy_saving]
         }
         return grouped_modules[group]

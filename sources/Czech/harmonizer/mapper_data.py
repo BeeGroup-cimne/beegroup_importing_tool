@@ -90,6 +90,21 @@ def harmonize_building_info(data, **kwargs):
 
     df['hasEPC'] = df['energy_performance_certificate_subject'].apply(lambda x: n[x])
 
+    # AdditionalInfoEPC
+    df['energy_performance_certificate_additional_subject'] = df.apply(
+        lambda x: f"ADDITIONAL-EPC-{x['Unique ID']}-{x['EnergyCertificateDate_timestamp']}",
+        axis=1)
+
+    df['energy_performance_certificate_additional_uri'] = df['energy_performance_certificate_additional_subject'].apply(
+        lambda x: n[x])
+    translate_dict = {'Ano': True, 'Ne': False}
+
+    df['Renewable'] = df['Renewable'].map(translate_dict)
+    df['EnergyAudit'] = df['EnergyAudit'].map(translate_dict)
+    df['Monitoring'] = df['Monitoring'].map(translate_dict)
+    df['SolarPV'] = df['SolarPV'].map(translate_dict)
+    df['SolarThermal'] = df['SolarThermal'].map(translate_dict)
+
     # Project
     df['project_subject'] = df['Unique ID'].apply(project_subject)
     df['hasProject'] = df['project_subject'].apply(lambda x: n[x])
