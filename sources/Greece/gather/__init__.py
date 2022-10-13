@@ -22,7 +22,7 @@ def gather_data(config, settings, args):
                     df = df.iloc[2:].copy()
 
                     save_data(data=df.to_dict(orient='records'), data_type="BuildingInfo",
-                              row_keys=["Year", "Month", 'Meter number'],
+                              row_keys=["Year", "Month", 'Unique ID'],
                               column_map=[("info", "all")], config=config, settings=settings, args=args)
 
 

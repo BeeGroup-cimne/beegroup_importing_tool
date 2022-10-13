@@ -7,7 +7,7 @@ from rdflib import Namespace
 
 import settings
 from harmonizer.cache import Cache
-from sources.ePlanet.harmonizer.Mapper import Mapper
+from sources.Greece.harmonizer.Mapper import Mapper
 from utils.data_transformations import decode_hbase, building_subject, location_info_subject, building_space_subject, \
     device_subject, delivery_subject, sensor_subject, fuzz_location
 from utils.hbase import save_to_hbase
@@ -18,9 +18,9 @@ from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.rdf_utils.save_rdf import save_rdf_with_source
 
 STATIC_COLUMNS = ['Year', 'Month', 'Region',
-                  'Street name', 'Street number', 'Name of the building or public lighting', 'Meter number']
+                  'Street name', 'Street number', 'Name of the building or public lighting', 'Unique ID']
 
-TS_COLUMNS = ['Year', 'Month', 'Meter number', 'Current record', 'Previous record', 'Variable', 'Recording date',
+TS_COLUMNS = ['Year', 'Month', 'Unique ID', 'Current record', 'Previous record', 'Variable', 'Recording date',
               'Previous recording date', 'StartDate', 'EndDate']
 
 
@@ -35,15 +35,15 @@ def clean_static_data(df: pd.DataFrame, **kwargs):
 
     # Building
     # call {match (n:bigg__Building) where n.uri contains "eplanet" return n  limit 1} match (n)-[r*]->(o) where o.uri contains "eplanet" return n,r,o
-    df['building_subject'] = df['Meter number'].apply(
+    df['building_subject'] = df['Unique ID'].apply(
         building_subject)  # TODO : change meter number to unique id, to identify building
 
     # Building Space
-    df['building_space_subject'] = df['Meter number'].apply(building_space_subject)
+    df['building_space_subject'] = df['Unique ID'].apply(building_space_subject)
     df['hasSpace'] = df['building_space_subject'].apply(lambda x: n[x])
 
     # Location
-    df['location_subject'] = df['Meter number'].apply(location_info_subject)
+    df['location_subject'] = df['Unique ID'].apply(location_info_subject)
     df['hasLocationInfo'] = df['location_subject'].apply(lambda x: n[x])
 
     # Municipality
@@ -53,11 +53,11 @@ def clean_static_data(df: pd.DataFrame, **kwargs):
     df['hasAddressCity'] = df['Municipality'].map(mun_map)
 
     # Device
-    df['device_subject'] = df['Meter number'].apply(partial(device_subject, source=config['source']))
+    df['device_subject'] = df['Unique ID'].apply(partial(device_subject, source=config['source']))
     df['isObservedByDevice'] = df['device_subject'].apply(lambda x: n[x])
 
     # Utility Point of Delivery
-    df['utility_point_subject'] = df['Meter number'].apply(delivery_subject)
+    df['utility_point_subject'] = df['Unique ID'].apply(delivery_subject)
 
     return df
 
@@ -80,7 +80,7 @@ def harmonize_ts_data(raw_df: pd.DataFrame, kwargs):
         'Variable'].astype(float)
     aux_df = aux_df[aux_df['aux_value'] >= 0]
 
-    for unique_value, df in aux_df.groupby('Meter number'):
+    for unique_value, df in aux_df.groupby('Unique ID'):
         dt_ini = df.iloc[0]['StartDate']
         dt_end = df.iloc[-1]['EndDate']
 
@@ -93,12 +93,12 @@ def harmonize_ts_data(raw_df: pd.DataFrame, kwargs):
         df['value'] = df['aux_value']
         df['isReal'] = True
 
-        df['device_subject'] = df['Meter number'].apply(partial(device_subject, source=config['source']))
+        df['device_subject'] = df['Unique ID'].apply(partial(device_subject, source=config['source']))
 
         with neo.session() as session:
             for index, row in df.iterrows():
                 device_uri = str(n[row['device_subject']])
-                sensor_id = sensor_subject(config['source'], row['Meter number'],
+                sensor_id = sensor_subject(config['source'], row['Unique ID'],
                                            'EnergyConsumptionGridElectricity', "RAW", "")
 
                 sensor_uri = str(n[sensor_id])
@@ -147,8 +147,8 @@ def clean_general_data(df: pd.DataFrame):
     df['StartDate'] = pd.to_datetime(df['StartDate'], format="%d%m%Y")
     df['EndDate'] = pd.to_datetime(df['EndDate'], format="%d%m%Y")
 
-    df['Meter number'] = df['Meter number'].astype(str)
-    df.sort_values(by=['Meter number', 'StartDate'], inplace=True)
+    df['Unique ID'] = df['Unique ID'].astype(str)
+    df.sort_values(by=['Unique ID', 'StartDate'], inplace=True)
     df.drop_duplicates(inplace=True)
     df.columns = [s.strip() for s in df.columns]
 

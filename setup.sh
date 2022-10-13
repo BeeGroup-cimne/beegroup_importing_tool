@@ -168,3 +168,11 @@ python3 -m harmonizer -so Bulgaria -u "bulgaria" -n "https://bulgaria.bg#" -c
 
 
 python3 -m gather -so Bulgaria -f "data/Bulgaria" -u "bulgaria" -n "https://bulgaria.bg#" -t summary -st kafka
+
+
+# Greece Organization
+python3 -m gather -n "https://eplanet.eu#" -so Greece -st kafka -u Greece -f "data/crete"
+
+
+# Chez
+python3 -m gather -n "https://eplanet.eu#" -so Czech -st kafka -u eplanet -f data/czech/building -kf building_eem

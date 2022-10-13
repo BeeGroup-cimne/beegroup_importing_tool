@@ -84,11 +84,12 @@ def gather(arguments, settings, config):
             log_string(f"File: {file}")
 
             xl = pd.ExcelFile(f"{args.file}/{file}")
+            # TODO: Alertar si no hi ha cap pagina de gas, electricitat o aigua
 
             for i in xl.sheet_names:
                 unique_id = f"{file}".split('_')[0]
 
-                if i == 'plyn':  # GAS
+                if i in 'plyn':  # GAS
                     try:
                         df = pd.read_excel(f"{args.file}/{file}", skiprows=5, sheet_name=i)
                         df.dropna(how='all', axis='columns', inplace=True)
@@ -106,7 +107,7 @@ def gather(arguments, settings, config):
                     except Exception as ex:
                         log_string(ex)
 
-                elif i == 'elektřina':
+                elif i in 'elektřina':
                     try:
                         df = pd.read_excel(f"{args.file}/{file}", sheet_name='elektřina',
                                            skiprows=6)

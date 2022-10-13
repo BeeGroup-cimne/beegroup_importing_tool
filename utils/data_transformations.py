@@ -42,9 +42,8 @@ def fuzzy_dictionary_match(text, map_dict, default, fix_score=90):
 
 def get_taxonomy_mapping(taxonomy_file, default):
     # Transformation function
-    taxonomy_dict = pd.read_excel(taxonomy_file,  index_col="SOURCE").to_dict()["TAXONOMY"]
+    taxonomy_dict = pd.read_excel(taxonomy_file, index_col="SOURCE").to_dict()["TAXONOMY"]
     return defaultdict(lambda: default, taxonomy_dict)
-
 
 
 def to_object_property(text, namespace):
@@ -177,8 +176,3 @@ def fuzz_location(location_dict, list_prop, unique_values, fix_score=90):
 
 def additional_epc_subject(key):
     return f"ADDITIONAL-EPC-{key}"
-
-
-def fuzz_location(location_dict, list_prop, unique_values):
-    fuzz = partial(fuzzy_dictionary_match, map_dict=fuzz_params(location_dict, list_prop), default=None)
-    return {k: fuzz(k) for k in unique_values}
