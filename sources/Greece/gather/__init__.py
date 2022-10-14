@@ -18,6 +18,7 @@ def gather_data(config, settings, args):
 
             for sheet_name in list_sheets:
                 if sheet_name.isdigit():
+                    log_string(f"{config['source']} - {file}")
                     df = pd.read_excel(path, skiprows=4, sheet_name=sheet_name)
                     df = df.iloc[2:].copy()
 

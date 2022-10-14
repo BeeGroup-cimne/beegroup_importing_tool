@@ -368,9 +368,6 @@ class Mapper(object):
                     }, "solarThermalSystemPresence": {
                         "key": "solarThermalSystemPresence",
                         "operations": []
-                    }, "hasEnergySavingType": {
-                        "key": "hasEnergySavingType",
-                        "operations": []
                     }
                 },
             }
