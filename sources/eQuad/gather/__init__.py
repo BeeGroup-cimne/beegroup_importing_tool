@@ -13,21 +13,12 @@ BASE_HEADERS = {'Content-Type': 'application/json;charset=utf-8'}
 
 
 def get_token(**kwargs):
-    response = requests.post(f"{BASE_URL}/authenticate", headers=BASE_HEADERS,
-                             data=dumps({"email": kwargs['username'], "password": kwargs['password']}))
-    if response.ok:
-        return response.json()['token']
-    else:
-        raise Exception(f"Authentication process receives a {response.status_code}")
+    return requests.post(f"{BASE_URL}/authenticate", headers=BASE_HEADERS,
+                         data=dumps({"email": kwargs['username'], "password": kwargs['password']}))
 
 
-def gather_projects(token):
-    response = requests.get(f"{BASE_URL}/api/projects?token={token}")
-
-    if response.ok:
-        return response.json()
-    else:
-        raise Exception(f"Gather project receives a {response.status_code}")
+def get_projects(token):
+    return requests.get(f"{BASE_URL}/api/projects?token={token}")
 
 
 def save_data(data, data_type, row_keys, column_map, config, settings, args):
@@ -69,9 +60,18 @@ def gather(arguments, config=None, settings=None):
     ap.add_argument("-st", "--store", required=True, help="Where to store the data", choices=["kafka", "hbase"])
     args = ap.parse_args(arguments)
 
-    token = get_token(**config['eQuad'])
-    data = gather_projects(token=token)
+    response_token = get_token(**config['eQuad'])
 
-    save_data(data=data, data_type='Projects',
-              row_keys=['_id'], column_map=[("info", "all")],
-              config=config, settings=settings, args=args)
+    if response_token.ok:
+        token = response_token.json()['token']
+    else:
+        raise Exception(f"Authentication process receives a {response_token.status_code}")
+
+    response_projects = get_projects(token=token)
+
+    if response_projects.ok:
+        save_data(data=response_projects.json(), data_type='Projects',
+                  row_keys=['_id'], column_map=[("info", "all")],
+                  config=config, settings=settings, args=args)
+    else:
+        raise Exception(f"Gather project receives a {response_projects.status_code}")
