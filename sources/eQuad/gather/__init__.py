@@ -65,7 +65,7 @@ def gather(arguments, config=None, settings=None):
     if response_token.ok:
         token = response_token.json()['token']
     else:
-        raise Exception(f"Authentication process receives a {response_token.status_code}")
+        raise response_token.raise_for_status()
 
     response_projects = get_projects(token=token)
 
@@ -74,4 +74,4 @@ def gather(arguments, config=None, settings=None):
                   row_keys=['_id'], column_map=[("info", "all")],
                   config=config, settings=settings, args=args)
     else:
-        raise Exception(f"Gather project receives a {response_projects.status_code}")
+        raise response_projects.raise_for_status()

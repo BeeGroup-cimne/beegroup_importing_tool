@@ -4,9 +4,10 @@ from rdflib import Namespace
 
 
 def clean_data(data):
-    df = pd.json_normalize(data, sep='_')
+    df = pd.DataFrame(data)
 
     # Building
+    df['building_subject'] = df['']
 
 
 def harmonize_data(data, **kwargs):
