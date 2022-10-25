@@ -33,7 +33,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "buildingIDFromOrganization": {
-                        "key": "Code",
+                        "key": "Unique ID",
                         "operations": []
                     },
                     "hasLocationInfo": {
@@ -130,7 +130,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "deviceName": {
-                        "key": 'Meter Code',
+                        "key": 'Unique ID',
                         "operations": []
                     }
                 }
@@ -153,7 +153,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "pointOfDeliveryIDFromOrganization": {
-                        "key": 'Meter Code',
+                        "key": 'Unique ID',
                         "operations": []
                     },
                     "hasDevice": {
