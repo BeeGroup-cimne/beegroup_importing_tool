@@ -1,6 +1,6 @@
 from utils.data_transformations import to_object_property
 from utils.rdf_utils.ontology.bigg_classes import Building, LocationInfo, BuildingSpace, Device, \
-    UtilityPointOfDelivery
+    UtilityPointOfDelivery, Organization
 from utils.rdf_utils.ontology.namespaces_definition import countries, bigg_enums
 
 
@@ -12,8 +12,23 @@ class Mapper(object):
         BuildingSpace.set_namespace(namespace)
         Device.set_namespace(namespace)
         UtilityPointOfDelivery.set_namespace(namespace)
+        Organization.set_namespace(namespace)
 
     def get_mappings(self, group):
+        organization = {
+            "name": "organization",
+            "class": Organization,
+            "type": {
+                "origin": "static"
+            },
+            "params": {
+                "raw": {
+                    "subject": "Greece",
+                    "organizationName": "Greece"
+                }
+            }
+        }
+
         buildings = {
             "name": "buildings",
             "class": Building,
@@ -44,10 +59,10 @@ class Mapper(object):
                         "key": "hasSpace",
                         "operations": []
                     },
-                    # "pertainsToOrganization": {
-                    #     "key": "pertainsToOrganization",
-                    #     "operations": []
-                    # },
+                    "pertainsToOrganization": {
+                        "key": "organization_uri",
+                        "operations": []
+                    },
                 }
             },
         }
@@ -67,10 +82,6 @@ class Mapper(object):
                         "key": "building_space_subject",
                         "operations": []
                     },
-                    # "hasBuildingSpaceUseType": {
-                    #     "key": "hasBuildingSpaceUseType",
-                    #     "operations": []
-                    # },
                     "isObservedByDevice": {
                         "key": "isObservedByDevice",
                         "operations": []
@@ -165,6 +176,6 @@ class Mapper(object):
         }
 
         grouped_modules = {
-            "static": [buildings, locations, building_space, device, utility_point]
+            "static": [organization, buildings, locations, building_space, device, utility_point]
         }
         return grouped_modules[group]

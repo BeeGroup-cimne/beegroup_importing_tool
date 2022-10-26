@@ -9,7 +9,7 @@ import settings
 from harmonizer.cache import Cache
 from sources.Greece.harmonizer.Mapper import Mapper
 from utils.data_transformations import decode_hbase, building_subject, location_info_subject, building_space_subject, \
-    device_subject, delivery_subject, sensor_subject, fuzz_location
+    device_subject, delivery_subject, sensor_subject, fuzz_location, building_department_subject
 from utils.hbase import save_to_hbase
 from utils.neo4j import create_sensor
 from utils.nomenclature import harmonized_nomenclature, HARMONIZED_MODE
@@ -29,14 +29,13 @@ def clean_static_data(df: pd.DataFrame, **kwargs):
     config = kwargs['config']
     n = Namespace(namespace)
 
-    # # Organization
-    # df['pertainsToOrganization'] = df['Code'].apply(
-    #     lambda x: building_department_subject(sha256(x.encode('utf-8')).hexdigest()))
+    # Organization
+    df['organization_subject'] = building_department_subject(config['source'])
+    df['organization_uri'] = df['organization_subject'].apply(lambda x: n[x])
 
     # Building
     # call {match (n:bigg__Building) where n.uri contains "eplanet" return n  limit 1} match (n)-[r*]->(o) where o.uri contains "eplanet" return n,r,o
-    df['building_subject'] = df['Unique ID'].apply(
-        building_subject)  # TODO : change meter number to unique id, to identify building
+    df['building_subject'] = df['Unique ID'].apply(building_subject)
 
     # Building Space
     df['building_space_subject'] = df['Unique ID'].apply(building_space_subject)
@@ -150,7 +149,7 @@ def clean_general_data(df: pd.DataFrame):
     df['Unique ID'] = df['Unique ID'].astype(str)
     df.sort_values(by=['Unique ID', 'StartDate'], inplace=True)
     df.drop_duplicates(inplace=True)
-    df.columns = [s.strip() for s in df.columns]
+    df.rename(columns=lambda x: x.strip(), inplace=True)
 
     return df
 
@@ -188,3 +187,4 @@ def harmonize_static_data(df, config, kwargs, n):
     g = generate_rdf(mapper.get_mappings("static"), df_static)
     g.serialize('output.ttl', format="ttl")
     save_rdf_with_source(g, config['source'], config['neo4j'])
+    # '.*\_eplanet$'

@@ -21,7 +21,7 @@ def gather_data(config, settings, args):
                     log_string(f"{config['source']} - {file}")
                     df = pd.read_excel(path, skiprows=4, sheet_name=sheet_name)
                     df = df.iloc[2:].copy()
-
+                    df = df.rename(columns=lambda x: x.strip())
                     save_data(data=df.to_dict(orient='records'), data_type="BuildingInfo",
                               row_keys=["Year", "Month", 'Unique ID'],
                               column_map=[("info", "all")], config=config, settings=settings, args=args)

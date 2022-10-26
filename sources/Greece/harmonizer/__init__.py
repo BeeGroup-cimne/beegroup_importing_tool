@@ -15,21 +15,19 @@ def harmonize_command_line(arguments, config=None, settings=None):
     hbase_conn = config['hbase_store_raw_data']
     hbase_table = utils.nomenclature.raw_nomenclature(args.source, RAW_MODE.STATIC, data_type="BuildingInfo",
                                                       user=args.user)
-    i = 0
     Cache.load_cache()
     for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table, batch_size=100):
         dic_list = []
-        print("parsing hbase")
-        for u_c, x in data:
+        for key, value in data:
             item = dict()
-            for k, v in x.items():
+            for k, v in value.items():
                 k1 = re.sub("^info:", "", k.decode())
                 item[k1] = v
-            filename, id = u_c.decode().split("~")
-            item.update({"filename": filename})
-            item.update({"id": id})
+
+            year, month, unique_id = key.decode().split("~")
+            item.update({"Unique ID": unique_id})
+            item.update({"Month": month})
+            item.update({"Year": year})
             dic_list.append(item)
-        print("parsed. Mapping...")
-        i += len(dic_list)
-        print(i)
-        # harmonize_static(dic_list, namespace=args.namespace, user=args.user, config=config)
+
+        #harmonize_data(dic_list, namespace=args.namespace, user=args.user, config=config)
