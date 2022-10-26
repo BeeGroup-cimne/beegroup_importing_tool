@@ -26,15 +26,14 @@ CALL n10s.nsprefixes.add("rdfs","http://www.w3.org/2000/01/rdf-schema#");
 ```
 - run in linux terminal
 ```bash
-# Create the dictionary of elements
-echo "dict"
+echo "create dictionaries"
 python3 -m set_up.Dictionaries
-# add translation labels
+echo "add translation labels"
 python3 -m utils.rdf_utils.ontology.taxonomy_translations  translate
 ```
+# TODO
 # General Setup
 ```bash
-# create the weather stations (for each country)
 echo "weather stations catalonia"
 python3 -m set_up.Weather -f data/Weather/cpcat.json -n "https://weather.beegroup-cimne.com#" -c
 ```
@@ -48,7 +47,7 @@ python3 -m set_up.Weather -f data/Weather/cpcat.json -n "https://weather.beegrou
 ### 1. SET UP
 ```bash
 echo "org"
-python3 -m set_up.Organizations -f data/Organizations/gencat-organizations.xls -name "Generalitat de Catalunya" -u "icaen" -n "https://icaen.cat#"
+python3 -m set_up.Organizations -f data/Organizations/gencat-organizations2.xls -name "Generalitat de Catalunya" -u "icaen" -n "https://icaen.cat#"
 echo "Gemweb source"
 python3 -m set_up.DataSources -u "icaen" -n "https://icaen.cat#" -f data/DataSources/gemweb.xls -d GemwebSource
 echo "datadis source"
@@ -58,7 +57,7 @@ python3 -m set_up.DataSources -u "icaen" -n "https://icaen.cat#" -f data/DataSou
 echo "simpleTariff source"
 python3 -m set_up.DataSources -u "icaen" -n "https://icaen.cat#" -f data/DataSources/simpleTariff.xls -d SimpleTariffSource
 echo "co2Emisions source"
-python3 -m set_up.DataSources -u "icaen" -n "https://icaen.cat#" -f data/DataSources/simpleTariff.xls -d C02EmissionsSource
+python3 -m set_up.DataSources -u "icaen" -n "https://icaen.cat#" -f data/DataSources/simpleTariff.xls -d CO2EmissionsSource
 ```
 
 ### 2. LOAD STATIC DATA
@@ -77,7 +76,7 @@ python3 -m harmonizer -so OpenData -n "https://icaen.cat#" -u icaen -c
 ```
 2.2 Load from KAFKA
 ```bash
-python3 -m gather -so GPG -f "data/GPG/Llistat immobles alta inventari (13-04-2021).xls" -n "https://icaen.cat#" -st kafka -u icaen
+python3 -m gather -so GPG -f "data/GPG/2022-10 SIME-DadesdelsImmobles v2.xlsx" -n "https://icaen.cat#" -st kafka -u icaen
 python3 -m gather -so Gemweb -st kafka
 python3 -m gather -so Genercat -f data/genercat/data2.xls -u icaen -n "https://icaen.cat#" -st kafka
 python3 -m gather -so CEEC3X -f "data/CEEC3X/ceec3x-01639-2TX229LJ9.xml" -b 01639 -id 2TX229LJ9 -n "https://icaen.cat#" -u icaen  -st kafka
@@ -98,12 +97,12 @@ Match (s:SimpleTariffSource) where (s)<-[:hasSource]-(o)
 Merge (t:bigg__Tariff:Resource{bigg__tariffCompany:"CIMNE", bigg__tariffName: "gasdefault", uri: "https://icaen.cat#TARIFF-SimpleTariffSource-icaen-gasdefault"})-[:importedFromSource]->(s)
 return t;
 Match (o:bigg__Organization{userID:"icaen"})
-Match (s:C02EmissionsSource) where (s)<-[:hasSource]-(o)
-Merge (t:bigg__CO2EmissionsFactor:Resource{bigg__CO2EmissionsStation:"cataloniaElectric", wgs__lon:40.959, wgs__lat:1.485, uri: "https://weather.beegroup-cimne.com#CO2EMISIONS-cataloniaElectric"})-[:importedFromSource]->(s)
+Match (s:CO2EmissionsSource) where (s)<-[:hasSource]-(o)
+Merge (t:bigg__CO2EmissionsFactor:Resource{bigg__CO2EmissionsStation:"cataloniaElectric", wgs__lon:40.959, wgs__lat:1.485, uri: "https://icaen.cat#CO2EMISIONS-cataloniaElectric"})-[:importedFromSource]->(s)
 return t;
 Match (o:bigg__Organization{userID:"icaen"})
-Match (s:C02EmissionsSource) where (s)<-[:hasSource]-(o)
-Merge (t:bigg__CO2EmissionsFactor:Resource{bigg__CO2EmissionsStation:"cataloniaGas", wgs__lon:40.959, wgs__lat:1.485, uri: "https://weather.beegroup-cimne.com#CO2EMISIONS-cataloniaGas"})-[:importedFromSource]->(s)
+Match (s:CO2EmissionsSource) where (s)<-[:hasSource]-(o)
+Merge (t:bigg__CO2EmissionsFactor:Resource{bigg__CO2EmissionsStation:"cataloniaGas", wgs__lon:40.959, wgs__lat:1.485, uri: "https://icaen.cat#CO2EMISIONS-cataloniaGas"})-[:importedFromSource]->(s)
 return t;
 ```
 ### 4. Link all buildings to tariff and CO2Emissions
@@ -113,21 +112,21 @@ Match (dt {uri:"http://bigg-project.eu/ontology#Electricity"})
 Match (bigg__Organization{userID:"icaen"})-[:bigg__hasSubOrganization*]->()-[:bigg__managesBuilding]->()-[:bigg__hasSpace]->()-[:bigg__hasUtilityPointOfDelivery]->(s)-[:bigg__hasUtilityType]->(dt)
 Merge (c:bigg__ContractedTariff:Resource{bigg__contractStartDate: datetime("2000-01-01T00:00:00.000+0100"), bigg__contractName:"electricdefault", uri: s.uri+"_tariff"})
 Merge (s)-[:bigg__hasContractedTariff]->(c)
-Merge (c)-[:bigg__hastariff]->(t)
+Merge (c)-[:bigg__hasTariff]->(t)
 return t;
 Match (bigg__Organization{userID:"icaen"})-[:hasSource]->(:SimpleTariffSource)<-[:importedFromSource]-(t:bigg__Tariff{bigg__tariffName:"gasdefault"})
 Match (dt {uri:"http://bigg-project.eu/ontology#Gas"})
 Match (bigg__Organization{userID:"icaen"})-[:bigg__hasSubOrganization*]->()-[:bigg__managesBuilding]->()-[:bigg__hasSpace]->()-[:bigg__hasUtilityPointOfDelivery]->(s)-[:bigg__hasUtilityType]->(dt)
 Merge (c:bigg__ContractedTariff:Resource{bigg__contractStartDate: datetime("2000-01-01T00:00:00.000+0100"), bigg__contractName:"gasdefault", uri: s.uri+"_tariff"})
 Merge (s)-[:bigg__hasContractedTariff]->(c)
-Merge (c)-[:bigg__hastariff]->(t)
+Merge (c)-[:bigg__hasTariff]->(t)
 return t;
-Match (co2:bigg__CO2EmissionsFactor{bigg__CO2EmissionsStation:"cataloniaElectric"})
+Match (bigg__Organization{userID:"icaen"})-[:hasSource]->(:CO2EmissionsSource)<-[:importedFromSource]-(co2:bigg__CO2EmissionsFactor{bigg__CO2EmissionsStation:"cataloniaElectric"})
 Match (dt {uri:"http://bigg-project.eu/ontology#Electricity"})
 Match (bigg__Organization{userID:"icaen"})-[:bigg__hasSubOrganization*]->()-[:bigg__managesBuilding]->()-[:bigg__hasSpace]->()-[:bigg__hasUtilityPointOfDelivery]->(s)-[:bigg__hasUtilityType]->(dt)
 Merge (s)-[:bigg__hasCO2EmissionsFactor]->(co2)
 return co2;
-Match (co2:bigg__CO2EmissionsFactor{bigg__CO2EmissionsStation:"cataloniaGas"})
+Match (bigg__Organization{userID:"icaen"})-[:hasSource]->(:CO2EmissionsSource)<-[:importedFromSource]-(co2:bigg__CO2EmissionsFactor{bigg__CO2EmissionsStation:"cataloniaGas"})
 Match (dt {uri:"http://bigg-project.eu/ontology#Gas"})
 Match (bigg__Organization{userID:"icaen"})-[:bigg__hasSubOrganization*]->()-[:bigg__managesBuilding]->()-[:bigg__hasSpace]->()-[:bigg__hasUtilityPointOfDelivery]->(s)-[:bigg__hasUtilityType]->(dt)
 Merge (s)-[:bigg__hasCO2EmissionsFactor]->(co2)

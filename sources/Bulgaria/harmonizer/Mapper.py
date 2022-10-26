@@ -244,8 +244,8 @@ class Mapper(object):
                         "key": "location_subject",
                         "operations": []
                     },
-                    "hasAddressProvince": {
-                        "key": "hasAddressProvince",
+                    "hasAddressCity": {
+                        "key": "hasAddressCity",
                         "operations": []
                     }
                 }
@@ -386,7 +386,7 @@ class Mapper(object):
             },
             "params": {
                 "raw": {
-                    "hasAreaType": bigg_enums["GrossFloorAreaAboveGround"],
+                    "hasAreaType": bigg_enums["GrossFloorArea"],
                     "hasAreaUnitOfMeasurement": units["M2"]
                 },
                 "mapping": {

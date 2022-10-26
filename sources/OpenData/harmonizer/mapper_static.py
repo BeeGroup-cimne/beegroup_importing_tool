@@ -55,7 +55,7 @@ def harmonize_data(data, **kwargs):
             f"""MATCH (b:bigg__Building)-[:bigg__hasCadastralInfo]-(c:bigg__CadastralInfo),
             (b:bigg__Building)<-[:bigg__managesBuilding|bigg__hasSubOrganization *]-(o:bigg__Organization{{userID:'icaen'}}) 
              RETURN b.bigg__buildingIDFromOrganization as building_id, c.bigg__landCadastralReference as cadastral_ref """).data()
-
+    neo.close()
     df = pd.DataFrame(data)
     df = df.applymap(decode_hbase)
 
@@ -74,7 +74,7 @@ def harmonize_data(data, **kwargs):
 
     for linked, _df in [("linked", building_linked), ("unlinked", building_unlinked)]:
         g = generate_rdf(mapper.get_mappings(linked), _df)
-        save_rdf_with_source(g, config['source'], config['neo4j'])
+        save_rdf_with_source(g, config['source'], neo4j_connection)
     df_links = df[["epc_subject"]]
     df_links = df_links.rename(columns={"epc_subject": "device_subject"})
     df_links['source_id'] = 6275

@@ -29,18 +29,19 @@ def set_taxonomy(df):
     df['buildingSpaceUseType'] = df['type_of_building'].map(building_type_taxonomy).apply(partial(to_object_property,
                                                                                               namespace=bigg_enums))
 
+
 def set_municipality(df):
-    province_dic = Cache.province_dic_BG
-    province_fuzz = partial(fuzzy_dictionary_match,
+    municipality_dic = Cache.municipality_dic_BG
+    municipality_fuzz = partial(fuzzy_dictionary_match,
                             map_dict=fuzz_params(
-                                province_dic,
+                                municipality_dic,
                                 ['ns1:name']
                             ),
                             default=None
                             )
-    unique_province = df['municipality'].unique()
-    province_map = {k: province_fuzz(k) for k in unique_province}
-    df.loc[:, 'hasAddressProvince'] = df['municipality'].map(province_map)
+    unique_municipality = df['municipality'].unique()
+    municipality_map = {k: municipality_fuzz(k) for k in unique_municipality}
+    df.loc[:, 'hasAddressCity'] = df['municipality'].map(municipality_map)
 
 
 def clean_dataframe_building_info(df_orig, source):
@@ -52,7 +53,10 @@ def clean_dataframe_building_info(df_orig, source):
     df['building_name'] = df.apply(lambda x: f"{x.municipality}:{x.name}-{x.type_of_building}", axis=1)
     df['building_id'] = df['filename'].str.slice(-5) + '-' + df['id'].astype(str)
     df['location_subject'] = df['subject'].apply(location_info_subject)
-    df['epc_date_before'] = pd.to_datetime(df['epc_date']) - timedelta(days=365)
+    df['epc_date'] = pd.to_datetime(df['epc_date'])
+    df['epc_date_before'] = df['epc_date'] - timedelta(days=365)
+    df['epc_date'] = (df['epc_date'].astype('datetime64')).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+    df['epc_date_before'] = (df['epc_date_before'].astype('datetime64')).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
     df['epc_before_subject'] = df['subject'].apply(lambda x: x + '-before').apply(epc_subject)
     df['epc_after_subject'] = df['subject'].apply(lambda x: x + '-after').apply(epc_subject)
 
@@ -69,7 +73,10 @@ def clean_dataframe_eem_savings(df_orig, eems_parted, start_column):
     df = df_orig.copy(deep=True)
     df['subject'] = df['filename'] + '-' + df['id'].astype(str)
     df['element_subject'] = df['subject'].apply(construction_element_subject)
-    df['epc_date_before'] = pd.to_datetime(df['epc_date']) - timedelta(days=365)
+    df['epc_date'] = pd.to_datetime(df['epc_date'])
+    df['epc_date_before'] = df['epc_date'] - timedelta(days=365)
+    df['epc_date'] = (df['epc_date'].astype('datetime64')).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+    df['epc_date_before'] = (df['epc_date_before'].astype('datetime64')).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
     saving_columns = []
     for i, eem_type in enumerate(eems_parted):
         list_i = i + start_column
@@ -89,7 +96,11 @@ def clean_dataframe_project(df_orig):
     df = df_orig.copy(deep=True)
     df['subject'] = df['filename'] + '-' + df['id'].astype(str)
     df['project_subject'] = df['subject'].apply(project_subject)
-    df['epc_date_before'] = pd.to_datetime(df['epc_date']) - timedelta(days=365)
+    df['epc_date'] = pd.to_datetime(df['epc_date'])
+    df['epc_date_before'] = df['epc_date'] - timedelta(days=365)
+    df['epc_date'] = (df['epc_date'].astype('datetime64')).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+    df['epc_date_before'] = (df['epc_date_before'].astype('datetime64')).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
     for i, eem_type in enumerate(enum_energy_efficiency_measurement_type):
         df[f"eem_{i}_subject"] = df['subject'].apply(lambda x: f"{x}-{eem_type}").apply(eem_subject)
     for saving_type in enum_energy_saving_type:
@@ -192,16 +203,16 @@ def harmonize_ts(data, **kwargs):
                 measurement_uri = str(n[measurement_id])
 
                 create_sensor(session=session, device_uri=device_uri, sensor_uri=sensor_uri, unit_uri=units["KiloW-HR"],
-                              property_uri=bigg_enums[measured_property_list[i]], estimation_method_uri=bigg_enums.TrustedModel,
+                              property_uri=bigg_enums[measured_property_list[i]], estimation_method_uri=bigg_enums.Naive,
                               measurement_uri=measurement_uri, is_regular=True,
-                              is_cumulative=False, is_on_change=False, freq=freq, agg_func="SUM", dt_ini=row['epc_date_before'],
+                              is_cumulative=False, is_on_change=False, freq=freq, agg_func="SUM", dt_ini=pd.Timestamp(row['epc_date_before']),
                               dt_end=pd.Timestamp(row['epc_date']), ns_mappings=settings.namespace_mappings)
             reduced_df = df[[measured_property_df[i]]]
 
             reduced_df['listKey'] = measurement_id
-            reduced_df['isReal'] = True
-            reduced_df['bucket'] = ((df['epc_date_before'].values.astype(int) // 10 ** 9) // settings.ts_buckets) % settings.buckets
-            reduced_df['start'] = (df['epc_date_before'].values.astype(int)) // 10 ** 9
+            reduced_df['isReal'] = False
+            reduced_df['bucket'] = ((pd.to_datetime(df['epc_date_before']).values.astype(int) // 10 ** 9) // settings.ts_buckets) % settings.buckets
+            reduced_df['start'] = (pd.to_datetime(df['epc_date_before']).values.astype(int)) // 10 ** 9
             reduced_df['end'] = (pd.to_datetime(df['epc_date']).values.astype(int)) // 10 ** 9
 
             reduced_df.rename(
@@ -221,74 +232,74 @@ def harmonize_ts(data, **kwargs):
                           row_fields=['bucket', 'start', 'listKey'])
         print("finished")
 
-def harmonize_detail(data, **kwargs):
-    namespace = kwargs['namespace']
-    n = Namespace(namespace)
-    config = kwargs['config']
-
-    df = pd.DataFrame(data)
-
-    # Transformations
-    df.rename(columns={"location_municipality": "municipality", "area_gross_floor_area": "gross_floor_area"},
-              inplace=True)
-    # TODO: municipality and building_type taxonomy
-    df['epc_date'] = pd.to_datetime(df['epc_date'])
-    df['epc_date_before'] = df['epc_date'] - timedelta(days=365)
-    df['annual_energy_consumption_before_total_consumption'] = df['consumption_11_type']
-
-    # Subjects
-    df['subject'] = df['epc_id']
-    df['organization_subject'] = 'ORGANIZATION-' + df['subject']
-    df['building_subject'] = 'BUILDING-' + df['subject']
-    df['building_name'] = df['subject'] + '-' + df['municipality'] + '-' + df['building_type']
-    df['location_subject'] = 'LOCATION-' + df['subject']
-
-    df['epc_before_subject'] = 'EPC-' + df['subject'] + '-' + df['epc_energy_class_before']
-    df['epc_after_subject'] = 'EPC-' + df['subject'] + '-' + df['epc_energy_class_after']
-
-    df['building_space_subject'] = 'BUILDINGSPACE-' + df['subject']
-    df['gross_floor_area_subject'] = 'AREA-GrossFloorArea-' + config['source'] + '-' + df['subject']
-
-    df['element_subject'] = 'ELEMENT-' + df['subject']
-
-    df['device_subject'] = 'DEVICE-' + config['source'] + '-' + df['subject']
-
-    for i in range(len(enum_energy_efficiency_measurement_type)):
-        for j in range(len(eem_headers)):
-            if j == 0:
-                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_0"] + df[f"measure_{i}_1"]
-
-            if j == 1:
-                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_3"]
-
-            if j == 2:
-                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_4"] + df[f"measure_{i}_5"]
-
-            if j == 3:
-                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_8"] + df[
-                    f"measure_{i}_2"] + df[
-                                                              f"measure_{i}_6"] + df[f"measure_{i}_7"]
-
-            if j == 4:
-                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_9"]
-
-            if j == 5:
-                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_10"]
-
-            if j == 6:
-                df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_11"]
-
-    for i in range(len(enum_energy_efficiency_measurement_type)):
-        df[f"eem_{i}_subject"] = 'EEM-' + df['subject'] + '-' + enum_energy_efficiency_measurement_type[i]
-        df[f"emm_{i}_type"] = enum_energy_efficiency_measurement_type[i]
-
-        for j in range(len(enum_energy_saving_type)):
-            df[f"energy_saving_{i}_{j}_subject"] = 'EnergySaving-' + df['subject'] + '-' + \
-                                                   enum_energy_efficiency_measurement_type[
-                                                       i] + '-' + enum_energy_saving_type[j]
-
-    mapper = Mapper(config['source'], n)
-    g = generate_rdf(mapper.get_mappings("all"), df)
-
-    g.serialize('output.ttl', format="ttl")
-    save_rdf_with_source(g, config['source'], config['neo4j'])
+# def harmonize_detail(data, **kwargs):
+#     namespace = kwargs['namespace']
+#     n = Namespace(namespace)
+#     config = kwargs['config']
+#
+#     df = pd.DataFrame(data)
+#
+#     # Transformations
+#     df.rename(columns={"location_municipality": "municipality", "area_gross_floor_area": "gross_floor_area"},
+#               inplace=True)
+#     # TODO: municipality and building_type taxonomy
+#     df['epc_date'] = pd.to_datetime(df['epc_date'])
+#     df['epc_date_before'] = df['epc_date'] - timedelta(days=365)
+#     df['annual_energy_consumption_before_total_consumption'] = df['consumption_11_type']
+#
+#     # Subjects
+#     df['subject'] = df['epc_id']
+#     df['organization_subject'] = 'ORGANIZATION-' + df['subject']
+#     df['building_subject'] = 'BUILDING-' + df['subject']
+#     df['building_name'] = df['subject'] + '-' + df['municipality'] + '-' + df['building_type']
+#     df['location_subject'] = 'LOCATION-' + df['subject']
+#
+#     df['epc_before_subject'] = 'EPC-' + df['subject'] + '-' + df['epc_energy_class_before']
+#     df['epc_after_subject'] = 'EPC-' + df['subject'] + '-' + df['epc_energy_class_after']
+#
+#     df['building_space_subject'] = 'BUILDINGSPACE-' + df['subject']
+#     df['gross_floor_area_subject'] = 'AREA-GrossFloorArea-' + config['source'] + '-' + df['subject']
+#
+#     df['element_subject'] = 'ELEMENT-' + df['subject']
+#
+#     df['device_subject'] = 'DEVICE-' + config['source'] + '-' + df['subject']
+#
+#     for i in range(len(enum_energy_efficiency_measurement_type)):
+#         for j in range(len(eem_headers)):
+#             if j == 0:
+#                 df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_0"] + df[f"measure_{i}_1"]
+#
+#             if j == 1:
+#                 df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_3"]
+#
+#             if j == 2:
+#                 df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_4"] + df[f"measure_{i}_5"]
+#
+#             if j == 3:
+#                 df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_8"] + df[
+#                     f"measure_{i}_2"] + df[
+#                                                               f"measure_{i}_6"] + df[f"measure_{i}_7"]
+#
+#             if j == 4:
+#                 df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_9"]
+#
+#             if j == 5:
+#                 df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_10"]
+#
+#             if j == 6:
+#                 df[f"measurement_{i}_{eem_headers[j]}"] = df[f"measure_{i}_11"]
+#
+#     for i in range(len(enum_energy_efficiency_measurement_type)):
+#         df[f"eem_{i}_subject"] = 'EEM-' + df['subject'] + '-' + enum_energy_efficiency_measurement_type[i]
+#         df[f"emm_{i}_type"] = enum_energy_efficiency_measurement_type[i]
+#
+#         for j in range(len(enum_energy_saving_type)):
+#             df[f"energy_saving_{i}_{j}_subject"] = 'EnergySaving-' + df['subject'] + '-' + \
+#                                                    enum_energy_efficiency_measurement_type[
+#                                                        i] + '-' + enum_energy_saving_type[j]
+#
+#     mapper = Mapper(config['source'], n)
+#     g = generate_rdf(mapper.get_mappings("all"), df)
+#
+#     g.serialize('output.ttl', format="ttl")
+#     save_rdf_with_source(g, config['source'], config['neo4j'])

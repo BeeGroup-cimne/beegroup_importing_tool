@@ -11,4 +11,4 @@ ts_buckets = 10000000
 buckets = 20
 sources_priorities = ["Org", "GPG", "bulgaria", "BIS", "gemweb", "datadis", "CEEC3X",
                       "genercat", "nedgia", "weather","analytics", "OpenData"]
-countries = ["ES", "BG", "GR"]
+countries = ["ES", "BG"]

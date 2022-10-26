@@ -28,7 +28,7 @@ def gather(arguments, config=None, settings=None):
                 "user": args.user,
                 "collection_type": "buildings",
                 "source": config['source'],
-                "row_keys": ["Num_Ens_Inventari"],
+                "row_keys": ["Num ens"],
                 "logger": mongo_logger.export_log(),
                 "data": gpg_list
             }
@@ -42,7 +42,7 @@ def gather(arguments, config=None, settings=None):
         try:
             h_table_name = f"raw_GPG_static_buildings__{args.user}"
             utils.hbase.save_to_hbase(gpg_list, h_table_name, config['hbase_store_raw_data'], [("info", "all")],
-                                      row_fields=["Num_Ens_Inventari"])
+                                      row_fields=["Num ens"])
         except Exception as e:
             utils.utils.log_string(f"error saving to hbase: {e}")
     else:

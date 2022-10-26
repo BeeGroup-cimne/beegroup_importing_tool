@@ -18,7 +18,7 @@ def harmonize_command_line(arguments, config=None, settings=None):
     hbase_table = utils.nomenclature.raw_nomenclature("bulgaria", RAW_MODE.STATIC, data_type="BuildingInfo",
                                                       user=args.user)
     i = 0
-    for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table, batch_size=100):
+    for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table, batch_size=10):
         dic_list = []
         print("parsing hbase")
         for u_c, x in data:
@@ -34,3 +34,4 @@ def harmonize_command_line(arguments, config=None, settings=None):
         i += len(dic_list)
         print(i)
         harmonize_static(dic_list, namespace=args.namespace, user=args.user, config=config)
+        break

@@ -113,6 +113,7 @@ def save_rdf_with_source(graph, source, connection):
         WITH keys(n) as k, n
         RETURN n
         """).single().data().get('n')
+    neo.close()
     namespaces_i = {}
     for k, v in namespaces.items():
         namespaces_i[v] = k
@@ -159,17 +160,20 @@ def save_rdf_with_source(graph, source, connection):
     v = graph.serialize(format="ttl")
     v = v.replace('\\"', "`")
     v = v.replace("'", "`")
+    neo = GraphDatabase.driver(**connection)
     with neo.session() as session:
         tty = __neo4j_import__(session, v)
         print(tty)
     __set_source_link(neo, source, data_link, prop_node)
+    neo.close()
+
 
 
 def link_devices_with_source(df, ns, neo4j_connection):
     df_temp = df[["source_id", "device_subject"]]
     df_temp.loc[:, "device_subject"] = df_temp["device_subject"].apply(ns.__getattr__).apply(str)
-    for limit in range(0, len(df_temp), 200):
-        links_dict = df_temp.iloc[limit:limit+200][["source_id", "device_subject"]].to_dict(orient="records")
+    for limit in range(0, len(df_temp), 50):
+        links_dict = df_temp.iloc[limit:limit+50][["source_id", "device_subject"]].to_dict(orient="records")
         neo = GraphDatabase.driver(**neo4j_connection)
         with neo.session() as session:
             session.run(f"""

@@ -70,7 +70,8 @@ def join_params(args, joiner='~'):
 def zfill_param(key, num):
     try:
         return key.zfill(num)
-    except:
+    except Exception as  e:
+        print(e)
         return None
 
 
@@ -153,8 +154,8 @@ def delivery_subject(key):
     return f"SUPPLY-{key}"
 
 
-def validate_ref_cadastral(value):
-    ref = value.split(";")
+def validate_ref_cadastral(value, sep=","):
+    ref = value.split(sep)
     valid_ref = []
     for refer in ref:
         refer = refer.strip()

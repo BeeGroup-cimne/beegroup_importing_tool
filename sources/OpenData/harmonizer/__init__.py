@@ -17,7 +17,7 @@ def harmonize_command_line(arguments, config=None, settings=None):
     i = 0
     Cache.load_cache()
 
-    for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table, batch_size=500):
+    for data in utils.hbase.get_hbase_data_batch(hbase_conn, hbase_table, batch_size=1000):
         dic_list = []
         log_string("parsing hbase", mongo=False)
         for key_info, x in data:

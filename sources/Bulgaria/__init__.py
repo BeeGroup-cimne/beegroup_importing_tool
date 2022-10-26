@@ -2,7 +2,7 @@ import utils
 from sources import SourcePlugin
 from sources.Bulgaria.gather import gather
 from sources.Bulgaria.harmonizer import harmonize_command_line
-from sources.Bulgaria.harmonizer.mapper_buildings import harmonize_ts, harmonize_static, harmonize_detail
+from sources.Bulgaria.harmonizer.mapper_buildings import harmonize_ts, harmonize_static
 from utils.nomenclature import RAW_MODE
 
 

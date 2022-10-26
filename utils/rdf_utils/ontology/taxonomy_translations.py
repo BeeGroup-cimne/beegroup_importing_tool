@@ -11,7 +11,7 @@ neo = GraphDatabase.driver(**config['neo4j'])
 type_d = ["AreaType", "BuildingSpaceUseType", "EnergyEfficiencyMeasureType", "BuildingConstructionElementType",
           "DeviceType", "UtilityType"]
 
-trans_folder = "/Users/eloigabal/Desktop/translations"
+trans_folder = "translations"
 
 def make_english():
     for t in type_d:

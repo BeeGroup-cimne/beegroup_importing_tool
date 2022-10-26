@@ -1,6 +1,6 @@
-@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix ns1: <http://www.geonames.org/ontology#> .
 @prefix ns2: <http://www.w3.org/2003/01/geo/wgs84_pos#> .
+@prefix ns3: <http://xmlns.com/foaf/0.1/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
 <https://sws.geonames.org/2509951/> a <http://bigg-project.eu/ontology#AddressProvince>,
@@ -1458,7 +1458,7 @@
     rdfs:seeAlso <https://dbpedia.org/resource/Province_of_Girona> ;
     ns2:lat "41.98916" ;
     ns2:long "2.81113" ;
-    foaf:page <http://pleiades.stoa.org/places/246406> .
+    ns3:page <http://pleiades.stoa.org/places/246406> .
 
 <https://sws.geonames.org/6355231/> a <http://bigg-project.eu/ontology#AddressProvince>,
         ns1:Feature ;
