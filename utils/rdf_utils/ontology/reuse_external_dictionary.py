@@ -1,43 +1,44 @@
 import sys
 
-import pandas as pd
+import rdflib
 import requests
 from bs4 import BeautifulSoup
-import rdflib
-from rdflib import RDF, Namespace, Literal
+from rdflib import RDF, Namespace
+
 BIGG = Namespace("http://bigg-project.eu/ontology#")
 ALL_QUERY = """SELECT DISTINCT ?s WHERE{ ?s ?p ?o}"""
 COUNTRIES = {
-                # "ES": {
-                #     "file": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-ES.txt",
-                #     "adms": [
-                #         ("regions", "A.ADM1", None),
-                #         ("province", "A.ADM2", "AddressProvince"),
-                #         ("municipality", "A.ADM3", "AddressCity"),
-                #     ]
-                # },
-                # "BG": {
-                #     "file": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-BG.txt",
-                #     "adms":[
-                #         ("province", "A.ADM1", "AddressProvince"),
-                #         ("municipality", "A.ADM2", "AddressCity")
-                #     ]
-                # },
-                "GR": {
-                    "file": "/Users/francesc/Downloads/all-geonames-rdf-clean-GR.txt",
-                    "adms": [
-                        ("province", "A.ADM1", "AddressProvince"),
-                        ("municipality", "A.ADM3", "AddressCity")
-                    ]
-                },
-                # "CZ": {
-                #     "file": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-CZ.txt",
-                #     "adms": [
-                #         ("province", "A.ADM1", "AddressProvince"),
-                #         ("municipality", "A.ADM3", "AddressCity")
-                #     ]
-                # },
+    # "ES": {
+    #     "file": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-ES.txt",
+    #     "adms": [
+    #         ("regions", "A.ADM1", None),
+    #         ("province", "A.ADM2", "AddressProvince"),
+    #         ("municipality", "A.ADM3", "AddressCity"),
+    #     ]
+    # },
+    # "BG": {
+    #     "file": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-BG.txt",
+    #     "adms":[
+    #         ("province", "A.ADM1", "AddressProvince"),
+    #         ("municipality", "A.ADM2", "AddressCity")
+    #     ]
+    # },
+    "GR": {
+        "file": "/Users/francesc/Downloads/all-geonames-rdf-clean-GR.txt",
+        "adms": [
+            ("province", "A.ADM1", "AddressProvince"),
+            ("municipality", "A.ADM3", "AddressCity")
+        ]
+    },
+    # "CZ": {
+    #     "file": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-CZ.txt",
+    #     "adms": [
+    #         ("province", "A.ADM1", "AddressProvince"),
+    #         ("municipality", "A.ADM3", "AddressCity")
+    #     ]
+    # },
 }
+
 
 def align_to_bigg(graph, query, bigg_class):
     for result in graph.query(query):
@@ -54,7 +55,8 @@ def get_countries_rdf():
     all_countries = rdflib.Graph()
     all_countries.namespace_manager.bind("bigg", BIGG)
     for c in countries:
-        rdf = requests.get(f"http://api.geonames.org/search?q={c}&featureCode=PCLI&maxRows=10&fuzzy=0.8&type=rdf&username=beegroup").content
+        rdf = requests.get(
+            f"http://api.geonames.org/search?q={c}&featureCode=PCLI&maxRows=10&fuzzy=0.8&type=rdf&username=beegroup").content
         one_country = rdflib.Graph()
         one_country.parse(rdf)
         one_country = align_to_bigg(one_country, ALL_QUERY, [BIGG['AddressCountry']])

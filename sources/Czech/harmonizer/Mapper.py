@@ -161,14 +161,11 @@ class Mapper(object):
                         "key": "PostalCode",
                         "operations": []
                     },
-                    # "hasAddressCity": { TODO: Map keys according to the respective variables.
-                    #     "key": "PostalCode",
-                    #     "operations": []
-                    # },
-                    # "hasAddressProvince": { TODO: Map keys according to the respective variables.
-                    #     "key": "PostalCode",
-                    #     "operations": []
-                    # }
+                    "hasAddressCity": {
+                        "key": "hasAddressCity",
+                        "operations": []
+                    },
+
                 }
             }
         }
