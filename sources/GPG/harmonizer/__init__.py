@@ -26,7 +26,7 @@ def harmonize_command_line(arguments, config=None, settings=None):
             for k, v in x.items():
                 k1 = re.sub("^info:", "", k.decode())
                 item[k1] = v
-            item.update({"Num_Ens_Inventari": n_ens})
+            item.update({"Num ens": n_ens})
             dic_list.append(item)
         log_string("parsed. Mapping...", mongo=False)
         i += len(dic_list)

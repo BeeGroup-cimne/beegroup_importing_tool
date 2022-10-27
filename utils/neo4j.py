@@ -93,7 +93,7 @@ def create_timeseries(session, ts_uri, property_uri, estimation_method_uri, is_r
            MATCH (mp: {bigg}__MeasuredProperty {{uri:"{property_uri}"}})
            MATCH (se: {bigg}__EstimationMethod {{uri:"{estimation_method_uri}"}})
 
-           MERGE (s: {bigg}__TimeSeries:Resource {{
+           MERGE (s: {bigg}__TimeSeriesList:Resource {{
                uri: "{ts_uri}"
            }})
            Merge(s)-[:{bigg}__hasMeasuredProperty]->(mp)

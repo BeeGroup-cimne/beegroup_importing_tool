@@ -76,7 +76,7 @@ class EnergyPerformanceContract(BIGGObjects):
 class Building(BIGGObjects):
     __rdf_type__ = ['Bigg.Building', 'Bigg.KPICalculationItem', 'Bigg.Thing']
 
-    def __init__(self, subject, buildingClosingHour=None,buildingConstructionYear=None,buildingIDFromOrganization=None,buildingName=None,buildingOpeningHour=None,comment=None,label=None,hasBuildingConstructionType=None,hasBuildingOwnership=None,hasCadastralInfo=None,hasLocationInfo=None,pertainsToOrganization=None,hasSpace=None,hasProject=None,assessesSingleKPI=None,groupsForAnalytics=None,hasAnalyticalModel=None,hasKPI=None,hasEPC=None):
+    def __init__(self, subject, buildingClosingHour=None,buildingConstructionYear=None,buildingIDFromOrganization=None,buildingName=None,buildingOpeningHour=None,comment=None,label=None,hasBuildingConstructionType=None,hasBuildingOwnership=None,hasCadastralInfo=None,hasLocationInfo=None,pertainsToOrganization=None,hasSpace=None,assessesSingleKPI=None,groupsForAnalytics=None,hasAnalyticalModel=None,hasKPI=None,hasProject=None,hasEPC=None):
         super().__init__(subject)
         self.buildingClosingHour = buildingClosingHour
         self.buildingConstructionYear = buildingConstructionYear
@@ -91,11 +91,11 @@ class Building(BIGGObjects):
         self.hasLocationInfo = hasLocationInfo
         self.pertainsToOrganization = pertainsToOrganization
         self.hasSpace = hasSpace
-        self.hasProject = hasProject
         self.assessesSingleKPI = assessesSingleKPI
         self.groupsForAnalytics = groupsForAnalytics
         self.hasAnalyticalModel = hasAnalyticalModel
         self.hasKPI = hasKPI
+        self.hasProject = hasProject
         self.hasEPC = hasEPC
         
         
@@ -322,9 +322,9 @@ class BuildingElement(BIGGObjects):
         
         
 class EnergyEfficiencyMeasure(BIGGObjects):
-    __rdf_type__ = ['Bigg.EnergyEfficiencyMeasure', 'Bigg.NonEnergyBenefitProducingItem', 'Bigg.SavingProducingItem', 'Bigg.KPICalculationItem', 'Bigg.Thing']
+    __rdf_type__ = ['Bigg.EnergyEfficiencyMeasure', 'Bigg.KPICalculationItem', 'Bigg.NonEnergyBenefitProducingItem', 'Bigg.SavingProducingItem', 'Bigg.Thing']
 
-    def __init__(self, subject, comment=None,label=None,energyEfficiencyMeasureCO2Reduction=None,energyEfficiencyMeasureCurrencyExchangeRate=None,energyEfficiencyMeasureDescription=None,energyEfficiencyMeasureFinancialSavings=None,energyEfficiencyMeasureInvestment=None,energyEfficiencyMeasureLifetime=None,energyEfficiencyMeasureOperationalDate=None,energyEfficiencyMeasureSavingsToInvestmentRatio=None,energySourcePriceEscalationRate=None,shareOfAffectedElement=None,affectsElement=None,hasEnergyEfficiencyMeasureInvestmentCurrency=None,hasEnergyEfficiencyMeasureType=None,producesNonEnergyBenefit=None,producesSaving=None,assessesSingleKPI=None,groupsForAnalytics=None,hasAnalyticalModel=None,hasKPI=None):
+    def __init__(self, subject, comment=None,label=None,energyEfficiencyMeasureCO2Reduction=None,energyEfficiencyMeasureCurrencyExchangeRate=None,energyEfficiencyMeasureDescription=None,energyEfficiencyMeasureFinancialSavings=None,energyEfficiencyMeasureInvestment=None,energyEfficiencyMeasureLifetime=None,energyEfficiencyMeasureOperationalDate=None,energyEfficiencyMeasureSavingsToInvestmentRatio=None,energySourcePriceEscalationRate=None,shareOfAffectedElement=None,affectsElement=None,hasEnergyEfficiencyMeasureInvestmentCurrency=None,hasEnergyEfficiencyMeasureType=None,assessesSingleKPI=None,groupsForAnalytics=None,hasAnalyticalModel=None,hasKPI=None,producesNonEnergyBenefit=None,producesSaving=None):
         super().__init__(subject)
         self.comment = comment
         self.label = label
@@ -341,16 +341,36 @@ class EnergyEfficiencyMeasure(BIGGObjects):
         self.affectsElement = affectsElement
         self.hasEnergyEfficiencyMeasureInvestmentCurrency = hasEnergyEfficiencyMeasureInvestmentCurrency
         self.hasEnergyEfficiencyMeasureType = hasEnergyEfficiencyMeasureType
-        self.producesNonEnergyBenefit = producesNonEnergyBenefit
-        self.producesSaving = producesSaving
         self.assessesSingleKPI = assessesSingleKPI
         self.groupsForAnalytics = groupsForAnalytics
         self.hasAnalyticalModel = hasAnalyticalModel
         self.hasKPI = hasKPI
+        self.producesNonEnergyBenefit = producesNonEnergyBenefit
+        self.producesSaving = producesSaving
         
         
-class CO2EmissionsPoint(BIGGObjects):
-    __rdf_type__ = ['Bigg.CO2EmissionsPoint', 'Bigg.TimeSeriesPoint', 'Bigg.Thing']
+class BuildingKeyPerformanceIndicator(BIGGObjects):
+    __rdf_type__ = ['Bigg.BuildingKeyPerformanceIndicator', 'Bigg.KeyPerformanceIndicator', 'Bigg.Thing']
+
+    def __init__(self, subject, comment=None,label=None,hasKPIType=None):
+        super().__init__(subject)
+        self.comment = comment
+        self.label = label
+        self.hasKPIType = hasKPIType
+        
+        
+class EEMKeyPerformanceIndicator(BIGGObjects):
+    __rdf_type__ = ['Bigg.EEMKeyPerformanceIndicator', 'Bigg.KeyPerformanceIndicator', 'Bigg.Thing']
+
+    def __init__(self, subject, comment=None,label=None,hasKPIType=None):
+        super().__init__(subject)
+        self.comment = comment
+        self.label = label
+        self.hasKPIType = hasKPIType
+        
+        
+class SingleKPIAssessmentPoint(BIGGObjects):
+    __rdf_type__ = ['Bigg.SingleKPIAssessmentPoint', 'Bigg.TimeSeriesPoint', 'Bigg.Thing']
 
     def __init__(self, subject, comment=None,label=None,end=None,isReal=None,start=None,value=None):
         super().__init__(subject)
@@ -362,10 +382,24 @@ class CO2EmissionsPoint(BIGGObjects):
         self.value = value
         
         
-class TariffComponentPoint(BIGGObjects):
-    __rdf_type__ = ['Bigg.TariffComponentPoint', 'Bigg.TimeSeriesPoint', 'Bigg.Thing']
+class AggregatedKPIAssessment(BIGGObjects):
+    __rdf_type__ = ['Bigg.AggregatedKPIAssessment', 'Bigg.KPIAssessment', 'Bigg.Thing']
 
-    def __init__(self, subject, comment=None,label=None,end=None,isReal=None,start=None,value=None):
+    def __init__(self, subject, comment=None,label=None,hasAggregatedKPIPoint=None,hasAggregationFunction=None,hasKPIUnit=None,isEstimatedByModel=None,quantifiesKPI=None):
+        super().__init__(subject)
+        self.comment = comment
+        self.label = label
+        self.hasAggregatedKPIPoint = hasAggregatedKPIPoint
+        self.hasAggregationFunction = hasAggregationFunction
+        self.hasKPIUnit = hasKPIUnit
+        self.isEstimatedByModel = isEstimatedByModel
+        self.quantifiesKPI = quantifiesKPI
+        
+        
+class AggregatedKPIAssessmentPoint(BIGGObjects):
+    __rdf_type__ = ['Bigg.AggregatedKPIAssessmentPoint', 'Bigg.TimeSeriesPoint', 'Bigg.Thing']
+
+    def __init__(self, subject, comment=None,label=None,end=None,isReal=None,start=None,value=None,hasAggregationFunction=None):
         super().__init__(subject)
         self.comment = comment
         self.label = label
@@ -373,45 +407,26 @@ class TariffComponentPoint(BIGGObjects):
         self.isReal = isReal
         self.start = start
         self.value = value
+        self.hasAggregationFunction = hasAggregationFunction
         
         
-class ContractedTariff(BIGGObjects):
-    __rdf_type__ = ['Bigg.ContractedTariff', 'Bigg.Contract', 'Bigg.Thing']
+class SingleKPIAssessment(BIGGObjects):
+    __rdf_type__ = ['Bigg.SingleKPIAssessment', 'Bigg.KPIAssessment', 'Bigg.Thing']
 
-    def __init__(self, subject, contractEndDate=None,contractName=None,contractStartDate=None,comment=None,label=None,hasTariff=None):
-        super().__init__(subject)
-        self.contractEndDate = contractEndDate
-        self.contractName = contractName
-        self.contractStartDate = contractStartDate
-        self.comment = comment
-        self.label = label
-        self.hasTariff = hasTariff
-        
-        
-class CO2EmissionsFactorList(BIGGObjects):
-    __rdf_type__ = ['Bigg.CO2EmissionsFactorList', 'Bigg.TimeSeriesList', 'Bigg.Thing']
-
-    def __init__(self, subject, comment=None,label=None,timeSeriesEnd=None,timeSeriesFrequency=None,timeSeriesIsCumulative=None,timeSeriesIsOnChange=None,timeSeriesIsRegular=None,timeSeriesStart=None,timeSeriesTimeAggregationFunction=None,hasC02MeasuredUnit=None,hasC02RelatedMeasuredProperty=None,hasC02RelatedMeasuredUnit=None,hasCO2EmissionsFactorValue=None):
+    def __init__(self, subject, comment=None,label=None,hasKPIUnit=None,hasSingleKPIPoint=None,isEstimatedByModel=None,quantifiesKPI=None):
         super().__init__(subject)
         self.comment = comment
         self.label = label
-        self.timeSeriesEnd = timeSeriesEnd
-        self.timeSeriesFrequency = timeSeriesFrequency
-        self.timeSeriesIsCumulative = timeSeriesIsCumulative
-        self.timeSeriesIsOnChange = timeSeriesIsOnChange
-        self.timeSeriesIsRegular = timeSeriesIsRegular
-        self.timeSeriesStart = timeSeriesStart
-        self.timeSeriesTimeAggregationFunction = timeSeriesTimeAggregationFunction
-        self.hasC02MeasuredUnit = hasC02MeasuredUnit
-        self.hasC02RelatedMeasuredProperty = hasC02RelatedMeasuredProperty
-        self.hasC02RelatedMeasuredUnit = hasC02RelatedMeasuredUnit
-        self.hasCO2EmissionsFactorValue = hasCO2EmissionsFactorValue
+        self.hasKPIUnit = hasKPIUnit
+        self.hasSingleKPIPoint = hasSingleKPIPoint
+        self.isEstimatedByModel = isEstimatedByModel
+        self.quantifiesKPI = quantifiesKPI
         
         
-class TariffComponentList(BIGGObjects):
-    __rdf_type__ = ['Bigg.TariffComponentList', 'Bigg.TimeSeriesList', 'Bigg.Thing']
+class KPIAssessment(BIGGObjects):
+    __rdf_type__ = ['Bigg.KPIAssessment', 'Bigg.TimeSeriesList', 'Bigg.Thing']
 
-    def __init__(self, subject, comment=None,label=None,timeSeriesEnd=None,timeSeriesFrequency=None,timeSeriesIsCumulative=None,timeSeriesIsOnChange=None,timeSeriesIsRegular=None,timeSeriesStart=None,timeSeriesTimeAggregationFunction=None,hasTariffComponentPoint=None,hasTariffCurrencyUnit=None,hasTariffMeasuredProperty=None,hasTariffMeasuredUnit=None):
+    def __init__(self, subject, comment=None,label=None,timeSeriesEnd=None,timeSeriesFrequency=None,timeSeriesIsCumulative=None,timeSeriesIsOnChange=None,timeSeriesIsRegular=None,timeSeriesStart=None,timeSeriesTimeAggregationFunction=None,hasKPIUnit=None,isEstimatedByModel=None,quantifiesKPI=None):
         super().__init__(subject)
         self.comment = comment
         self.label = label
@@ -422,10 +437,9 @@ class TariffComponentList(BIGGObjects):
         self.timeSeriesIsRegular = timeSeriesIsRegular
         self.timeSeriesStart = timeSeriesStart
         self.timeSeriesTimeAggregationFunction = timeSeriesTimeAggregationFunction
-        self.hasTariffComponentPoint = hasTariffComponentPoint
-        self.hasTariffCurrencyUnit = hasTariffCurrencyUnit
-        self.hasTariffMeasuredProperty = hasTariffMeasuredProperty
-        self.hasTariffMeasuredUnit = hasTariffMeasuredUnit
+        self.hasKPIUnit = hasKPIUnit
+        self.isEstimatedByModel = isEstimatedByModel
+        self.quantifiesKPI = quantifiesKPI
         
         
 class RenovationProject(BIGGObjects):
@@ -529,96 +543,6 @@ class Project(BIGGObjects):
         self.hasSubProject = hasSubProject
         self.producesNonEnergyBenefit = producesNonEnergyBenefit
         self.producesSaving = producesSaving
-        
-        
-class BuildingKeyPerformanceIndicator(BIGGObjects):
-    __rdf_type__ = ['Bigg.BuildingKeyPerformanceIndicator', 'Bigg.KeyPerformanceIndicator', 'Bigg.Thing']
-
-    def __init__(self, subject, comment=None,label=None,hasKPIType=None,hasKPIUnit=None):
-        super().__init__(subject)
-        self.comment = comment
-        self.label = label
-        self.hasKPIType = hasKPIType
-        self.hasKPIUnit = hasKPIUnit
-        
-        
-class EEMKeyPerformanceIndicator(BIGGObjects):
-    __rdf_type__ = ['Bigg.EEMKeyPerformanceIndicator', 'Bigg.KeyPerformanceIndicator', 'Bigg.Thing']
-
-    def __init__(self, subject, comment=None,label=None,hasKPIType=None,hasKPIUnit=None):
-        super().__init__(subject)
-        self.comment = comment
-        self.label = label
-        self.hasKPIType = hasKPIType
-        self.hasKPIUnit = hasKPIUnit
-        
-        
-class AggregatedKPIAssesmentPoint(BIGGObjects):
-    __rdf_type__ = ['Bigg.AggregatedKPIAssesmentPoint', 'Bigg.TimeSeriesPoint', 'Bigg.Thing']
-
-    def __init__(self, subject, comment=None,label=None,end=None,isReal=None,start=None,value=None):
-        super().__init__(subject)
-        self.comment = comment
-        self.label = label
-        self.end = end
-        self.isReal = isReal
-        self.start = start
-        self.value = value
-        
-        
-class SingleKPIAssesmentPoint(BIGGObjects):
-    __rdf_type__ = ['Bigg.SingleKPIAssesmentPoint', 'Bigg.TimeSeriesPoint', 'Bigg.Thing']
-
-    def __init__(self, subject, comment=None,label=None,end=None,isReal=None,start=None,value=None):
-        super().__init__(subject)
-        self.comment = comment
-        self.label = label
-        self.end = end
-        self.isReal = isReal
-        self.start = start
-        self.value = value
-        
-        
-class AggregatedKPIAssesment(BIGGObjects):
-    __rdf_type__ = ['Bigg.AggregatedKPIAssesment', 'Bigg.KPIAssesment', 'Bigg.Thing']
-
-    def __init__(self, subject, comment=None,label=None,estimatesKPI=None,hasAggregatedKPIPoint=None,quantifiesKPI=None):
-        super().__init__(subject)
-        self.comment = comment
-        self.label = label
-        self.estimatesKPI = estimatesKPI
-        self.hasAggregatedKPIPoint = hasAggregatedKPIPoint
-        self.quantifiesKPI = quantifiesKPI
-        
-        
-class SingleKPIAssesment(BIGGObjects):
-    __rdf_type__ = ['Bigg.SingleKPIAssesment', 'Bigg.KPIAssesment', 'Bigg.Thing']
-
-    def __init__(self, subject, comment=None,label=None,estimatesKPI=None,hasSingleKPIPoint=None,quantifiesKPI=None):
-        super().__init__(subject)
-        self.comment = comment
-        self.label = label
-        self.estimatesKPI = estimatesKPI
-        self.hasSingleKPIPoint = hasSingleKPIPoint
-        self.quantifiesKPI = quantifiesKPI
-        
-        
-class KPIAssesment(BIGGObjects):
-    __rdf_type__ = ['Bigg.KPIAssesment', 'Bigg.TimeSeriesList', 'Bigg.Thing']
-
-    def __init__(self, subject, comment=None,label=None,timeSeriesEnd=None,timeSeriesFrequency=None,timeSeriesIsCumulative=None,timeSeriesIsOnChange=None,timeSeriesIsRegular=None,timeSeriesStart=None,timeSeriesTimeAggregationFunction=None,estimatesKPI=None,quantifiesKPI=None):
-        super().__init__(subject)
-        self.comment = comment
-        self.label = label
-        self.timeSeriesEnd = timeSeriesEnd
-        self.timeSeriesFrequency = timeSeriesFrequency
-        self.timeSeriesIsCumulative = timeSeriesIsCumulative
-        self.timeSeriesIsOnChange = timeSeriesIsOnChange
-        self.timeSeriesIsRegular = timeSeriesIsRegular
-        self.timeSeriesStart = timeSeriesStart
-        self.timeSeriesTimeAggregationFunction = timeSeriesTimeAggregationFunction
-        self.estimatesKPI = estimatesKPI
-        self.quantifiesKPI = quantifiesKPI
         
         
 class System(BIGGObjects):
@@ -950,15 +874,13 @@ class ObservableItem(BIGGObjects):
 class UtilityPointOfDelivery(BIGGObjects):
     __rdf_type__ = ['Bigg.UtilityPointOfDelivery', 'Bigg.Thing']
 
-    def __init__(self, subject, comment=None,label=None,pointOfDeliveryIDFromOrganization=None,hasDevice=None,hasUtilityType=None,hasCO2EmissionsFactor=None,hasContractedTariff=None):
+    def __init__(self, subject, comment=None,label=None,pointOfDeliveryIDFromOrganization=None,hasDevice=None,hasUtilityType=None):
         super().__init__(subject)
         self.comment = comment
         self.label = label
         self.pointOfDeliveryIDFromOrganization = pointOfDeliveryIDFromOrganization
         self.hasDevice = hasDevice
         self.hasUtilityType = hasUtilityType
-        self.hasCO2EmissionsFactor = hasCO2EmissionsFactor
-        self.hasContractedTariff = hasContractedTariff
         
         
 class TimeSeriesPoint(BIGGObjects):
@@ -1157,8 +1079,8 @@ class MaintenanceAction(BIGGObjects):
         self.isSubjectToMaintenance = isSubjectToMaintenance
         
         
-class TariffCurrency(BIGGObjects):
-    __rdf_type__ = ['Bigg.TariffCurrency', 'Bigg.Thing']
+class AggregationFunction(BIGGObjects):
+    __rdf_type__ = ['Bigg.AggregationFunction', 'Bigg.Thing']
 
     def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
@@ -1166,26 +1088,79 @@ class TariffCurrency(BIGGObjects):
         self.label = label
         
         
-class CO2EmissionsFactor(BIGGObjects):
-    __rdf_type__ = ['Bigg.CO2EmissionsFactor', 'Bigg.Thing']
+class KPIType(BIGGObjects):
+    __rdf_type__ = ['Bigg.KPIType', 'Bigg.Thing']
 
-    def __init__(self, subject, comment=None,label=None,hasCO2EmissionsFactorList=None):
+    def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
         self.comment = comment
         self.label = label
-        self.hasCO2EmissionsFactorList = hasCO2EmissionsFactorList
         
         
-class Tariff(BIGGObjects):
-    __rdf_type__ = ['Bigg.Tariff', 'Bigg.Thing']
+class ModelStorageInfrastructure(BIGGObjects):
+    __rdf_type__ = ['Bigg.ModelStorageInfrastructure', 'Bigg.Thing']
 
-    def __init__(self, subject, comment=None,label=None,tariffCompany=None,tariffName=None,hasTariffComponentList=None):
+    def __init__(self, subject, comment=None,label=None):
         super().__init__(subject)
         self.comment = comment
         self.label = label
-        self.tariffCompany = tariffCompany
-        self.tariffName = tariffName
-        self.hasTariffComponentList = hasTariffComponentList
+        
+        
+class ModelType(BIGGObjects):
+    __rdf_type__ = ['Bigg.ModelType', 'Bigg.Thing']
+
+    def __init__(self, subject, comment=None,label=None):
+        super().__init__(subject)
+        self.comment = comment
+        self.label = label
+        
+        
+class AnalyticalGroup(BIGGObjects):
+    __rdf_type__ = ['Bigg.AnalyticalGroup', 'Bigg.Thing']
+
+    def __init__(self, subject, comment=None,label=None,assessesAggregatedKPI=None):
+        super().__init__(subject)
+        self.comment = comment
+        self.label = label
+        self.assessesAggregatedKPI = assessesAggregatedKPI
+        
+        
+class KeyPerformanceIndicator(BIGGObjects):
+    __rdf_type__ = ['Bigg.KeyPerformanceIndicator', 'Bigg.Thing']
+
+    def __init__(self, subject, comment=None,label=None,hasKPIType=None):
+        super().__init__(subject)
+        self.comment = comment
+        self.label = label
+        self.hasKPIType = hasKPIType
+        
+        
+class KPICalculationItem(BIGGObjects):
+    __rdf_type__ = ['Bigg.KPICalculationItem', 'Bigg.Thing']
+
+    def __init__(self, subject, comment=None,label=None,assessesSingleKPI=None,groupsForAnalytics=None,hasAnalyticalModel=None,hasKPI=None):
+        super().__init__(subject)
+        self.comment = comment
+        self.label = label
+        self.assessesSingleKPI = assessesSingleKPI
+        self.groupsForAnalytics = groupsForAnalytics
+        self.hasAnalyticalModel = hasAnalyticalModel
+        self.hasKPI = hasKPI
+        
+        
+class AnalyticalModel(BIGGObjects):
+    __rdf_type__ = ['Bigg.AnalyticalModel', 'Bigg.Thing']
+
+    def __init__(self, subject, comment=None,label=None,modelBaselineYear=None,modelLocation=None,modelName=None,modelTrainedDate=None,hasModelStorageInfrastructure=None,hasModelType=None):
+        super().__init__(subject)
+        self.comment = comment
+        self.label = label
+        self.modelBaselineYear = modelBaselineYear
+        self.modelLocation = modelLocation
+        self.modelName = modelName
+        self.modelTrainedDate = modelTrainedDate
+        self.hasModelStorageInfrastructure = hasModelStorageInfrastructure
+        self.hasModelType = hasModelType
         
         
 class EnergySavingType(BIGGObjects):
@@ -1301,70 +1276,6 @@ class EnergySaving(BIGGObjects):
         self.hasEnergySavingType = hasEnergySavingType
         self.hasEnergySavingVerificationSource = hasEnergySavingVerificationSource
         self.influencesObjective = influencesObjective
-        
-        
-class KPIType(BIGGObjects):
-    __rdf_type__ = ['Bigg.KPIType', 'Bigg.Thing']
-
-    def __init__(self, subject, comment=None,label=None):
-        super().__init__(subject)
-        self.comment = comment
-        self.label = label
-        
-        
-class ModelStorageInfrastructure(BIGGObjects):
-    __rdf_type__ = ['Bigg.ModelStorageInfrastructure', 'Bigg.Thing']
-
-    def __init__(self, subject, comment=None,label=None):
-        super().__init__(subject)
-        self.comment = comment
-        self.label = label
-        
-        
-class AnalyticalGroup(BIGGObjects):
-    __rdf_type__ = ['Bigg.AnalyticalGroup', 'Bigg.Thing']
-
-    def __init__(self, subject, comment=None,label=None,assessesAggregatedKPI=None):
-        super().__init__(subject)
-        self.comment = comment
-        self.label = label
-        self.assessesAggregatedKPI = assessesAggregatedKPI
-        
-        
-class AnalyticalModel(BIGGObjects):
-    __rdf_type__ = ['Bigg.AnalyticalModel', 'Bigg.Thing']
-
-    def __init__(self, subject, comment=None,label=None,modelLocation=None,modelName=None,hasModelStorageInfrastructure=None):
-        super().__init__(subject)
-        self.comment = comment
-        self.label = label
-        self.modelLocation = modelLocation
-        self.modelName = modelName
-        self.hasModelStorageInfrastructure = hasModelStorageInfrastructure
-        
-        
-class KPICalculationItem(BIGGObjects):
-    __rdf_type__ = ['Bigg.KPICalculationItem', 'Bigg.Thing']
-
-    def __init__(self, subject, comment=None,label=None,assessesSingleKPI=None,groupsForAnalytics=None,hasAnalyticalModel=None,hasKPI=None):
-        super().__init__(subject)
-        self.comment = comment
-        self.label = label
-        self.assessesSingleKPI = assessesSingleKPI
-        self.groupsForAnalytics = groupsForAnalytics
-        self.hasAnalyticalModel = hasAnalyticalModel
-        self.hasKPI = hasKPI
-        
-        
-class KeyPerformanceIndicator(BIGGObjects):
-    __rdf_type__ = ['Bigg.KeyPerformanceIndicator', 'Bigg.Thing']
-
-    def __init__(self, subject, comment=None,label=None,hasKPIType=None,hasKPIUnit=None):
-        super().__init__(subject)
-        self.comment = comment
-        self.label = label
-        self.hasKPIType = hasKPIType
-        self.hasKPIUnit = hasKPIUnit
         
         
 class SystemType(BIGGObjects):

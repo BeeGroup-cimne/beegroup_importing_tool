@@ -14,16 +14,7 @@ if __name__ == "__main__":
     config = utils.utils.read_config(settings.conf_file)
     neo = GraphDatabase.driver(**config['neo4j'])
     with neo.session() as session:
-        namespaces = session.run(f"""
-            MATCH (n:`_NsPrefDef`)
-            WITH keys(n) as k, n
-            RETURN n
-                """).single().data().get('n')
-        namespaces_i = {}
-        for k, v in namespaces.items():
-            v = v[:-1]
-            namespaces_i[v] = k
-        print(namespaces_i)
+
         for f in os.listdir(DICTIONARIES):
             print(f)
             g = rdflib.Graph()
@@ -33,6 +24,16 @@ if __name__ == "__main__":
             v = re.sub(r"\"[^\"]*\"", lambda x: x.group(0).replace("'", "%27"), v)
             v = re.sub(r"<[^>]*>", lambda x: x.group(0).replace("'", "%27"), v)
             print(save_rdf.__neo4j_import__(session, v))
+            namespaces = session.run(f"""
+                MATCH (n:`_NsPrefDef`)
+                WITH keys(n) as k, n
+                RETURN n
+                    """).single().data().get('n')
+            namespaces_i = {}
+            for k, v in namespaces.items():
+                v = v[:-1]
+                namespaces_i[v] = k
+            print(namespaces_i)
 
             for s, p in g.subject_predicates(None):
                 o_list = list(g.objects(s, p))
@@ -55,7 +56,6 @@ if __name__ == "__main__":
                             o_value.append(f"{o}@{lan}")
                         else:
                             o_value.append(str(o))
-
                     session.run(f"""
                     Match(n{{uri:"{s}"}})
                     SET n.{namespaces_i[ns]}__{f}={o_value if len(o_value) >= 1 and lan else '"' + str(o_value[0]) + '"'}

@@ -28,13 +28,14 @@ Also, the information will be split by the different elements in the XML file
 The harmonization of the file will be done with the following mapping, also it will be split depending on the elements on the XML
 
 ####  "DatosDelCertificador" ==> NOT MAPPED
+
+-----
 ####  "IdentificacionEdificio" =>
    ###### Building =>
-| Origin                     | Harmonization                |
-|----------------------------|------------------------------|
-| NombreDelEdificio          | buildingName                 |
-| AnoConstruccion            | buildingConstructionYear     |
- | taxonomy("TipoDeEdificio") | hasBuildingConstructionType  | 
+| Origin                      | Harmonization                 |
+|-----------------------------|-------------------------------|
+| NombreDelEdificio           | buildingName                  |
+| AnoConstruccion             | buildingConstructionYear      |
 
    ###### LocationInfo =>
 | Origin               | Harmonization         |
@@ -50,26 +51,32 @@ The harmonization of the file will be done with the following mapping, also it w
 |---------------------|------------------------|
  | ReferenciaCatastral | landCadastralReference |
 
+###### BuildingSpace =>
+| Origin                   | Harmonization           |
+|--------------------------|-------------------------|
+ | taxonomy(TipoDeEdificio) | hasBuildingSpaceUseType |
+
 ###### EnergyPerformanceCertificate =>
-| Origin                | Harmonization                     |
-|-----------------------|-----------------------------------|
- | Procedimiento         | energyPerformanceProcedureType    | 
- | AlcanceInformacionXML | energyPerformanceCertificateClass | 
+| Origin                | Harmonization                             |
+|-----------------------|-------------------------------------------|
+ | Procedimiento         | energyPerformanceCertificateProcedureType | 
 
 ###### EnergyPerformanceCertificateAdditionalInfo =>
 | Origin                 | Harmonization      |
 |------------------------|--------------------|
  | constructionRegulation | NormativaVigente   |
 
+
+
+
 ###### NO-> 
 ```
+AlcanceInformacionXML
 ComunidadAutonoma
 ```
        
 
 ------
-
-
 #### DatosGeneralesyGeometria =>
 ###### BuildingSpace =>
 | Origin | Harmonization |
@@ -98,7 +105,15 @@ ComunidadAutonoma
         Plano
 ```
 ------
+#### DatosEnvolventeTermica => NO
 
+-----
+#### InstalacionesTermicas => NO
+
+-----
+#### InstalacionesIluminacion => NO
+
+-----
 #### CondicionesFuncionamientoyOcupacion =>
 ###### BuildingSpace =>
 
@@ -117,6 +132,67 @@ ComunidadAutonoma
     NivelDeAcondicionamiento
     PerfilDeUso
 ```
+------
+#### EnergiasRenovables => NO
+
+-----
+#### Demanda =>
+###### EnergyPerformanceCertificate =>
+
+| Origin        | Harmonization                   |
+|---------------|---------------------------------|
+ | Calefaccion   | annualHeatingEnergyDemand       |
+ | Refrigeracion | annualCoolingEnergyDemand       |
+
+###### NO =>
+``` 
+    Global
+    ACS
+```
+
+------
+#### Consumo => 
+###### EnergyPerformanceCertificate =>
+
+| Origin                            | Harmonization                    |
+|-----------------------------------|----------------------------------|
+ | EnergiaPrimariaNoRenovable>Global | annualPrimaryEnergyConsumption   |
+ | suma(EnergiaFinalVectores>Global) | annualFinalEnergyConsumption     |
+
+-----
+#### EmisionesCO2 => NO
+| Origin                                         | Harmonization              |
+|------------------------------------------------|----------------------------|
+ | suma(TotalConsumoElectrico, TotalConsumoOtros) | annualC02Emissions         |
+ | Area * Iluminacion                             | annualLightingCO2Emissions |
+ | Area * Calefaccion                             | annualHeatingCO2Emissions  |
+ | Area * ACS                                     | annualHotWaterCO2Emissions |
+ | Area * Refrigeracion                           | annualCoolingCO2Emissions  |
+
+-----
+#### Calificacion =>
+###### EnergyPerformanceCertificate =>
+
+| Origin                     | Harmonization             |
+|----------------------------|---------------------------|
+ | Demanda>Calefaccion        | heatingEnergyDemandClass  |
+ | Demanda>Refrigeracion      | coolingEnergyDemandClass  |
+ | EmisionesCO2>Iluminacion   | lightingCO2EmissionsClass |
+ | EmisionesCO2>Calefaccion   | heatingCO2EmissionsClass  |
+ | EmisionesCO2>ACS           | hotWaterCO2EmissionsClass |
+ | EmisionesCO2>Refrigeracion | coolingCO2EmissionsClass  |
+ | EmisionesCO2>Global        | C02EmissionsClass         |
+
+###### NO =>
+``` 
+ 
+```
+------
+#### MedidasDeMejora => NO
+
+-----
+
+
 
 ## Import script information
 

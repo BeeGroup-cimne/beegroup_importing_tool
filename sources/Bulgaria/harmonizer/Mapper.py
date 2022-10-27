@@ -5,7 +5,7 @@ from sources.Bulgaria.constants import eem_headers, enum_energy_saving_type, \
 from utils.data_transformations import to_object_property
 from utils.rdf_utils.ontology.bigg_classes import Organization, Building, LocationInfo, BuildingSpace, Area, \
     EnergyPerformanceCertificate, BuildingSpaceUseType, AreaType, AreaUnitOfMeasurement, Device, \
-    EnergyEfficiencyMeasure, Sensor, EnergySaving, BuildingConstructionElement, RenovationProject
+    EnergyEfficiencyMeasure, Sensor, EnergySaving, BuildingConstructionElement, RenovationProject, UtilityPointOfDelivery
 from utils.rdf_utils.ontology.namespaces_definition import Bigg, units, bigg_enums, countries
 
 
@@ -27,6 +27,7 @@ class Mapper(object):
         AreaUnitOfMeasurement.set_namespace(namespace)
         BuildingConstructionElement.set_namespace(namespace)
         Device.set_namespace(namespace)
+        UtilityPointOfDelivery.set_namespace(namespace)
         EnergyEfficiencyMeasure.set_namespace(namespace)
         Sensor.set_namespace(namespace)
         EnergySaving.set_namespace(namespace)
@@ -116,9 +117,38 @@ class Mapper(object):
                 }
             },
             "links": {
-                "building_organization": {
+                "location_organization": {
                     "type": Bigg.hasSubOrganization,
                     "link": "__all__"
+                }
+            }
+        }
+
+        location_organization = {
+            "name": "location_organization",
+            "class": Organization,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "raw": {
+                    "organizationDivisionType": "Location"
+                },
+                "mapping": {
+                    "subject": {
+                        "key": "location_org_subject",
+                        "operations": []
+                    },
+                    "organizationName": {
+                        "key": "municipality",
+                        "operations": []
+                    }
+                }
+            },
+            "links": {
+                "building_organization": {
+                    "type": Bigg.hasSubOrganization,
+                    "link": "organization_subject"
                 }
             }
         }
@@ -169,7 +199,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "buildingIDFromOrganization": {
-                        "key": "subject",
+                        "key": "building_id",
                         "operations": []
                     }
                 }
@@ -207,15 +237,15 @@ class Mapper(object):
             "params": {
                 "raw": {
                     "hasAddressCountry": countries["732800/"],
-                    "addressTimeZone": "Europe/Madrid"
+                    "addressTimeZone": "Europe/Sofia"
                 },
                 "mapping": {
                     "subject": {
                         "key": "location_subject",
                         "operations": []
                     },
-                    "hasAddressProvince": {
-                        "key": "hasAddressProvince",
+                    "hasAddressCity": {
+                        "key": "hasAddressCity",
                         "operations": []
                     }
                 }
@@ -340,6 +370,10 @@ class Mapper(object):
                 "device": {
                     "type": Bigg.isObservedByDevice,
                     "link": "subject"
+                },
+                "utilityPoint": {
+                    "type": Bigg.hasUtilityPointOfDelivery,
+                    "link": "subject"
                 }
             }
         }
@@ -352,7 +386,7 @@ class Mapper(object):
             },
             "params": {
                 "raw": {
-                    "hasAreaType": bigg_enums["GrossFloorAreaAboveGround"],
+                    "hasAreaType": bigg_enums["GrossFloorArea"],
                     "hasAreaUnitOfMeasurement": units["M2"]
                 },
                 "mapping": {
@@ -399,11 +433,47 @@ class Mapper(object):
                 "origin": "row"
             },
             "params": {
+                "raw": {
+                    "hasDeviceType": to_object_property("Meter.EnergyMeter", namespace=bigg_enums)
+                },
                 "mapping": {
                     "subject": {
                         "key": "device_subject",
                         "operations": []
                     },
+                    "deviceName": {
+                        "key": "building_id",
+                        "operations": []
+                    },
+                }
+            }
+        }
+
+        utilityPoint = {
+            "name": "utilityPoint",
+            "class": UtilityPointOfDelivery,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "raw": {
+                    "hasUtilityType": to_object_property("Electricity", namespace=bigg_enums)
+                },
+                "mapping": {
+                    "subject": {
+                        "key": "utility_subject",
+                        "operations": []
+                    },
+                    "pointOfDeliveryIDFromOrganization": {
+                        "key": "building_id",
+                        "operations": []
+                    },
+                }
+            },
+            "links": {
+                "device": {
+                    "type": Bigg.hasDevice,
+                    "link": "subject"
                 }
             }
         }
@@ -491,9 +561,9 @@ class Mapper(object):
 
 
         grouped_modules = {
-            "building_info": [organization, building_organization, buildings, building_space,
+            "building_info": [organization, location_organization, building_organization, buildings, building_space,
                               gross_floor_area, location_info, energy_performance_certificate_before,
-                              energy_performance_certificate_after, element, device, project],
+                              energy_performance_certificate_after, element, device, utilityPoint, project],
             "eem_savings": energy_saving_list + eem_list + [element],
             "project_info": [project] + eem_links_only + project_energy_saving,
         }

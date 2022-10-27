@@ -133,6 +133,7 @@ if __name__ == "__main__":
 
         for _, l in location.iterrows():
             ws['dist'] = ws.apply(get_distance, lat=l['latitude'], lon=l['longitude'], axis=1)
-            ws_sel = ws[ws.dist == ws.dist.min()].subject
-            link_ws(driver, ws_sel.values[0], l['subject'])
+            ws_sel = ws[ws.dist == ws.dist.min()]
+            if ws_sel.dist.values[0] < 400:
+                link_ws(driver, ws_sel.subject.values[0], l['subject'])
     driver.close()

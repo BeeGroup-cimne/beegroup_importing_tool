@@ -8,9 +8,35 @@ from rdflib import RDF, Namespace, Literal
 BIGG = Namespace("http://bigg-project.eu/ontology#")
 ALL_QUERY = """SELECT DISTINCT ?s WHERE{ ?s ?p ?o}"""
 COUNTRIES = {
-                "ES": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-ES.txt",
-                "BG": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-BG.txt",
-                "GR": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-GR.txt"
+                "ES": {
+                    "file": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-ES.txt",
+                    "adms": [
+                        ("regions", "A.ADM1", None),
+                        ("province", "A.ADM2", "AddressProvince"),
+                        ("municipality", "A.ADM3", "AddressCity"),
+                    ]
+                },
+                "BG": {
+                    "file": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-BG.txt",
+                    "adms":[
+                        ("province", "A.ADM1", "AddressProvince"),
+                        ("municipality", "A.ADM2", "AddressCity")
+                    ]
+                },
+                "GR": {
+                    "file": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-GR.txt",
+                    "adms": [
+                        ("province", "A.ADM1", "AddressProvince"),
+                        ("municipality", "A.ADM3", "AddressCity")
+                    ]
+                },
+                "CZ": {
+                    "file": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-CZ.txt",
+                    "adms": [
+                        ("province", "A.ADM1", "AddressProvince"),
+                        ("municipality", "A.ADM3", "AddressCity")
+                    ]
+                },
 }
 
 def align_to_bigg(graph, query, bigg_class):
@@ -30,7 +56,7 @@ def get_countries_rdf():
     for c in countries:
         rdf = requests.get(f"http://api.geonames.org/search?q={c}&featureCode=PCLI&maxRows=10&fuzzy=0.8&type=rdf&username=beegroup").content
         one_country = rdflib.Graph()
-        one_country.load(rdf)
+        one_country.parse(rdf)
         one_country = align_to_bigg(one_country, ALL_QUERY, [BIGG['AddressCountry']])
         all_countries += one_country
     all_countries.serialize("utils/rdf_utils/ontology/dictionaries/countries.ttl", format="ttl")
@@ -46,14 +72,14 @@ def create_graph(all_regions, type_adm):
 def save_rdf(g, f, format="ttl"):
     g1 = rdflib.Graph()
     try:
-        g1.load(f, format=format)
+        g1.parse(f, format=format)
     except:
         pass
     g1 += g
     g1.serialize(f, format=format)
 
 
-def get_adm_rdf(rdf_geonames_file, country_code):
+def get_adm_rdf(rdf_geonames_file, country_code, adms):
     all_regions = rdflib.Graph()
     #load geonames with https
     geos = Namespace("https://www.geonames.org/ontology#")
@@ -61,16 +87,12 @@ def get_adm_rdf(rdf_geonames_file, country_code):
     all_regions.namespace_manager.bind("bigg", BIGG)
     all_regions.namespace_manager.bind("geos", geos)
     all_regions.namespace_manager.bind("geo", geo)
-    all_regions.load(rdf_geonames_file, format="xml")
-    regions = create_graph(all_regions, "A.ADM1")
-    province = create_graph(all_regions, "A.ADM2")
-    municipality = create_graph(all_regions, "A.ADM3")
-    # regions = align_to_bigg(regions, ALL_QUERY, BIGG['AddressCountry'])
-    province = align_to_bigg(province, ALL_QUERY, [BIGG['AddressProvince']])
-    municipality = align_to_bigg(municipality, ALL_QUERY, [BIGG['AddressCity']])
-    save_rdf(regions, f"utils/rdf_utils/ontology/dictionaries/regions_{country_code}.ttl", format="ttl")
-    save_rdf(province, f"utils/rdf_utils/ontology/dictionaries/province_{country_code}.ttl", format="ttl")
-    save_rdf(municipality, f"utils/rdf_utils/ontology/dictionaries/municipality_{country_code}.ttl", format="ttl")
+    all_regions.parse(rdf_geonames_file, format="xml")
+    for adm_type, adm_id, bigg_class in adms:
+        adm_values = create_graph(all_regions, adm_id)
+        if bigg_class:
+            adm_values = align_to_bigg(adm_values, ALL_QUERY, [BIGG[bigg_class]])
+        save_rdf(adm_values, f"utils/rdf_utils/ontology/dictionaries/{adm_type}_{country_code}.ttl", format="ttl")
 
 
 def align_qudt(qudt_file):
@@ -78,7 +100,7 @@ def align_qudt(qudt_file):
     units.namespace_manager.bind("bigg", BIGG)
     units.namespace_manager.bind("qudt", Namespace("http://qudt.org/schema/qudt/"))
     units.namespace_manager.bind("quantitykind", Namespace("http://qudt.org/vocab/quantitykind/"))
-    units.load(qudt_file, format="ttl")
+    units.parse(qudt_file, format="ttl")
     # EnergyEfficiencyMeasureInvestmentCurrency, ProjectInvestmentCurrency
     c_query = """SELECT DISTINCT ?s WHERE{ ?s qudt:hasQuantityKind quantitykind:Currency}"""
     units = align_to_bigg(units, c_query,
@@ -96,9 +118,9 @@ if __name__ == "__main__":
     if sys.argv[1] == "countries":
         get_countries_rdf()
     elif sys.argv[1] == "regions":
-        for cn, cf in COUNTRIES.items():
+        for cn, info in COUNTRIES.items():
             print(cn)
-            get_adm_rdf(cf, cn)
+            get_adm_rdf(info['file'], cn, info['adms'])
     elif sys.argv[1] == "units":
         align_qudt("/Users/eloigabal/Downloads/qudtUnits.ttl")
     else:
