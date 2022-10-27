@@ -171,10 +171,8 @@ python3 -m gather -so Bulgaria -f "data/Bulgaria" -u "bulgaria" -n "https://bulg
 
 
 # Greece Organization
-python3 -m set_up.Organizations -f data/Organizations/Greece.xlsx -name "GreeceSource" -u "eplanet" -n "https://eplanet.eu#"
 python3 -m gather -n "https://eplanet.eu#" -so Greece -st kafka -u Greece -f "data/crete"
 
 
-# Chez
-python3 -m set_up.Organizations -f data/Organizations/Czech.xlsx -name "CzechSource" -u "eplanet" -n "https://eplanet.eu#"
+# Czech
 python3 -m gather -n "https://eplanet.eu#" -so Czech -st kafka -u eplanet -f data/czech/building -kf building_eem

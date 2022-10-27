@@ -1,6 +1,6 @@
 from utils.rdf_utils.ontology.bigg_classes import Building, LocationInfo, BuildingSpace, Area, \
     EnergyPerformanceCertificate, AreaType, AreaUnitOfMeasurement, BuildingOwnership, Device, \
-    Element, EnergyEfficiencyMeasure, EnergySaving, Project, EnergyPerformanceCertificateAdditionalInfo
+    Element, EnergyEfficiencyMeasure, EnergySaving, Project, EnergyPerformanceCertificateAdditionalInfo, Organization
 from utils.rdf_utils.ontology.namespaces_definition import countries, bigg_enums, units
 
 
@@ -21,8 +21,23 @@ class Mapper(object):
         EnergyEfficiencyMeasure.set_namespace(namespace)
         EnergyPerformanceCertificateAdditionalInfo.set_namespace(namespace)
         EnergySaving.set_namespace(namespace)
+        Organization.set_namespace(namespace)
 
     def get_mappings(self, group):
+        organization = {
+            "name": "organization",
+            "class": Organization,
+            "type": {
+                "origin": "static"
+            },
+            "params": {
+                "raw": {
+                    "subject": "Czech",
+                    "organizationName": "Czech"
+                }
+            }
+        }
+
         buildings = {
             "name": "buildings",
             "class": Building,
@@ -55,10 +70,10 @@ class Mapper(object):
                         "key": "hasLocationInfo",
                         "operations": []
                     },
-                    # "hasBuildingConstructionType": {
-                    #     "key": "hasBuildingConstructionType",
-                    #     "operations": []
-                    # },
+                    "pertainsToOrganization": {
+                        "key": "pertainsToOrganization",
+                        "operations": []
+                    },
                     "hasBuildingOwnership": {
                         "key": "hasBuildingOwnership",
                         "operations": []
@@ -374,7 +389,7 @@ class Mapper(object):
         }
 
         grouped_modules = {
-            "building_info": [buildings, building_space, location_info, gross_floor_area, owner,
+            "building_info": [organization, buildings, building_space, location_info, gross_floor_area, owner,
                               energy_performance_certificate, project, devices, element, epc_add],
             "emm": [eem, energy_saving]
         }

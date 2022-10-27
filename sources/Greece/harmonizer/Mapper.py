@@ -60,7 +60,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "pertainsToOrganization": {
-                        "key": "organization_uri",
+                        "key": "pertainsToOrganization",
                         "operations": []
                     },
                 }

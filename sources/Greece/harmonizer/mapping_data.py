@@ -30,8 +30,7 @@ def clean_static_data(df: pd.DataFrame, **kwargs):
     n = Namespace(namespace)
 
     # Organization
-    df['organization_subject'] = building_department_subject(config['source'])
-    df['organization_uri'] = df['organization_subject'].apply(lambda x: n[x])
+    df['pertainsToOrganization'] = n[config['source']]
 
     # Building
     # call {match (n:bigg__Building) where n.uri contains "eplanet" return n  limit 1} match (n)-[r*]->(o) where o.uri contains "eplanet" return n,r,o

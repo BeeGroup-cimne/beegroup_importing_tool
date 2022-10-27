@@ -13,7 +13,7 @@ from harmonizer.cache import Cache
 from sources.Czech.harmonizer.Mapper import Mapper
 from utils.data_transformations import building_subject, decode_hbase, building_space_subject, to_object_property, \
     location_info_subject, gross_area_subject, owner_subject, project_subject, device_subject, sensor_subject, \
-    construction_element_subject, eem_subject, energy_saving_subject, fuzz_location
+    construction_element_subject, eem_subject, energy_saving_subject, fuzz_location, building_department_subject
 from utils.hbase import save_to_hbase
 from utils.neo4j import create_sensor
 from utils.nomenclature import harmonized_nomenclature, HARMONIZED_MODE
@@ -47,6 +47,9 @@ def harmonize_building_info(data, **kwargs):
                   'CoolingSource', 'CoolingPower']
 
     df = df.applymap(decode_hbase)
+
+    # Organization
+    df['pertainsToOrganization'] = n[config['source']]
 
     # Building
     df['building_subject'] = df['Unique ID'].apply(building_subject)
