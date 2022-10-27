@@ -118,6 +118,10 @@ class Mapper(object):
                         "key": "hasArea",
                         "operations": []
                     },
+                    "isObservedByDevice": {
+                        "key": "device_uri",
+                        "operations": []
+                    }
                 }
             },
         }
