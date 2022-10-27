@@ -8,35 +8,35 @@ from rdflib import RDF, Namespace, Literal
 BIGG = Namespace("http://bigg-project.eu/ontology#")
 ALL_QUERY = """SELECT DISTINCT ?s WHERE{ ?s ?p ?o}"""
 COUNTRIES = {
-                "ES": {
-                    "file": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-ES.txt",
-                    "adms": [
-                        ("regions", "A.ADM1", None),
-                        ("province", "A.ADM2", "AddressProvince"),
-                        ("municipality", "A.ADM3", "AddressCity"),
-                    ]
-                },
-                "BG": {
-                    "file": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-BG.txt",
-                    "adms":[
-                        ("province", "A.ADM1", "AddressProvince"),
-                        ("municipality", "A.ADM2", "AddressCity")
-                    ]
-                },
+                # "ES": {
+                #     "file": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-ES.txt",
+                #     "adms": [
+                #         ("regions", "A.ADM1", None),
+                #         ("province", "A.ADM2", "AddressProvince"),
+                #         ("municipality", "A.ADM3", "AddressCity"),
+                #     ]
+                # },
+                # "BG": {
+                #     "file": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-BG.txt",
+                #     "adms":[
+                #         ("province", "A.ADM1", "AddressProvince"),
+                #         ("municipality", "A.ADM2", "AddressCity")
+                #     ]
+                # },
                 "GR": {
-                    "file": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-GR.txt",
+                    "file": "/Users/francesc/Downloads/all-geonames-rdf-clean-GR.txt",
                     "adms": [
                         ("province", "A.ADM1", "AddressProvince"),
                         ("municipality", "A.ADM3", "AddressCity")
                     ]
                 },
-                "CZ": {
-                    "file": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-CZ.txt",
-                    "adms": [
-                        ("province", "A.ADM1", "AddressProvince"),
-                        ("municipality", "A.ADM3", "AddressCity")
-                    ]
-                },
+                # "CZ": {
+                #     "file": "/Users/eloigabal/Downloads/ES/all-geonames-rdf-clean-CZ.txt",
+                #     "adms": [
+                #         ("province", "A.ADM1", "AddressProvince"),
+                #         ("municipality", "A.ADM3", "AddressCity")
+                #     ]
+                # },
 }
 
 def align_to_bigg(graph, query, bigg_class):

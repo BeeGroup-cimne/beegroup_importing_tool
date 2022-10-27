@@ -53,7 +53,7 @@ def gather(arguments, settings, config):
     if args.kind_of_file == 'building_data':
         for file in os.listdir(args.file):
             try:
-                df = pd.read_excel(f"{args.file}/{file}", skiprows=1)
+                df = pd.read_excel(f"{args.file}/{file}", skiprows=1, sheet_name=0)
                 df.rename(columns={"Unikátní kód": 'Unique ID'}, inplace=True)
                 save_data(data=df.to_dict(orient="records"), data_type="BuildingInfo",
                           row_keys=["Unique ID"],

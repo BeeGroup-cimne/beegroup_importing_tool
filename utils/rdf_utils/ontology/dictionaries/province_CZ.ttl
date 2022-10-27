@@ -1,0 +1,460 @@
+@prefix ns1: <http://www.geonames.org/ontology#> .
+@prefix ns2: <http://www.w3.org/2003/01/geo/wgs84_pos#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<https://sws.geonames.org/3067695/> a <http://bigg-project.eu/ontology#AddressProvince>,
+        ns1:Feature ;
+    ns1:alternateName "Capital City of Prague",
+        "City of Prague",
+        "Prague Independent City",
+        "Hauptstadt Prag"@de,
+        "Hlavní Mesto Praha"@nb,
+        "Hlavní Mesto Praha"@nn ;
+    ns1:childrenFeatures <https://sws.geonames.org/3067695/contains.rdf> ;
+    ns1:countryCode "CZ" ;
+    ns1:featureClass <https://www.geonames.org/ontology#A> ;
+    ns1:featureCode <https://www.geonames.org/ontology#A.ADM1> ;
+    ns1:locationMap <https://www.geonames.org/3067695/hlavni-mesto-praha.html> ;
+    ns1:name "Hlavní město Praha" ;
+    ns1:officialName "Hlavní město Praha"@cs,
+        "Praha"@cs,
+        "Praga"@es,
+        "Prague ville-capitale"@fr ;
+    ns1:parentCountry <https://sws.geonames.org/3077311/> ;
+    ns1:parentFeature <https://sws.geonames.org/3077311/> ;
+    ns1:population "1167050" ;
+    ns1:wikipediaArticle <https://en.wikipedia.org/wiki/Prague> ;
+    rdfs:isDefinedBy <https://sws.geonames.org/3067695/about.rdf> ;
+    rdfs:seeAlso <https://dbpedia.org/resource/Prague> ;
+    ns2:lat "50.08333" ;
+    ns2:long "14.46667" .
+
+<https://sws.geonames.org/3339536/> a <http://bigg-project.eu/ontology#AddressProvince>,
+        ns1:Feature ;
+    ns1:alternateName "Brno Region",
+        "Brněnský Kraj",
+        "إقليم جنوب مورافيا"@ar,
+        "Yihomoravsk diyarı"@az,
+        "Паўднёвамараўскі край"@be,
+        "Южноморавски край"@bg,
+        "Rannvro Moravia ar Su"@br,
+        "Južnomoravski kraj"@bs,
+        "Moràvia Meridional"@ca,
+        "Sydmähren"@da,
+        "Südmährische Region"@de,
+        "South Moravian Region"@en,
+        "Sudmoravia regiono"@eo,
+        "Región de Moravia Meridional"@es,
+        "Lõuna-Morava maakond"@et,
+        "Hego Moravia"@eu,
+        "منطقه موراویای جنوبی"@fa,
+        "Etelä-Määrin lääni"@fi,
+        "Rexión de Moravia Meridional"@gl,
+        "Južna Moravska"@hr,
+        "Dél-Morva kerület"@hu,
+        "Moravia meridionale"@it,
+        "南モラヴィア州"@ja,
+        "სამხრეთ მორავიის მხარე"@ka,
+        "남모라바 주"@ko,
+        "Pietų Moravijos kraštas"@lt,
+        "Dienvidmorāvijas apgabals"@lv,
+        "Јужноморавски крај"@mk,
+        "Wilayah Moravia Selatan"@ms,
+        "Zuid-Moravië"@nl,
+        "Sydmähren"@no,
+        "Moràvia del Sud"@oc,
+        "South Moravian Labuad"@pam,
+        "Kraj południowomorawski"@pl,
+        "Morávia do Sul"@pt,
+        "Regiunea Moravia de Sud"@ro,
+        "Южноморавский край"@ru,
+        "Pėitū Muoravėjės krašts"@sgs,
+        "Juhomoravský kraj"@sk,
+        "Јужноморавски крај"@sr,
+        "Södra Mähren"@sv,
+        "Güney Moravya ili"@tr,
+        "Південноморавський край"@uk,
+        "جنوبی موراویائی علاقہ"@ur,
+        "Nam Moravia"@vi,
+        "Salatan nga Moravia"@war,
+        "南摩拉維亞州"@zh ;
+    ns1:childrenFeatures <https://sws.geonames.org/3339536/contains.rdf> ;
+    ns1:countryCode "CZ" ;
+    ns1:featureClass <https://www.geonames.org/ontology#A> ;
+    ns1:featureCode <https://www.geonames.org/ontology#A.ADM1> ;
+    ns1:locationMap <https://www.geonames.org/3339536/jihomoravsky-kraj.html> ;
+    ns1:name "South Moravian" ;
+    ns1:officialName "Jihomoravský",
+        "Jihomoravský kraj",
+        "Jihomoravský"@cs,
+        "Jihomoravský kraj"@cs,
+        "South Moravian"@en,
+        "Moravie-du-Sud"@fr ;
+    ns1:parentCountry <https://sws.geonames.org/3077311/> ;
+    ns1:parentFeature <https://sws.geonames.org/3077311/> ;
+    ns1:population "1196113" ;
+    ns1:wikipediaArticle <https://en.wikipedia.org/wiki/South_Moravian_Region>,
+        <https://ru.wikipedia.org/wiki/%D0%AE%D0%B6%D0%BD%D0%BE%D0%BC%D0%BE%D1%80%D0%B0%D0%B2%D1%81%D0%BA%D0%B8%D0%B9_%D0%BA%D1%80%D0%B0%D0%B9> ;
+    rdfs:isDefinedBy <https://sws.geonames.org/3339536/about.rdf> ;
+    rdfs:seeAlso <https://dbpedia.org/resource/South_Moravian_Region> ;
+    ns2:lat "49.20122" ;
+    ns2:long "16.61339" .
+
+<https://sws.geonames.org/3339537/> a <http://bigg-project.eu/ontology#AddressProvince>,
+        ns1:Feature ;
+    ns1:alternateName "Budejovice Region",
+        "Budějovický Kraj",
+        "South Bohemian Region",
+        "إقليم جنوب بوهيميا"@ar,
+        "Cənubi Çexiya diyarı"@az,
+        "Паўднёвачэшскі край"@be,
+        "Южночешки край"@bg,
+        "Rannvro Bohemia ar Su"@br,
+        "Južnočeški kraj"@bs,
+        "Bohèmia Meridional"@ca,
+        "Sydbøhmen"@da,
+        "Südböhmische Region"@de,
+        "Sudbohemia regiono"@eo,
+        "Región de Bohemia Meridional"@es,
+        "Lõuna-Tšehhi maakond"@et,
+        "Hego Bohemia"@eu,
+        "منطقه بوهمی جنوبی"@fa,
+        "Etelä-Böömin lääni"@fi,
+        "Južna Češka"@hr,
+        "Dél-csehországi kerület"@hu,
+        "Daerah Bohemia Selatan"@id,
+        "Boemia meridionale"@it,
+        "南ボヘミア州"@ja,
+        "სამხრეთ ბოჰემიის მხარე"@ka,
+        "남보헤미아 주"@ko,
+        "Pietų Čekijos kraštas"@lt,
+        "Dienvidčehijas apgabals"@lv,
+        "Јужночешки крај"@mk,
+        "Wilayah Bohemia Selatan"@ms,
+        "Zuid-Bohemen"@nl,
+        "Sydböhmen"@no,
+        "Boèmia del Sud"@oc,
+        "South Bohemian Labuad"@pam,
+        "Kraj południowoczeski"@pl,
+        "Boêmia do Sul"@pt,
+        "Regiunea Boemia de Sud"@ro,
+        "Южночешский край"@ru,
+        "Juhočeský kraj"@sk,
+        "Јужночешки крај"@sr,
+        "Södra Böhmen"@sv,
+        "Güney Bohemya ili"@tr,
+        "Південночеський край"@uk,
+        "جنوبی بوہیمیائی علاقہ"@ur,
+        "Nam Bohemia"@vi,
+        "Salatan nga Bohemia"@war,
+        "南波希米亚州"@zh ;
+    ns1:childrenFeatures <https://sws.geonames.org/3339537/contains.rdf> ;
+    ns1:countryCode "CZ" ;
+    ns1:featureClass <https://www.geonames.org/ontology#A> ;
+    ns1:featureCode <https://www.geonames.org/ontology#A.ADM1> ;
+    ns1:locationMap <https://www.geonames.org/3339537/jihocesky-kraj.html> ;
+    ns1:name "Jihočeský kraj" ;
+    ns1:officialName "Jihočeský"@cs,
+        "Jihočeský kraj"@cs,
+        "Bohême-du-Sud"@fr ;
+    ns1:parentCountry <https://sws.geonames.org/3077311/> ;
+    ns1:parentFeature <https://sws.geonames.org/3077311/> ;
+    ns1:population "625703" ;
+    ns1:wikipediaArticle <https://en.wikipedia.org/wiki/South_Bohemian_Region> ;
+    rdfs:isDefinedBy <https://sws.geonames.org/3339537/about.rdf> ;
+    rdfs:seeAlso <https://dbpedia.org/resource/South_Bohemian_Region> ;
+    ns2:lat "49.08333" ;
+    ns2:long "14.5" .
+
+<https://sws.geonames.org/3339538/> a <http://bigg-project.eu/ontology#AddressProvince>,
+        ns1:Feature ;
+    ns1:alternateName "Jihlava Region",
+        "Jihlavský Kraj",
+        "Vysocina Region",
+        "Region Hochland"@de ;
+    ns1:childrenFeatures <https://sws.geonames.org/3339538/contains.rdf> ;
+    ns1:countryCode "CZ" ;
+    ns1:featureClass <https://www.geonames.org/ontology#A> ;
+    ns1:featureCode <https://www.geonames.org/ontology#A.ADM1> ;
+    ns1:locationMap <https://www.geonames.org/3339538/kraj-vysocina.html> ;
+    ns1:name "Kraj Vysočina" ;
+    ns1:officialName "Kraj Vysočina",
+        "Vysočina",
+        "Kraj Vysočina"@cs,
+        "Vysočina"@cs ;
+    ns1:parentCountry <https://sws.geonames.org/3077311/> ;
+    ns1:parentFeature <https://sws.geonames.org/3077311/> ;
+    ns1:population "517114" ;
+    ns1:wikipediaArticle <https://en.wikipedia.org/wiki/Vyso%C4%8Dina_Region> ;
+    rdfs:isDefinedBy <https://sws.geonames.org/3339538/about.rdf> ;
+    rdfs:seeAlso <https://dbpedia.org/resource/Vyso%C4%8Dina_Region> ;
+    ns2:lat "49.41667" ;
+    ns2:long "15.5" .
+
+<https://sws.geonames.org/3339539/> a <http://bigg-project.eu/ontology#AddressProvince>,
+        ns1:Feature ;
+    ns1:alternateName "Karlsbader Region"@de ;
+    ns1:childrenFeatures <https://sws.geonames.org/3339539/contains.rdf> ;
+    ns1:countryCode "CZ" ;
+    ns1:featureClass <https://www.geonames.org/ontology#A> ;
+    ns1:featureCode <https://www.geonames.org/ontology#A.ADM1> ;
+    ns1:locationMap <https://www.geonames.org/3339539/karlovarsky-kraj.html> ;
+    ns1:name "Karlovarský kraj" ;
+    ns1:officialName "Karlovarský kraj",
+        "Karlovarský"@cs,
+        "Karlovarský kraj"@cs ;
+    ns1:parentCountry <https://sws.geonames.org/3077311/> ;
+    ns1:parentFeature <https://sws.geonames.org/3077311/> ;
+    ns1:population "304294" ;
+    ns1:wikipediaArticle <https://en.wikipedia.org/wiki/Karlovy_Vary_Region> ;
+    rdfs:isDefinedBy <https://sws.geonames.org/3339539/about.rdf> ;
+    rdfs:seeAlso <https://dbpedia.org/resource/Karlovy_Vary_Region> ;
+    ns2:lat "50.16667" ;
+    ns2:long "12.66667" .
+
+<https://sws.geonames.org/3339540/> a <http://bigg-project.eu/ontology#AddressProvince>,
+        ns1:Feature ;
+    ns1:alternateName "Königgrätzer Region"@de ;
+    ns1:childrenFeatures <https://sws.geonames.org/3339540/contains.rdf> ;
+    ns1:countryCode "CZ" ;
+    ns1:featureClass <https://www.geonames.org/ontology#A> ;
+    ns1:featureCode <https://www.geonames.org/ontology#A.ADM1> ;
+    ns1:locationMap <https://www.geonames.org/3339540/kralovehradecky-kraj.html> ;
+    ns1:name "Královéhradecký kraj" ;
+    ns1:officialName "Královéhradecký kraj",
+        "Královéhradecký"@cs,
+        "Královéhradecký kraj"@cs ;
+    ns1:parentCountry <https://sws.geonames.org/3077311/> ;
+    ns1:parentFeature <https://sws.geonames.org/3077311/> ;
+    ns1:population "546691" ;
+    ns1:wikipediaArticle <https://en.wikipedia.org/wiki/Hradec_Kr%C3%A1lov%C3%A9_Region> ;
+    rdfs:isDefinedBy <https://sws.geonames.org/3339540/about.rdf> ;
+    rdfs:seeAlso <https://dbpedia.org/resource/Hradec_Kr%C3%A1lov%C3%A9_Region> ;
+    ns2:lat "50.41667" ;
+    ns2:long "15.91667" .
+
+<https://sws.geonames.org/3339541/> a <http://bigg-project.eu/ontology#AddressProvince>,
+        ns1:Feature ;
+    ns1:alternateName "Reichenberger Region"@de ;
+    ns1:childrenFeatures <https://sws.geonames.org/3339541/contains.rdf> ;
+    ns1:countryCode "CZ" ;
+    ns1:featureClass <https://www.geonames.org/ontology#A> ;
+    ns1:featureCode <https://www.geonames.org/ontology#A.ADM1> ;
+    ns1:locationMap <https://www.geonames.org/3339541/liberecky-kraj.html> ;
+    ns1:name "Liberecký kraj" ;
+    ns1:officialName "Liberecký kraj",
+        "Liberecký"@cs,
+        "Liberecký kraj"@cs ;
+    ns1:parentCountry <https://sws.geonames.org/3077311/> ;
+    ns1:parentFeature <https://sws.geonames.org/3077311/> ;
+    ns1:population "427855" ;
+    ns1:wikipediaArticle <https://en.wikipedia.org/wiki/Liberec_Region> ;
+    rdfs:isDefinedBy <https://sws.geonames.org/3339541/about.rdf> ;
+    rdfs:seeAlso <https://dbpedia.org/resource/Liberec_Region> ;
+    ns2:lat "50.75" ;
+    ns2:long "15" .
+
+<https://sws.geonames.org/3339542/> a <http://bigg-project.eu/ontology#AddressProvince>,
+        ns1:Feature ;
+    ns1:alternateName "Olmützer Region"@de ;
+    ns1:childrenFeatures <https://sws.geonames.org/3339542/contains.rdf> ;
+    ns1:countryCode "CZ" ;
+    ns1:featureClass <https://www.geonames.org/ontology#A> ;
+    ns1:featureCode <https://www.geonames.org/ontology#A.ADM1> ;
+    ns1:locationMap <https://www.geonames.org/3339542/olomoucky-kraj.html> ;
+    ns1:name "Olomoucký kraj" ;
+    ns1:officialName "Olomoucký kraj",
+        "Olomoucký"@cs,
+        "Olomoucký kraj"@cs ;
+    ns1:parentCountry <https://sws.geonames.org/3077311/> ;
+    ns1:parentFeature <https://sws.geonames.org/3077311/> ;
+    ns1:population "635675" ;
+    ns1:shortName "Olomoucký" ;
+    ns1:wikipediaArticle <https://en.wikipedia.org/wiki/Olomouc_Region> ;
+    rdfs:isDefinedBy <https://sws.geonames.org/3339542/about.rdf> ;
+    rdfs:seeAlso <https://dbpedia.org/resource/Olomouc_Region> ;
+    ns2:lat "49.75" ;
+    ns2:long "17.16667" .
+
+<https://sws.geonames.org/3339573/> a <http://bigg-project.eu/ontology#AddressProvince>,
+        ns1:Feature ;
+    ns1:alternateName "Moravian and Silesian Region",
+        "Ostrava Region",
+        "Ostravský Kraj",
+        "Mährisch-Schlesische Region"@de ;
+    ns1:childrenFeatures <https://sws.geonames.org/3339573/contains.rdf> ;
+    ns1:countryCode "CZ" ;
+    ns1:featureClass <https://www.geonames.org/ontology#A> ;
+    ns1:featureCode <https://www.geonames.org/ontology#A.ADM1> ;
+    ns1:locationMap <https://www.geonames.org/3339573/moravskoslezsky-kraj.html> ;
+    ns1:name "Moravskoslezský kraj" ;
+    ns1:officialName "Moravskoslezský",
+        "Moravskoslezský kraj",
+        "Moravskoslezský"@cs,
+        "Moravskoslezský kraj"@cs,
+        "Moravie-Silésie"@fr ;
+    ns1:parentCountry <https://sws.geonames.org/3077311/> ;
+    ns1:parentFeature <https://sws.geonames.org/3063584/> ;
+    ns1:population "1200000" ;
+    ns1:wikipediaArticle <https://en.wikipedia.org/wiki/Moravian%E2%80%93Silesian_Region> ;
+    rdfs:isDefinedBy <https://sws.geonames.org/3339573/about.rdf> ;
+    rdfs:seeAlso <https://dbpedia.org/resource/Moravian%E2%80%93Silesian_Region> ;
+    ns2:lat "49.83333" ;
+    ns2:long "18" .
+
+<https://sws.geonames.org/3339574/> a <http://bigg-project.eu/ontology#AddressProvince>,
+        ns1:Feature ;
+    ns1:alternateName "Pardubitzer Region"@de ;
+    ns1:childrenFeatures <https://sws.geonames.org/3339574/contains.rdf> ;
+    ns1:countryCode "CZ" ;
+    ns1:featureClass <https://www.geonames.org/ontology#A> ;
+    ns1:featureCode <https://www.geonames.org/ontology#A.ADM1> ;
+    ns1:locationMap <https://www.geonames.org/3339574/pardubicky-kraj.html> ;
+    ns1:name "Pardubický kraj" ;
+    ns1:officialName "Pardubický kraj",
+        "Pardubický"@cs,
+        "Pardubický kraj"@cs ;
+    ns1:parentCountry <https://sws.geonames.org/3077311/> ;
+    ns1:parentFeature <https://sws.geonames.org/3077311/> ;
+    ns1:population "504641" ;
+    ns1:shortName "Pardubický" ;
+    ns1:wikipediaArticle <https://en.wikipedia.org/wiki/Pardubice_Region> ;
+    rdfs:isDefinedBy <https://sws.geonames.org/3339574/about.rdf> ;
+    rdfs:seeAlso <https://dbpedia.org/resource/Pardubice_Region> ;
+    ns2:lat "49.83333" ;
+    ns2:long "16.08333" .
+
+<https://sws.geonames.org/3339575/> a <http://bigg-project.eu/ontology#AddressProvince>,
+        ns1:Feature ;
+    ns1:alternateName "Pilsner Region"@de ;
+    ns1:childrenFeatures <https://sws.geonames.org/3339575/contains.rdf> ;
+    ns1:countryCode "CZ" ;
+    ns1:featureClass <https://www.geonames.org/ontology#A> ;
+    ns1:featureCode <https://www.geonames.org/ontology#A.ADM1> ;
+    ns1:locationMap <https://www.geonames.org/3339575/plzensky-kraj.html> ;
+    ns1:name "Plzeňský kraj" ;
+    ns1:officialName "Plzeňský kraj",
+        "Plzeňský"@cs,
+        "Plzeňský kraj"@cs ;
+    ns1:parentCountry <https://sws.geonames.org/3077311/> ;
+    ns1:parentFeature <https://sws.geonames.org/3077311/> ;
+    ns1:population "550343" ;
+    ns1:wikipediaArticle <https://en.wikipedia.org/wiki/Plze%C5%88_Region> ;
+    rdfs:isDefinedBy <https://sws.geonames.org/3339575/about.rdf> ;
+    rdfs:seeAlso <https://dbpedia.org/resource/Plze%C5%88_Region> ;
+    ns2:lat "49.5" ;
+    ns2:long "13.16667" .
+
+<https://sws.geonames.org/3339576/> a <http://bigg-project.eu/ontology#AddressProvince>,
+        ns1:Feature ;
+    ns1:alternateName "إقليم بوهيميا الوسطى"@ar,
+        "Orta Çexiya diyarı"@az,
+        "Сярэднячэшскі край"@be,
+        "Средночешки край"@bg,
+        "Rannvro Kreiz Bohemia"@br,
+        "Srednjočeški kraj"@bs,
+        "Bohèmia Central"@ca,
+        "Вăта Чех ен"@cv,
+        "Centralbøhmen"@da,
+        "Mittelböhmische Region"@de,
+        "Bohemya Merkezi"@diq,
+        "Central Bohemian Region"@en,
+        "Mezbohemia regiono"@eo,
+        "Región de Bohemia Central"@es,
+        "Kesk-Tšehhi maakond"@et,
+        "Erdialdeko Bohemia"@eu,
+        "منطقه بوهمی مرکزی"@fa,
+        "Keski-Böömin lääni"@fi,
+        "Bohême centrale"@fr,
+        "Bohemia Central"@gl,
+        "Središnja Češka"@hr,
+        "Közép-csehországi kerület"@hu,
+        "Daerah Bohemia Tengah"@id,
+        "Boemia centrale"@it,
+        "中央ボヘミア州"@ja,
+        "ცენტრალური ბოჰემიის მხარე"@ka,
+        "중앙보헤미아 주"@ko,
+        "Vidurio Čekijos kraštas"@lt,
+        "Centrālčehijas apgabals"@lv,
+        "Средночешки крај"@mk,
+        "Wilayah Bohemia Tengah"@ms,
+        "Midden-Bohemen"@nl,
+        "Sentralböhmen"@no,
+        "Boèmia Centrala"@oc,
+        "Kalibudtang Bohemian Labuad"@pam,
+        "Kraj środkowoczeski"@pl,
+        "Boêmia Central"@pt,
+        "Regiunea Boemia Centrală"@ro,
+        "Среднечешский край"@ru,
+        "Stredočeský kraj"@sk,
+        "Средњочешки крај"@sr,
+        "Mellersta Böhmen"@sv,
+        "Центральночеський край"@uk,
+        "مرکزی بوہیمیائی علاقہ"@ur,
+        "Čechy Trung"@vi,
+        "Butnga nga Bohemia"@war,
+        "中波希米亚州"@zh ;
+    ns1:childrenFeatures <https://sws.geonames.org/3339576/contains.rdf> ;
+    ns1:countryCode "CZ" ;
+    ns1:featureClass <https://www.geonames.org/ontology#A> ;
+    ns1:featureCode <https://www.geonames.org/ontology#A.ADM1> ;
+    ns1:locationMap <https://www.geonames.org/3339576/stredocesky-kraj.html> ;
+    ns1:name "Central Bohemia" ;
+    ns1:officialName "Středočeský kraj",
+        "Středočeský"@cs,
+        "Středočeský kraj"@cs,
+        "Central Bohemia"@en,
+        "Bohême-Centrale"@fr ;
+    ns1:parentCountry <https://sws.geonames.org/3077311/> ;
+    ns1:parentFeature <https://sws.geonames.org/3077311/> ;
+    ns1:population "1284629" ;
+    ns1:wikipediaArticle <https://en.wikipedia.org/wiki/Central_Bohemian_Region> ;
+    rdfs:isDefinedBy <https://sws.geonames.org/3339576/about.rdf> ;
+    rdfs:seeAlso <https://dbpedia.org/resource/Central_Bohemian_Region> ;
+    ns2:lat "50.12718" ;
+    ns2:long "14.1964" .
+
+<https://sws.geonames.org/3339577/> a <http://bigg-project.eu/ontology#AddressProvince>,
+        ns1:Feature ;
+    ns1:alternateName "Aussiger Region"@de ;
+    ns1:childrenFeatures <https://sws.geonames.org/3339577/contains.rdf> ;
+    ns1:countryCode "CZ" ;
+    ns1:featureClass <https://www.geonames.org/ontology#A> ;
+    ns1:featureCode <https://www.geonames.org/ontology#A.ADM1> ;
+    ns1:locationMap <https://www.geonames.org/3339577/ustecky-kraj.html> ;
+    ns1:name "Ústecký kraj" ;
+    ns1:officialName "Ústecký kraj",
+        "Ústecký"@cs,
+        "Ústecký kraj"@cs ;
+    ns1:parentCountry <https://sws.geonames.org/3077311/> ;
+    ns1:parentFeature <https://sws.geonames.org/3077311/> ;
+    ns1:population "821468" ;
+    ns1:wikipediaArticle <https://en.wikipedia.org/wiki/%C3%9Ast%C3%AD_nad_Labem_Region> ;
+    rdfs:isDefinedBy <https://sws.geonames.org/3339577/about.rdf> ;
+    rdfs:seeAlso <https://dbpedia.org/resource/%C3%9Ast%C3%AD_nad_Labem_Region> ;
+    ns2:lat "50.5" ;
+    ns2:long "13.83333" .
+
+<https://sws.geonames.org/3339578/> a <http://bigg-project.eu/ontology#AddressProvince>,
+        ns1:Feature ;
+    ns1:alternateName "Zliner Region"@de ;
+    ns1:childrenFeatures <https://sws.geonames.org/3339578/contains.rdf> ;
+    ns1:countryCode "CZ" ;
+    ns1:featureClass <https://www.geonames.org/ontology#A> ;
+    ns1:featureCode <https://www.geonames.org/ontology#A.ADM1> ;
+    ns1:locationMap <https://www.geonames.org/3339578/zlinsky-kraj.html> ;
+    ns1:name "Zlín" ;
+    ns1:officialName "Zlínský",
+        "Zlínský kraj",
+        "Zlínský"@cs,
+        "Zlínský kraj"@cs ;
+    ns1:parentCountry <https://sws.geonames.org/3077311/> ;
+    ns1:parentFeature <https://sws.geonames.org/3077311/> ;
+    ns1:population "590784" ;
+    ns1:shortName "Zlín"@en ;
+    ns1:wikipediaArticle <https://en.wikipedia.org/wiki/Zl%C3%ADn_Region> ;
+    rdfs:isDefinedBy <https://sws.geonames.org/3339578/about.rdf> ;
+    rdfs:seeAlso <https://dbpedia.org/resource/Zl%C3%ADn_Region> ;
+    ns2:lat "49.16667" ;
+    ns2:long "17.75" .
+

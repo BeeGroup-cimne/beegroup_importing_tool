@@ -13,7 +13,7 @@ from harmonizer.cache import Cache
 from sources.Czech.harmonizer.Mapper import Mapper
 from utils.data_transformations import building_subject, decode_hbase, building_space_subject, to_object_property, \
     location_info_subject, gross_area_subject, owner_subject, project_subject, device_subject, sensor_subject, \
-    construction_element_subject, eem_subject, energy_saving_subject, fuzz_location, building_department_subject
+    construction_element_subject, eem_subject, energy_saving_subject, fuzz_location
 from utils.hbase import save_to_hbase
 from utils.neo4j import create_sensor
 from utils.nomenclature import harmonized_nomenclature, HARMONIZED_MODE
@@ -71,15 +71,15 @@ def harmonize_building_info(data, **kwargs):
     df['location_subject'] = df['Unique ID'].apply(location_info_subject)
     df['hasLocationInfo'] = df['location_subject'].apply(lambda x: n[x])
 
-    mun_map = fuzz_location(location_dict=Cache.municipality_dic_GR, list_prop=['ns1:alternateName'],
-                            unique_values=df['Municipality'].unique())
+    mun_map = fuzz_location(location_dict=Cache.municipality_dic_CZ, list_prop=['ns1:name'],
+                            unique_values=df['Municipality'].dropna().unique())
 
-    df['hasAddressCity'] = df['Municipality'].map(mun_map)  # TODO: Call the correct Cache variable
+    df['hasAddressCity'] = df['Municipality'].map(mun_map)
 
-    mun_map = fuzz_location(location_dict=Cache.municipality_dic_GR, list_prop=['ns1:alternateName'],
-                            unique_values=df['Region'].unique())
+    province_map = fuzz_location(location_dict=Cache.province_dic_CZ, list_prop=['ns1:name', 'ns1:officialName'],
+                                 unique_values=df['Region'].dropna().unique())
 
-    df['hasAddressProvince'] = df['Region'].map(mun_map)  # TODO: Call the correct Cache variable
+    df['hasAddressProvince'] = df['Region'].map(province_map)
 
     # Area
     df['gross_floor_area_subject'] = df['Unique ID'].apply(partial(gross_area_subject, a_source=config['source']))
