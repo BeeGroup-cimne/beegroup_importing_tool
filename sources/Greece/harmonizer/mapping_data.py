@@ -9,7 +9,7 @@ import settings
 from harmonizer.cache import Cache
 from sources.Greece.harmonizer.Mapper import Mapper
 from utils.data_transformations import decode_hbase, building_subject, location_info_subject, building_space_subject, \
-    device_subject, delivery_subject, sensor_subject, fuzz_location, building_department_subject
+    device_subject, delivery_subject, sensor_subject, fuzz_location
 from utils.hbase import save_to_hbase
 from utils.neo4j import create_sensor
 from utils.nomenclature import harmonized_nomenclature, HARMONIZED_MODE
@@ -20,8 +20,8 @@ from utils.rdf_utils.save_rdf import save_rdf_with_source
 STATIC_COLUMNS = ['Year', 'Month', 'Region',
                   'Street name', 'Street number', 'Name of the building or public lighting', 'Unique ID']
 
-TS_COLUMNS = ['Year', 'Month', 'Unique ID', 'Current record', 'Previous record', 'Variable', 'Recording date',
-              'Previous recording date', 'StartDate', 'EndDate']
+TS_COLUMNS = ['StartDate', 'EndDate', 'Year', 'Month', 'Unique ID', 'Current record', 'Previous record', 'Variable',
+              'Recording date', 'Previous recording date']
 
 
 def clean_static_data(df: pd.DataFrame, **kwargs):
@@ -60,6 +60,20 @@ def clean_static_data(df: pd.DataFrame, **kwargs):
     return df
 
 
+def clean_ts_data(df_ts):
+    df_ts.set_index('StartDate', inplace=True)
+    df_ts.sort_index(inplace=True)
+
+    for unique_id, df_group in df_ts.groupby('Unique ID'):
+        df_red = df_group[['EndDate', 'Current record', 'Previous record']].copy()
+        df_red.dropna(inplace=True)
+        tmp = []
+        for unique_date in df_red.index:
+            pass
+            # TODO: Find and save large vector foreach unique StartDate
+            # TODO: next item will be greater or equal than last end Date
+
+
 def harmonize_ts_data(raw_df: pd.DataFrame, kwargs):
     namespace = kwargs['namespace']
     config = kwargs['config']
@@ -71,6 +85,8 @@ def harmonize_ts_data(raw_df: pd.DataFrame, kwargs):
     neo = GraphDatabase.driver(**neo4j_connection)
 
     hbase_conn = config['hbase_store_harmonized_data']
+
+    clean_ts_data(df_ts=raw_df)
 
     # calc
     aux_df = raw_df[raw_df['Current record'].str.isdigit()].copy()
