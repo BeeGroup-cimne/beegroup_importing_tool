@@ -65,13 +65,13 @@ def clean_ts_data(df_ts):
     df_ts.sort_index(inplace=True)
 
     for unique_id, df_group in df_ts.groupby('Unique ID'):
-        df_red = df_group[['EndDate', 'Current record', 'Previous record']].copy()
+        df_red = df_group[['EndDate', 'Current record', 'Previous record', 'Variable']].copy()
         df_red.dropna(inplace=True)
-        tmp = []
-        for unique_date in df_red.index:
-            pass
-            # TODO: Find and save large vector foreach unique StartDate
-            # TODO: next item will be greater or equal than last end Date
+        df_red['value'] = (df_red['Current record'].astype(float) - df_red['Previous record'].astype(float)) * df_red[
+            'Variable'].astype(float)
+        df_red = df_red[df_red['value'] > 0]
+        df_red = df_red[['EndDate', 'value']].copy()
+        print(df_red)
 
 
 def harmonize_ts_data(raw_df: pd.DataFrame, kwargs):
@@ -86,7 +86,7 @@ def harmonize_ts_data(raw_df: pd.DataFrame, kwargs):
 
     hbase_conn = config['hbase_store_harmonized_data']
 
-    clean_ts_data(df_ts=raw_df)
+    #clean_ts_data(df_ts=raw_df)
 
     # calc
     aux_df = raw_df[raw_df['Current record'].str.isdigit()].copy()

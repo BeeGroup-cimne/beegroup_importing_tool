@@ -47,7 +47,7 @@ def gather(arguments, settings, config):
     ap.add_argument("-f", "--file", required=True, help="Excel file path to parse")
     ap.add_argument("-kf", "--kind_of_file", required=True,
                     help="Choice the kind of file that you would like to harmonize.",
-                    choices=['region', 'municipality', 'building_data', 'building_eem'])
+                    choices=['ts', 'building_data', 'building_eem'])
     args = ap.parse_args(arguments)
 
     if args.kind_of_file == 'building_data':
@@ -78,8 +78,9 @@ def gather(arguments, settings, config):
             except Exception as ex:
                 log_string(ex)
 
-    if args.kind_of_file == 'municipality':
+    if args.kind_of_file == 'ts':
         freq = 'PT1M'
+
         for file in os.listdir(args.file):
             log_string(f"File: {file}")
 
@@ -142,18 +143,17 @@ def gather(arguments, settings, config):
                                                               user=args.user, source=config['source']))
                     except Exception as ex:
                         log_string(ex)
+                elif i in 'souhrn':
+                    try:
+                        df = pd.read_excel(f"{args.file}/{file}", sheet_name='souhrn', skiprows=99)
+                        df.dropna(how='all', axis='columns', inplace=True)
 
-    if args.kind_of_file == 'region':
-        for file in os.listdir(args.file):
-            try:
-                df = pd.read_excel(f"{args.file}/{file}", sheet_name='souhrn', skiprows=99)
-                df.dropna(how='all', axis='columns', inplace=True)
-
-                df['Unique ID'] = file.split('_')[0]
-                save_data(data=df.to_dict(orient="records"), data_type="region_ts",
-                          row_keys=["Unique ID"],
-                          column_map=[("info", "all")], config=config, settings=settings, args=args,
-                          table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES, data_type="region_ts", frequency="",
-                                                      user=args.user, source=config['source']))
-            except Exception as ex:
-                log_string(ex)
+                        df['Unique ID'] = file.split('_')[0]
+                        save_data(data=df.to_dict(orient="records"), data_type="region_ts",
+                                  row_keys=["Unique ID"],
+                                  column_map=[("info", "all")], config=config, settings=settings, args=args,
+                                  table_name=raw_nomenclature(mode=RAW_MODE.TIMESERIES, data_type="region_ts",
+                                                              frequency="",
+                                                              user=args.user, source=config['source']))
+                    except Exception as ex:
+                        log_string(ex)
