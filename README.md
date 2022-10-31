@@ -6,6 +6,10 @@ The architecture used for the import and harmonization of the sources is as foll
 <img src="docs/schema_diagram.svg"/>
 
 The different components of the architecture are depicted in the following list:
+## Install the package:
+   1. Install the application to your environment
+   2. Place the dictionaries in the dict_folder `ontology/dictionaries`
+   3. Run to generate the ontology `python3 -m main_ontology`
 
 ## External API Producer
 
@@ -37,56 +41,25 @@ To start the harmonization application
 python3 -m harmonizer
 ```
 
-## Data sources index
-
-The following links will provide information of each data source import tool:
-
-1. [GPG (Gestió de patrimoni de la generalitat)](sources/GPG/README.md)
-2. [BIS (Building Information Source)](sources/BIS/README.md)
-3. [Bulgaria (Building renovation projects from bulgaria)](sources/Bulgaria/README.md)
-4. [CEEC3X (xml certificates)](sources/CEEC3X/README.md)
-5. [Datadis (Distributor electricity energy)](sources/Datadis/README.md)
-5. [Gemweb (Energy Management Platform)](sources/Gemweb/README.md)
-6. [Genercat (EEM excel from Generalitat)](sources/genercat/README.md)
-6. [Ixon (Infraestructures connection platform)](sources/Ixon/README.md)
-6. [Nedgia (Distributor gas energy)](sources/Nedgia/README.md)
-6. [SimpleTariff (Tarif excel with yearly data)](sources/SimpleTariff/README.md)
-7. [Weather](sources/Weather/README.md)
-
-
-
 ## Setup Neo4j Database
 To get the Neo4j database working, we need to use [Neosemantics] (https://neo4j.com/labs/neosemantics/4.0/) plugin 
 
 1. Create a unique constraint on uri:
-
-```
-CREATE CONSTRAINT n10s_unique_uri ON (r:Resource)
-ASSERT r.uri IS UNIQUE;
-```
+    ```
+    CREATE CONSTRAINT n10s_unique_uri ON (r:Resource)
+    ASSERT r.uri IS UNIQUE;
+    ```
 2. Create the graph configuration:
-```
- CALL n10s.graphconfig.init({ keepLangTag: true, handleMultival:"ARRAY"});
- # CALL n10s.graphconfig.init({ keepLangTag: true, handleMultival:"ARRAY", multivalPropList:["http://www.w3.org/2000/01/rdf-schema#label", "http://www.w3.org/2000/01/rdf-schema#comment", "http://www.geonames.org/ontology#officialName"]});
-```
+    ```
+     CALL n10s.graphconfig.init({ keepLangTag: true, handleMultival:"ARRAY", multivalPropList:[<list of multival values>]});
+    ```
 3. Add the namespaces we will use:
-```
-CALL n10s.nsprefixes.add("bigg","http://bigg-project.eu/ontology#");
-CALL n10s.nsprefixes.add("geo","http://www.geonames.org/ontology#");
-CALL n10s.nsprefixes.add("wgs","http://www.w3.org/2003/01/geo/wgs84_pos#");
-CALL n10s.nsprefixes.add("unit","http://qudt.org/vocab/unit/");
-```
-
-## Setup sources
-The following are some scripts to automatically set up some of the features from organizations in BIGG
-1. Organizations
-2. DataSources
-3. WeatherStations
-4. Dictionaries
-
-[//]: # (5. [IXON]&#40;Ixon/README.md&#41;)
-[//]: # (6. [Certificats d’eficiència energètica d’edificis]&#40;DadesObertes/CEEE/README.md&#41;)
-
+    ```
+    CALL n10s.nsprefixes.add("<namespace>","<uri_namespace>");
+    CALL n10s.nsprefixes.add("geo","http://www.geonames.org/ontology#");
+    CALL n10s.nsprefixes.add("wgs","http://www.w3.org/2003/01/geo/wgs84_pos#");
+    CALL n10s.nsprefixes.add("unit","http://qudt.org/vocab/unit/");
+    ```
 
 ## Configuration
 
