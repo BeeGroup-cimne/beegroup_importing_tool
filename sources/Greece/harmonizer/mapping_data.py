@@ -60,20 +60,6 @@ def clean_static_data(df: pd.DataFrame, **kwargs):
     return df
 
 
-def clean_ts_data(df_ts):
-    df_ts.set_index('StartDate', inplace=True)
-    df_ts.sort_index(inplace=True)
-
-    for unique_id, df_group in df_ts.groupby('Unique ID'):
-        df_red = df_group[['EndDate', 'Current record', 'Previous record', 'Variable']].copy()
-        df_red.dropna(inplace=True)
-        df_red['value'] = (df_red['Current record'].astype(float) - df_red['Previous record'].astype(float)) * df_red[
-            'Variable'].astype(float)
-        df_red = df_red[df_red['value'] > 0]
-        df_red = df_red[['EndDate', 'value']].copy()
-        print(df_red)
-
-
 def harmonize_ts_data(raw_df: pd.DataFrame, kwargs):
     namespace = kwargs['namespace']
     config = kwargs['config']
@@ -86,13 +72,11 @@ def harmonize_ts_data(raw_df: pd.DataFrame, kwargs):
 
     hbase_conn = config['hbase_store_harmonized_data']
 
-    #clean_ts_data(df_ts=raw_df)
-
     # calc
     aux_df = raw_df[raw_df['Current record'].str.isdigit()].copy()
-    aux_df['aux_value'] = (aux_df['Current record'].astype(float) - aux_df['Previous record'].astype(float)) * aux_df[
-        'Variable'].astype(float)
+    aux_df['aux_value'] = aux_df['Current record'].astype(float) * aux_df['Variable'].astype(float)
     aux_df = aux_df[aux_df['aux_value'] >= 0]
+    aux_df.dropna(inplace=True)
 
     for unique_value, df in aux_df.groupby('Unique ID'):
         dt_ini = df.iloc[0]['StartDate']
