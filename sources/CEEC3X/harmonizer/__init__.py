@@ -3,7 +3,8 @@ import re
 import utils
 from harmonizer.cache import Cache
 from .mapper_static import harmonize_IdentificacionEdificio, harmonize_DatosGeneralesyGeometria, \
-    harmonize_CondicionesFuncionamientoyOcupacion
+    harmonize_CondicionesFuncionamientoyOcupacion, harmonize_Demanda, harmonize_Consumo, harmonize_Emissions,\
+    harmonize_Calificacion
 
 
 def harmonize_command_line(arguments, config=None, settings=None):
@@ -16,7 +17,11 @@ def harmonize_command_line(arguments, config=None, settings=None):
     data_harmonizer_map = {
         "IdentificacionEdificio": harmonize_IdentificacionEdificio,
         "DatosGeneralesyGeometria": harmonize_DatosGeneralesyGeometria,
-        "CondicionesFuncionamientoyOcupacion": harmonize_CondicionesFuncionamientoyOcupacion
+        "CondicionesFuncionamientoyOcupacion": harmonize_CondicionesFuncionamientoyOcupacion,
+        "Demanda": harmonize_Demanda,
+        "Consumo": harmonize_Consumo,
+        "EmisionesCO2": harmonize_Emissions,
+        "Calificacion": harmonize_Calificacion
     }
     Cache.load_cache()
     for datatype, harmonizer in data_harmonizer_map.items():

@@ -261,6 +261,7 @@ class Mapper(object):
         }
 
         grouped_modules = {
-            "all": [location, cad_ref, building, epc, additional_epc],
+            "linked": [location, cad_ref, building, epc, additional_epc],
+            "unlinked": [epc, additional_epc],
         }
         return grouped_modules[group]

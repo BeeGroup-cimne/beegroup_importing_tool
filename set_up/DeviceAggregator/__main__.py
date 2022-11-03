@@ -18,17 +18,17 @@ def create_dev_agg(measured_property, device_query, freq, agg_name, required, ag
     }}
     MATCH (bs:{bigg}__BuildingSpace)-[:{bigg}__isObservedByDevice]->(d:{device_query})-
         [:{bigg}__hasSensor]->(s:{bigg}__Sensor)-[:{bigg}__hasMeasurement]->(ts:{bigg}__Measurement) 
-    WHERE s.{bigg}__timeSeriesFrequency=["{freq}"] 
+    WHERE s.{bigg}__timeSeriesFrequency="{freq}" 
           AND EXISTS((s)-[:{bigg}__hasMeasuredProperty]->(prop))
     WITH bs, d, prop, ts, split(bs.uri, "-")[0]+"-AGGREGATOR-{id_prop}-TOTAL-"+split(bs.uri, "-")[1] as uri
     MERGE (da:{bigg}__DeviceAggregator:Resource{{uri:uri}})
     MERGE (da)-[:{bigg}__includesDevice]->(d)
     WITH da, apoc.text.join(collect("<mi>"+split(ts.uri,"#")[1]+"</mi>"), "<mo>"+"+"+"</mo>") as key1, prop, bs
-    SET da.required = [{required}], 
-        da.{bigg}__deviceAggregatorName = ["{agg_name}"],
-        da.{bigg}__deviceAggregatorFrequency = ["{freq}"],
-        da.{bigg}__deviceAggregatorFormula=[key1],
-        da.{bigg}__deviceAggregatorTimeAggregationFunction=["{agg_func}"]
+    SET da.required = {required}, 
+        da.{bigg}__deviceAggregatorName = "{agg_name}",
+        da.{bigg}__deviceAggregatorFrequency = "{freq}",
+        da.{bigg}__deviceAggregatorFormula=key1,
+        da.{bigg}__deviceAggregatorTimeAggregationFunction = {agg_func}
     MERGE (da)-[:{bigg}__hasDeviceAggregatorProperty]->(prop)
     MERGE (bs)-[:{bigg}__hasDeviceAggregator]->(da)    
     RETURN da
@@ -42,7 +42,7 @@ total_electricity_device_agg = [
         freq="PT1H",
         agg_name="totalElectricityConsumption",
         required="true",
-        agg_func="SUM"
+        agg_func=["SUM"]
     )
 ]
 
@@ -53,26 +53,26 @@ total_gas_device_agg = [
         freq="",
         agg_name="totalGasConsumption",
         required="true",
-        agg_func="SUM"
+        agg_func=["SUM"]
     )
 ]
 
 outdoor_weather_device_agg = [
     create_dev_agg(
         measured_property=bigg_enums.Temperature,
-        device_query=f"""{bigg}__Device:{bigg}__WeatherStation""",
+        device_query=f"""{bigg}__WeatherStation""",
         freq="PT1H",
         agg_name="outdoorTemperature",
         required="true",
-        agg_func="AVG"
+        agg_func=["AVG", "CDD", "HDD"]
     ),
     create_dev_agg(
         measured_property=bigg_enums.HumidityRatio,
-        device_query=f"""{bigg}__Device:{bigg}__WeatherStation""",
+        device_query=f"""{bigg}__WeatherStation""",
         freq="PT1H",
         agg_name="outdoorHumidityRatio",
         required="false",
-        agg_func="AVG"
+        agg_func=["AVG"]
     )
 ]
 

@@ -8,31 +8,9 @@ from rdflib import Namespace
 import settings
 from utils.data_transformations import *
 from utils.hbase import save_to_hbase
-from utils.neo4j import get_tariff_from_datasource, create_tariffPrice
+from utils.neo4j import get_tariff_from_datasource, create_tariff_component
 from utils.rdf_utils.ontology.namespaces_definition import units, bigg_enums
 from slugify import slugify
-
-
-def create_tariff(data, **kwargs):
-    namespace = kwargs['namespace']
-    user = kwargs['user']
-    config = kwargs['config']
-    data_source = kwargs['data_source']
-    tariff_name = pd.DataFrame.from_records(data).loc[0, 'name']
-    tariff_name_uri = slugify(tariff_name)
-    bigg = settings.namespace_mappings['bigg']
-    n = Namespace(namespace)
-    device_uri = tariff_subject(f"{user}-{tariff_name_uri}", "SimpleTariffSource")
-    neo4j_connection = config['neo4j']
-    neo = GraphDatabase.driver(**neo4j_connection)
-    with neo.session() as session:
-        session.run(f"""
-                    MATCH ({bigg}__Organization{{userID:'{user}'}})-[:{bigg}__hasSubOrganization*0..]->(o:{bigg}__Organization)-
-                    [:hasSource]->(s) where id(s) = {data_source}
-                    MERGE (s)<-[:importedFromSource]-(d:{bigg}__Tariff:Resource{{uri:"{n[device_uri]}"}})
-                    SET d.source="SimpleTariffSource",
-                        d.{bigg}__tariffName = ["{tariff_name}"] return d
-                    """)
 
 
 def harmonize_data_ts(data, **kwargs):
@@ -40,8 +18,13 @@ def harmonize_data_ts(data, **kwargs):
     namespace = kwargs['namespace']
     user = kwargs['user']
     config = kwargs['config']
-    tariff_name = kwargs['tariff']
-    tariff_name_uri = slugify(tariff_name)
+    tariff_uid = kwargs['tariff']
+    measured_property = kwargs['measured_property']
+    priced_property = kwargs['priced_property']
+    priced_property_unit = kwargs['priced_property_unit']
+    currency_unit = kwargs['currency_unit']
+
+    tariff_uri = tariff_subject("SimpleTariffSource", user, tariff_uid)
     date_ini = kwargs['date_ini']
     date_end = kwargs['date_end']
     # Database connections
@@ -66,6 +49,8 @@ def harmonize_data_ts(data, **kwargs):
 
     tariff_df['value'] = tariff_df.map.map({k['map']: k['value'] for k in df.to_dict(orient="records")})
     tariff_df = tariff_df.dropna()
+    if tariff_df.empty:
+        return
     tariff_df['start'] = tariff_df.index.astype('int') / 10 ** 9
     tariff_df['start'] = tariff_df['start'].astype('int')
     tariff_df['end'] = tariff_df['start'] + 3600
@@ -82,31 +67,32 @@ def harmonize_data_ts(data, **kwargs):
 
     with neo.session() as session:
         n = Namespace(namespace)
-        devices_neo = list(get_tariff_from_datasource(session, user, tariff_name, "SimpleTariffSource",
+        devices_neo = list(get_tariff_from_datasource(session, user, str(n[tariff_uri]), "SimpleTariffSource",
                                                           settings.namespace_mappings))
     for device in devices_neo:
-        print(device)
-        device_uri = device['d'].get("uri")
-        sensor_id = tariff_subject("simpletariff", tariff_name_uri, "EnergyPriceGridElectricity", "RAW", "")
-        sensor_uri = str(n[sensor_id])
-        measurement_id = hashlib.sha256(sensor_uri.encode("utf-8"))
+        tariff_uri = device['d'].get("uri")
+        prop = str(measured_property).split("#")[1]
+        tariff_comp_id = tariff_component_subject("SimpleTariffSource", tariff_uid, prop, "RAW",
+                                             "PT1H")
+        tariff_comp_uri = str(n[tariff_comp_id])
+        measurement_id = hashlib.sha256(tariff_comp_uri.encode("utf-8"))
         measurement_id = measurement_id.hexdigest()
         measurement_uri = str(n[measurement_id])
         with neo.session() as session:
-            create_tariffPrice(session, device_uri, sensor_uri, units["Euro"],
-                               bigg_enums["Price.EnergyPriceGridElectricity"],
-                               measurement_uri, True,
-                               False, False, "PT1H", "SUM", dt_ini, dt_end, settings.namespace_mappings)
-
+            create_tariff_component(session=session, tariff_component_uri=tariff_comp_uri, property_uri=measured_property,
+                                    estimation_method_uri=bigg_enums["TrustedModel"], is_regular=True, is_cumulative=False, is_on_change=False,
+                                    freq="PT1H", agg_func="SUM",  dt_ini=dt_ini, dt_end=dt_end, measurement_uri=measurement_uri,
+                                    tariff_uri=tariff_uri, priced_property=priced_property, unit_uri=priced_property_unit,
+                                    currency_unit=currency_unit, ns_mappings=settings.namespace_mappings)
         tariff_df['listKey'] = measurement_id
-        device_table = f"harmonized_online_EnergyPriceGridElectricity_100_SUM_PT1H_{user}"
+        device_table = f"harmonized_online_{prop}_100_SUM_PT1H_{user}"
 
         save_to_hbase(tariff_df.to_dict(orient="records"),
                       device_table,
                       hbase_conn2,
                       [("info", ['end', 'isReal']), ("v", ['value'])],
                       row_fields=['bucket', 'listKey', 'start'])
-        period_table = f"harmonized_batch_EnergyPriceGridElectricity_100_SUM_PT1H_{user}"
+        period_table = f"harmonized_batch_{prop}_100_SUM_PT1H_{user}"
         save_to_hbase(tariff_df.to_dict(orient="records"),
                       period_table, hbase_conn2,
                       [("info", ['end', 'isReal']), ("v", ['value'])],

@@ -1,11 +1,14 @@
 from sources import SourcePlugin
 from sources.OpenData.gather import gather
-from sources.OpenData.harmonizer import harmonize_data
+from sources.OpenData.harmonizer import harmonize_data, harmonize_command_line
 from utils.nomenclature import raw_nomenclature, RAW_MODE
 
 
 class Plugin(SourcePlugin):
     source_name = "OpenData"
+
+    def harmonizer_command_line(self, arguments):
+        harmonize_command_line(arguments, config=self.config, settings=self.settings)
 
     def gather(self, arguments):
         gather(arguments, settings=self.settings, config=self.config)

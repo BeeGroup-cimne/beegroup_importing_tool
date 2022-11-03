@@ -3,7 +3,7 @@ import pandas as pd
 from sources import SourcePlugin
 from .gather import gather
 from .harmonizer import harmonize_command_line
-from .harmonizer.mapper import harmonize_data_ts, create_tariff
+from .harmonizer.mapper import harmonize_data_ts
 
 
 class Plugin(SourcePlugin):
@@ -18,8 +18,6 @@ class Plugin(SourcePlugin):
     def get_mapper(self, message):
         if message['collection_type'] == "tariff_ts":
             return harmonize_data_ts
-        elif message['collection_type'] == "tariff":
-            return create_tariff
         else:
             return None
 
@@ -31,21 +29,19 @@ class Plugin(SourcePlugin):
                     "date_ini": message['date_ini'],
                     "date_end": message['date_end'],
                     "tariff":  message['tariff'],
+                    "measured_property": message['measured_property'],
+                    "priced_property": message['priced_property'],
+                    "priced_property_unit": message['priced_property_unit'],
+                    "currency_unit": message['currency_unit'],
                     "config": self.config
                 }
-        elif message['collection_type'] == "tariff":
-            return {
-                "namespace": message['namespace'],
-                "user": message['user'],
-                "data_source": message['data_source'],
-                "config": self.config
-            }
         else:
             return None
 
     def get_store_table(self, message):
         if message['collection_type'] == "tariff_ts":
-            return f"raw_simpletariff_ts_tariff_PT1H_{message['user']}"
+            prop = str(message['measured_property']).split("#")[1]
+            return f"raw_simpletariff_ts_{prop}_PT1H_{message['user']}"
         else:
             return None
 

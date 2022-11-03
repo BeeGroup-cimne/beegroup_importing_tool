@@ -18,23 +18,14 @@ class Mapper(object):
 
     def get_mappings(self, group):
         organization_organization = {
-            "name": "organization_organization",
+            "name": "organization_main",
             "class": Organization,
             "type": {
-                "origin": "row_split_column",
-                "operations": [],
-                "sep": ";",
-                "column": "organization_organization",
-                "column_mapping": {
-                    "subject": [],
-                }
+                "origin": "static",
             },
             "params": {
                 "raw": {
-                    "organizationDivisionType": "Organization"
-                },
-                "column_mapping": {
-                    "subject": "subject",
+                    "subject": "generalitat-de-catalunya"
                 }
             },
             "links": {
@@ -44,7 +35,7 @@ class Mapper(object):
                 # },
                 "building_organization": {
                     "type": Bigg.hasSubOrganization,
-                    "link": "Num_Ens_Inventari"
+                    "link": "__all__"
                 }
             }
         }
@@ -53,20 +44,18 @@ class Mapper(object):
             "name": "department_organization",
             "class": Organization,
             "type": {
-                "origin": "row_split_column",
+                "origin": "row",
                 "operations": [],
-                "sep": ";",
-                "column": "department_organization",
-                "column_mapping": {
-                    "subject": [],
-                }
             },
             "params": {
                 "raw": {
                     "organizationDivisionType": "Department"
                 },
-                "column_mapping": {
-                    "subject": "subject",
+                "mapping": {
+                    "subject": {
+                        "key": "department_organization",
+                        "operations": []
+                    },
                 }
             },
             "links": {
@@ -76,7 +65,7 @@ class Mapper(object):
                 # },
                 "building_organization": {
                     "type": Bigg.hasSubOrganization,
-                    "link": "Num_Ens_Inventari"
+                    "link": "Num ens"
                 }
             }
         }
@@ -97,7 +86,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "organizationName": {
-                        "key": "Espai",
+                        "key": "Nom",
                         "operations": []
                     }
                 }
@@ -113,7 +102,7 @@ class Mapper(object):
                 # },
                 "building": {
                     "type": Bigg.managesBuilding,
-                    "link": "Num_Ens_Inventari"
+                    "link": "Num ens"
                 }
             }
         }
@@ -135,7 +124,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "buildingName": {
-                        "key": "Espai",
+                        "key": "Nom",
                         "operations": []
                     }
                 }
@@ -147,15 +136,15 @@ class Mapper(object):
                 # },
                 "building_space": {
                     "type": Bigg.hasSpace,
-                    "link": "Num_Ens_Inventari"
+                    "link": "Num ens"
                 },
                 "location_info": {
                     "type": Bigg.hasLocationInfo,
-                    "link": "Num_Ens_Inventari"
+                    "link": "Num ens"
                 },
                 "cadastral_info": {
                     "type": Bigg.hasCadastralInfo,
-                    "link": "Num_Ens_Inventari"
+                    "link": "Num ens"
                 }
             }
         }
@@ -169,7 +158,8 @@ class Mapper(object):
             "params": {
                 "raw": {
                     "hasAddressCountry":
-                        to_object_property("2510769/", namespace=countries)
+                        to_object_property("2510769/", namespace=countries),
+                    "addressTimeZone": "Europe/Madrid"
                 },
                 "mapping": {
                     "subject": {
@@ -189,7 +179,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "addressStreetNumber": {
-                        "key": "Num_via",
+                        "key": "Núm. via",
                         "operations": []
                     },
                     "addressStreetName": {
@@ -220,7 +210,7 @@ class Mapper(object):
                 },
                 "mapping": {
                     "landArea": {
-                        "key": "Sup_terreny",
+                        "key": "Sup. del terreny",
                         "operations": []
                     }  # ,
                     # "landType": {
@@ -255,19 +245,19 @@ class Mapper(object):
             "links": {
                 "gross_floor_area": {
                     "type": Bigg.hasArea,
-                    "link": "Num_Ens_Inventari"
+                    "link": "Num ens"
                 },
                 "gross_floor_area_above_ground": {
                     "type": Bigg.hasArea,
-                    "link": "Num_Ens_Inventari"
+                    "link": "Num ens"
                 },
                 "gross_floor_area_under_ground": {
                     "type": Bigg.hasArea,
-                    "link": "Num_Ens_Inventari"
+                    "link": "Num ens"
                 },
                 "building_element": {
                     "type": Bigg.isAssociatedWithElement,
-                    "link": "Num_Ens_Inventari"
+                    "link": "Num ens"
                 }
             }
         }
@@ -289,7 +279,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "areaValue": {
-                        "key": "Sup_const_total",
+                        "key": "Sup. construïda total",
                         "operations": []
                     }
                 }
@@ -313,7 +303,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "areaValue": {
-                        "key": "Sup_const_sobre_rasant",
+                        "key": "Sup. const. sobre rasant",
                         "operations": []
                     }
                 }
@@ -337,7 +327,7 @@ class Mapper(object):
                         "operations": []
                     },
                     "areaValue": {
-                        "key": "Sup_const_sota rasant",
+                        "key": "Sup. const. sota rasant",
                         "operations": []
                     }
                 }
@@ -363,9 +353,12 @@ class Mapper(object):
             }
         }
         grouped_modules = {
-            "all": [organization_organization, department_organization, building_organization, building, location_info, cadastral_info,
-                    building_space, gross_floor_area, gross_floor_area_under_ground, gross_floor_area_above_ground,
-                    building_element],
+            "main_org": [organization_organization, building_organization, building, location_info, cadastral_info,
+                         building_space, gross_floor_area, gross_floor_area_under_ground, gross_floor_area_above_ground,
+                         building_element],
+            "dep_org" : [department_organization, building_organization, building, location_info, cadastral_info,
+                         building_space, gross_floor_area, gross_floor_area_under_ground, gross_floor_area_above_ground,
+                         building_element],
             "buildings": [building_organization, building, location_info, cadastral_info, building_space,
                           gross_floor_area, gross_floor_area_under_ground, gross_floor_area_above_ground,
                           building_element]

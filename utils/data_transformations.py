@@ -10,7 +10,7 @@ from thefuzz import process
 def load_dic(dictionary_list):
     dicty = rdflib.Graph()
     for d in dictionary_list:
-        dicty.load(d, format="ttl")
+        dicty.parse(d, format="ttl")
     return dicty
 
 
@@ -70,7 +70,8 @@ def join_params(args, joiner='~'):
 def zfill_param(key, num):
     try:
         return key.zfill(num)
-    except:
+    except Exception as  e:
+        print(e)
         return None
 
 
@@ -133,16 +134,28 @@ def sensor_subject(device_source, device_key, measured_property, sensor_type, fr
     return f"SENSOR-{device_source}-{device_key}-{measured_property}-{sensor_type}-{freq}"
 
 
-def tariff_subject(device_source, device_key, measured_property, sensor_type, freq):
-    return f"TARIFF-{device_source}-{device_key}-{measured_property}-{sensor_type}-{freq}"
+def tariff_subject(tariff_source, user, tariff_name):
+    return f"TARIFF-{tariff_source}-{user}-{tariff_name}"
+
+
+def co2_subject(tariff_name):
+    return f"CO2EMISIONS-{tariff_name}"
+
+
+def tariff_component_subject(tariff_source, tariff_key,  measured_property, tariff_type, freq):
+    return f"TARIFF-{tariff_source}-{tariff_key}-{measured_property}-{tariff_type}-{freq}"
+
+
+def co2_list_subject(co2_source, co2_key,  measured_property, co2_type, freq):
+    return f"CO2-{co2_source}-{co2_key}-{measured_property}-{co2_type}-{freq}"
 
 
 def delivery_subject(key):
     return f"SUPPLY-{key}"
 
 
-def validate_ref_cadastral(value):
-    ref = value.split(";")
+def validate_ref_cadastral(value, sep=","):
+    ref = value.split(sep)
     valid_ref = []
     for refer in ref:
         refer = refer.strip()

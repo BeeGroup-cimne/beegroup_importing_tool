@@ -77,7 +77,7 @@ class Mapping(object):
             },
             "params": {
                 "raw": {
-                    "hasDeviceType": to_object_property("Meter.EnergyMeter", namespace=bigg_enums)
+                    "hasDeviceType": to_object_property("Meter.EnergyMeter.Gas", namespace=bigg_enums)
                 },
                 "mapping": {
                     "subject": {

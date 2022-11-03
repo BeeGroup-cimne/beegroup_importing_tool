@@ -47,10 +47,6 @@ def gather_data_summary(config, settings, args):
                       row_keys=["filename", "id"],
                       column_map=[("info", "all")], config=config, settings=settings, args=args)
 
-            # save_data(data=df.to_dict(orient='records'), data_type="Consumption",
-            #           row_keys=["filename", "id"],
-            #           column_map=[("info", "all")], config=config, settings=settings, args=args)
-
 
 def gather_data_detail(config, settings, args):
     for file in os.listdir(args.file):

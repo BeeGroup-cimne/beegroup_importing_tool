@@ -94,7 +94,7 @@ def __mapping_params__(params, row):
                     __check_basic_syntax__(v1, mapping_params_mandatory_fields)
                     if v1['key'] in row:
                         value = row[v1['key']]
-                        if not value or value == b'nan' or pd.isna(value):
+                        if not value or value == b'nan' or value == 'nan' or pd.isna(value):
                             continue
                         for func in v1['operations']:
                             value = func(value)
@@ -109,7 +109,7 @@ def __mapping_params__(params, row):
             else:
                 if v['key'] in row:
                     value = row[v['key']]
-                    if value is None or value == b'nan':
+                    if value is None or value == b'nan' or value == 'nan' or pd.isna(value):
                         continue
                     if isinstance(value, list):
                         if all(pd.isna(value)):

@@ -1,8 +1,8 @@
 from .gather import gather
 from .harmonizer import harmonize_command_line
-from .harmonizer.mapper_static import harmonize_IdentificacionEdificio as harmonize_building, \
-    harmonize_DatosGeneralesyGeometria as harmonize_area,\
-    harmonize_CondicionesFuncionamientoyOcupacion as harmonize_spaces
+from .harmonizer.mapper_static import harmonize_IdentificacionEdificio, harmonize_DatosGeneralesyGeometria,\
+    harmonize_CondicionesFuncionamientoyOcupacion, harmonize_Demanda, harmonize_Consumo, harmonize_Emissions,\
+    harmonize_Calificacion
 from .. import SourcePlugin
 
 
@@ -18,17 +18,26 @@ class Plugin(SourcePlugin):
     def get_mapper(self, message):
         print(message["collection_type"])
         if message["collection_type"] == "IdentificacionEdificio":
-            return harmonize_building
+            return harmonize_IdentificacionEdificio
         elif message["collection_type"] == "DatosGeneralesyGeometria":
-            return harmonize_area
+            return harmonize_DatosGeneralesyGeometria
         elif message["collection_type"] == "CondicionesFuncionamientoyOcupacion":
-            return harmonize_spaces
+            return harmonize_CondicionesFuncionamientoyOcupacion
+        elif message["collection_type"] == "Demanda":
+            return harmonize_Demanda
+        elif message["collection_type"] == "Consumo":
+            return harmonize_Consumo
+        elif message["collection_type"] == "EmisionesCO2":
+            return harmonize_Emissions
+        elif message["collection_type"] == "Calificacion":
+            return harmonize_Calificacion
         else:
             return None
 
     def get_kwargs(self, message):
         if message["collection_type"] in ["IdentificacionEdificio", "DatosGeneralesyGeometria",
-                                          "CondicionesFuncionamientoyOcupacion"]:
+                                          "CondicionesFuncionamientoyOcupacion", "Demanda", "Consumo",
+                                          "EmisionesCO2", "Calificacion"]:
             return {
                 "namespace": message['namespace'],
                 "user": message['user'],
@@ -39,5 +48,6 @@ class Plugin(SourcePlugin):
 
     def get_store_table(self, message):
         if message["collection_type"] in ["IdentificacionEdificio", "DatosGeneralesyGeometria",
-                                          "CondicionesFuncionamientoyOcupacion"]:
+                                          "CondicionesFuncionamientoyOcupacion", "Demanda", "Consumo",
+                                          "EmisionesCO2", "Calificacion"]:
             return f"raw_{self.source_name}_static_{message['collection_type']}__{message['user']}"

@@ -55,7 +55,7 @@ def get_hbase_data_batch(hbase_conf, hbase_table, row_start=None, row_stop=None,
                          scan_batching=None, limit=None, sorted_columns=False, reverse=False):
     if row_prefix:
         row_start = row_prefix
-        row_stop = row_prefix[:-1] + chr(row_prefix[-1] + 1).encode("utf-8")
+        row_stop = row_prefix[:-1] + chr(ord(row_prefix[-1]) + 1)
 
     if limit:
         if limit > batch_size:
@@ -74,16 +74,19 @@ def get_hbase_data_batch(hbase_conf, hbase_table, row_start=None, row_stop=None,
                                reverse=reverse))
         if not data:
             break
-        last_record = data[-1][0]
-        current_register += len(data)
         yield data
+        if len(data) <= 1:
+            break
+
+        last_record = data[-1][0].decode()
+        current_register += len(data)
 
         if limit:
             if current_register >= limit:
                 break
             else:
                 current_limit = min(batch_size, limit - current_register)
-        row_start = last_record[:-1] + chr(last_record[-1] + 1).encode("utf-8")
+        row_start = last_record[:-1] + chr(ord(last_record[-1]) + 1)
 
 
 def get_hbase_data_batch_bucket(hbase_conf, hbase_table, row_start=None, row_stop=None, row_prefix=None, columns=None,
@@ -91,8 +94,8 @@ def get_hbase_data_batch_bucket(hbase_conf, hbase_table, row_start=None, row_sto
                                 scan_batching=None, limit=None, sorted_columns=False, reverse=False, buckets=20):
     for buck in range(buckets):
         if row_prefix:
-            row_start = "~".join([str(buck), row_prefix.decode()]).encode()
-            row_stop = row_start[:-1] + chr(row_start[-1] + 1).encode("utf-8")
+            row_start = "~".join([str(buck), row_prefix])
+            row_stop = (row_start[:-1] + chr(ord(row_start[-1]) + 1))
 
         if limit:
             if limit > batch_size:
@@ -111,13 +114,16 @@ def get_hbase_data_batch_bucket(hbase_conf, hbase_table, row_start=None, row_sto
                                    reverse=reverse))
             if not data:
                 break
-            last_record = data[-1][0]
-            current_register += len(data)
             yield data
+            if len(data) <= 1:
+                break
+
+            last_record = data[-1][0].decode()
+            current_register += len(data)
 
             if limit:
                 if current_register >= limit:
                     break
                 else:
                     current_limit = min(batch_size, limit - current_register)
-            row_start = last_record[:-1] + chr(last_record[-1] + 1).encode("utf-8")
+            row_start = last_record[:-1] + chr(ord(last_record[-1]) + 1)

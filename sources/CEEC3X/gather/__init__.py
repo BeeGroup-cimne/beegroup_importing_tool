@@ -10,6 +10,7 @@ def gather(arguments, config=None, settings=None):
     ap.add_argument("-f", "--file", required=True, help="Excel file path to parse")
     ap.add_argument("--user", "-u", help="The user importing the data", required=True)
     ap.add_argument("--building", "-b", help="The building importing the data", required=True)
+    ap.add_argument("--cert_id", "-id", help="The building importing the data", required=True)
     ap.add_argument("--namespace", "-n", help="The subjects namespace uri", required=True)
     ap.add_argument("-st", "--store", required=True, help="Where to store the data", choices=["kafka", "hbase"])
     args = ap.parse_args(arguments)
@@ -18,10 +19,8 @@ def gather(arguments, config=None, settings=None):
                         log_exec=datetime.utcnow())
     try:
         cert = read_xml_certificate(args.file)
-        file_id = hashlib.md5(bytes(args.file.split("/")[-1], encoding="utf-8")).hexdigest()
     except Exception as e:
         cert = {}
-        file_id = None
         utils.utils.log_string(f"could not parse file: {e}")
         exit(1)
 
@@ -29,10 +28,14 @@ def gather(arguments, config=None, settings=None):
         cert.pop("@version")
     except:
         pass
-
+    building_area = None
     for k, v in cert.items():
         v['building_organization_code'] = args.building
-        v['certificate_unique_code'] = file_id
+        v['certificate_unique_code'] = args.cert_id
+        if k == "DatosGeneralesyGeometria":
+            building_area = v['SuperficieHabitable']
+        if k == "EmisionesCO2":
+            v["area"] = building_area
         if args.store == "kafka":
             utils.utils.log_string(f"saving to kafka", mongo=False)
             try:

@@ -1,8 +1,7 @@
 from utils.data_transformations import *
 from utils.rdf_utils.ontology.namespaces_definition import Bigg, bigg_enums, units, countries
 from utils.rdf_utils.ontology.bigg_classes import Organization, Building, LocationInfo, CadastralInfo, BuildingSpace, \
-    Area, BuildingConstructionElement
-
+    Area, BuildingConstructionElement, EnergyPerformanceCertificate, EnergyPerformanceCertificateAdditionalInfo
 
 
 class Mapper(object):
@@ -15,6 +14,8 @@ class Mapper(object):
         CadastralInfo.set_namespace(namespace)
         Area.set_namespace(namespace)
         BuildingConstructionElement.set_namespace(namespace)
+        EnergyPerformanceCertificate.set_namespace(namespace)
+        EnergyPerformanceCertificateAdditionalInfo.set_namespace(namespace)
 
     def get_mappings(self, group):
         building = {
@@ -36,7 +37,11 @@ class Mapper(object):
                     "buildingName": {
                         "key": "NombreDelEdificio",
                         "operations": []
-                    }
+                    },
+                    "buildingConstructionYear": {
+                        "key": "AnoConstruccion",
+                        "operations": []
+                    },
                 }
             },
             "links": {
@@ -47,7 +52,15 @@ class Mapper(object):
                 "cadastral_info": {
                     "type": Bigg.hasCadastralInfo,
                     "link": "building_subject"
-                }
+                },
+                "buildingspace": {
+                    "type": Bigg.hasSpace,
+                    "link": "building_subject"
+                },
+                "epc": {
+                    "type": Bigg.hasEPC,
+                    "link": "building_subject"
+                },
             }
         }
 
@@ -103,7 +116,72 @@ class Mapper(object):
             }
         }
 
+        buildingspace = {
+            "name": "buildingspace",
+            "class": BuildingSpace,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "buildingspace_subject",
+                        "operations": []
+                    },
+                    "hasBuildingSpaceUseType": {
+                        "key": "hasBuildingSpaceUseType",
+                        "operations": []
+                    }
+                }
+            }
+        }
+
+        epc = {
+            "name": "epc",
+            "class": EnergyPerformanceCertificate,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "epc_subject",
+                        "operations": []
+                    },
+                    "energyPerformanceCertificateProcedureType": {
+                        "key": "Procedimiento",
+                        "operations": []
+                    }
+                }
+            },
+            "links": {
+                "epc_add": {
+                    "type": Bigg.hasAdditionalInfo,
+                    "link": "building_subject"
+                }
+            }
+        }
+        epc_add = {
+            "name": "epc_add",
+            "class": EnergyPerformanceCertificateAdditionalInfo,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "epc_additional_subject",
+                        "operations": []
+                    },
+                    "constructionRegulation": {
+                        "key": "NormativaVigente",
+                        "operations": []
+                    }
+                }
+            },
+        }
+
         grouped_modules = {
-            "all": [building, location_info, cadastral_info]
+            "all": [building, location_info, cadastral_info, buildingspace, epc, epc_add]
         }
         return grouped_modules[group]

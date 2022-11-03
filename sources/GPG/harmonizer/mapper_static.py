@@ -18,17 +18,13 @@ bigg = settings.namespace_mappings['bigg']
 
 
 def harmonize_organizations(x, map):
-    resp = set()
-    for xx in x:
-        resp.add(map[xx])
-    return list(resp)
+    return map[x]
 
 
 def _organization_map(series, orgs, default):
     x = set()
     for item in series:
-        for xx in item:
-            x.add(xx)
+        x.add(item)
 
     resp = {}
     for xx in x:
@@ -52,7 +48,7 @@ def _get_fuzz_params(user_id, neo4j_conn):
         organization_names = s.run(f"""
          MATCH 
          (m:{bigg}__Organization {{userID: "{user_id}"}})-[:{bigg}__hasSubOrganization *]->
-         (n:{bigg}__Organization{{{bigg}__organizationDivisionType: ["Department"]}})
+         (n:{bigg}__Organization{{{bigg}__organizationDivisionType: "Department"}})
          RETURN n.uri
          """)
         dep_uri = {x.value().split("#")[1]: x.value().split("#")[1] for x in organization_names}
@@ -60,28 +56,27 @@ def _get_fuzz_params(user_id, neo4j_conn):
 
 
 def fuzz_departments(df, user_id, neo4j):
-    df['department_organization_tmp'] = df['Departament_Assig_Adscrip'].apply(lambda x: x.split(";")). \
-        apply(lambda x: [clean_department(s) for s in x])
+    df['department_organization_tmp'] = df['Responsable fiscal efectiu']
     fparams = _get_fuzz_params(user_id, neo4j)
     org_map = _organization_map(df['department_organization_tmp'], **fparams)
     harmonize_deps = partial(harmonize_organizations, map=org_map)
-    df['department_organization'] = df['department_organization_tmp'].apply(harmonize_deps).apply(lambda x: ";".join([x1[0] for x1 in x if x1[1]]))
-    df['organization_organization'] = df['department_organization_tmp'].apply(harmonize_deps).apply(lambda x: ";".join([x1[0] for x1 in x if not x1[1]]))
+    df['department_organization'] = df['department_organization_tmp'].apply(harmonize_deps).apply(lambda x: x[0])
+    df['department_organization_main'] = df['department_organization_tmp'].apply(harmonize_deps).apply(lambda x: x[1])
 
 
 def clean_dataframe(df, source):
-    df['building_organization'] = df['Num_Ens_Inventari'].apply(id_zfill).apply(building_department_subject)
-    df['building'] = df['Num_Ens_Inventari'].apply(id_zfill).apply(building_subject)
-    df['buildingIDFromOrganization'] = df['Num_Ens_Inventari'].apply(id_zfill)
-    df['location_info'] = df['Num_Ens_Inventari'].apply(id_zfill).apply(location_info_subject)
+    df['building_organization'] = df['Num ens'].apply(id_zfill).apply(building_department_subject)
+    df['building'] = df['Num ens'].apply(id_zfill).apply(building_subject)
+    df['buildingIDFromOrganization'] = df['Num ens'].apply(id_zfill)
+    df['location_info'] = df['Num ens'].apply(id_zfill).apply(location_info_subject)
     province_dic = Cache.province_dic_ES
     province_fuzz = partial(fuzzy_dictionary_match,
                             map_dict=fuzz_params(province_dic, ['ns1:name']),
                             default=None
                             )
-    unique_prov = df['Provincia'].unique()
+    unique_prov = df['Província'].unique()
     prov_map = {k: province_fuzz(k) for k in unique_prov}
-    df['hasAddressProvince'] = df['Provincia'].map(prov_map)
+    df['hasAddressProvince'] = df['Província'].map(prov_map)
 
     municipality_dic = Cache.municipality_dic_ES
     for prov, df_group in df.groupby('hasAddressProvince'):
@@ -97,24 +92,30 @@ def clean_dataframe(df, source):
         city_map = {k: municipality_fuzz(k) for k in unique_city}
         df.loc[df['hasAddressProvince']==prov, 'hasAddressCity'] = df_group.Municipi.map(city_map)
 
-    df['cadastral_info'] = df['Ref_Cadastral'].apply(validate_ref_cadastral)
-    df['building_space'] = df['Num_Ens_Inventari'].apply(id_zfill).apply(building_space_subject)
+    df['cadastral_info'] = df['Ref. Cadastral'].apply(validate_ref_cadastral)
+    df['building_space'] = df['Num ens'].apply(id_zfill).apply(building_space_subject)
 
     building_type_taxonomy = get_taxonomy_mapping(
         taxonomy_file="sources/GPG/harmonizer/BuildingUseTypeTaxonomy.xls",
         default="Other")
 
-    df['hasBuildingSpaceUseType'] = df['Tipus_us'].apply(lambda x: ast.literal_eval(x)[-1]).map(building_type_taxonomy). \
+    df['hasBuildingSpaceUseType'] = df['Tipus ús'].apply(lambda x: eval(x)[0]).map(building_type_taxonomy). \
         apply(partial(to_object_property, namespace=bigg_enums))
-    df['gross_floor_area'] = df['Num_Ens_Inventari'].apply(id_zfill).\
+    df['gross_floor_area'] = df['Num ens'].apply(id_zfill).\
         apply(partial(gross_area_subject, a_source=source))
-    df['gross_floor_area_above_ground'] = df['Num_Ens_Inventari'].\
+    df['gross_floor_area_above_ground'] = df['Num ens'].\
         apply(id_zfill).apply(partial(gross_area_subject_above, a_source=source))
-    df['gross_floor_area_under_ground'] = df['Num_Ens_Inventari'].\
+    df['gross_floor_area_under_ground'] = df['Num ens'].\
         apply(id_zfill).apply(partial(gross_area_subject_under, a_source=source))
 
-    df['building_element'] = df['Num_Ens_Inventari'].apply(id_zfill).apply(construction_element_subject)
-
+    df['building_element'] = df['Num ens'].apply(id_zfill).apply(construction_element_subject)
+    try:
+        df['Codi_postal'] = df['Codi_postal']
+    except:
+        df['Codi_postal'] = ""
+    # remove strange buildings
+    # df = df[~((df.hasBuildingSpaceUseType == rdflib.URIRef('http://bigg-project.eu/ontology#Other')) & (
+    # df.Sup_const_total.astype(float) == 0))]
 
 def harmonize_data(data, **kwargs):
     namespace = kwargs['namespace']
@@ -131,7 +132,10 @@ def harmonize_data(data, **kwargs):
     if organizations:
         log_string("maching organizations", mongo=False)
         fuzz_departments(df, user, config['neo4j'])
-        g = generate_rdf(mapper.get_mappings("all"), df)
+        dep = df[df.department_organization_main==True]
+        main = df[df.department_organization_main==False]
+        g = generate_rdf(mapper.get_mappings("main_org"), main)
+        g += generate_rdf(mapper.get_mappings("dep_org"), dep)
     else:
         g = generate_rdf(mapper.get_mappings("buildings"), df)
     log_string("saving", mongo=False)
