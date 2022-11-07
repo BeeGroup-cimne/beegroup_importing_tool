@@ -5,6 +5,7 @@ import geopy.distance
 import pandas as pd
 from neo4j import GraphDatabase
 import settings
+import set_up_params
 import argparse
 from utils.utils import read_config
 
@@ -109,7 +110,7 @@ if __name__ == "__main__":
     if args.create:
         create_ws(driver, stations, args.namespace)
     if args.update:
-        country_info = settings.COUNTRIES[args.country]
+        country_info = set_up_params.WEATHER_STATIONS[args.country]
         location1 = pd.DataFrame(get_building_locations_lat_lon(driver, namespaces=country_info['namespaces']))
         location2 = pd.DataFrame(get_building_locations_stations_df(driver, stations, country_info['weather_query'],
                                                                     namespaces=country_info['namespaces']))

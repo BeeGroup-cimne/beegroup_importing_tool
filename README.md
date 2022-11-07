@@ -11,6 +11,9 @@ The different components of the architecture are depicted in the following list:
    2. Place the dictionaries in the dict_folder `ontology/dictionaries`
    3. Run to generate the ontology `python3 -m main_ontology`
 
+# PREPARE THE PROJECT:
+Create the directories `ontology`, `sources` and `translations`, write the `settings.py` and `set_up_params.py` files
+
 ## External API Producer
 
 This component is in charge to communicate to the different external providers and make the pertinent requests to obtain the data. This component is able to store the data directly to *HBASE* or send it to the *KAFKA* to be processed later. 

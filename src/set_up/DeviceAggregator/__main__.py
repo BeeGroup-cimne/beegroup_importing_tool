@@ -2,6 +2,7 @@ import argparse
 import os
 from neo4j import GraphDatabase
 import settings
+import set_up_params
 from utils import utils
 from ontology.namespaces_definition import *
 from utils.rdf.rdf_functions import get_namespace_subject
@@ -16,11 +17,12 @@ def create_dev_agg(measured_property, device_query, freq, agg_name, required, ag
         MATCH(prop {{uri:"{measured_property}"}}) 
         RETURN prop
     }}
-    MATCH (bs:{bigg}__BuildingSpace)-[:{bigg}__isObservedByDevice]->(d:{device_query})-
+    MATCH (bs:{bigg}__BuildingSpace)-[:{bigg}__isObservedByDevice]->(d)-
         [:{bigg}__hasSensor]->(s:{bigg}__Sensor)-[:{bigg}__hasMeasurement]->(ts:{bigg}__Measurement) 
-    WHERE s.{bigg}__timeSeriesFrequency="{freq}" 
+    WHERE {device_query} 
+          AND s.{bigg}__timeSeriesFrequency="{freq}" 
           AND EXISTS((s)-[:{bigg}__hasMeasuredProperty]->(prop))
-    WITH bs, d, prop, ts, split(bs.uri, "-")[0]+"-AGGREGATOR-{id_prop}-TOTAL-"+split(bs.uri, "-")[1] as uri
+    WITH bs, d, prop, ts, split(bs.uri, "-")[0]+"-AGGREGATOR-{id_prop}-TOTAL-"+split(bs.uri, "-")[1:] as uri
     MERGE (da:{bigg}__DeviceAggregator:Resource{{uri:uri}})
     MERGE (da)-[:{bigg}__includesDevice]->(d)
     WITH da, apoc.text.join(collect("<mi>"+split(ts.uri,"#")[1]+"</mi>"), "<mo>"+"+"+"</mo>") as key1, prop, bs
@@ -47,7 +49,7 @@ if __name__ == "__main__":
     # read config file
     config = utils.read_config(settings.conf_file)
     neo4j = GraphDatabase.driver(**config['neo4j'])
-    d_agg = settings.device_aggregators[args.country]
+    d_agg = set_up_params.DEVICE_AGGREGATORS[args.country]
     for query_params in d_agg[args.device_aggregator_type]:
         query = create_dev_agg(**query_params)
         print(query)

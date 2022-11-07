@@ -5,10 +5,11 @@ import requests
 from bs4 import BeautifulSoup
 import rdflib
 import settings
+import set_up_params
 from rdflib import RDF, Namespace, Literal
 BIGG = Namespace("http://bigg-project.eu/ontology#")
 ALL_QUERY = """SELECT DISTINCT ?s WHERE{ ?s ?p ?o}"""
-COUNTRIES = settings.COUNTRIES
+COUNTRIES = set_up_params.ZONE_DICTIONARY
 
 def align_to_bigg(graph, query, bigg_class):
     for result in graph.query(query):

@@ -62,3 +62,29 @@ with neo.session() as session:
             SET g.bigg__groupType="Global"
             SET g.bigg__groupLabel="ALLBUILDINGS"
     """)
+
+f"""
+                Merge (g:bigg__AnalyticalGroup:Resource{{uri:"{namespace}#GROUP-ALLMEASURES"}})
+                WITH g
+                Match (b:bigg__EnergyEfficiencyMeasure)
+                WHERE b.uri =~"{namespace}#.*"
+                Merge (g)<-[:bigg__groupsForAnalytics]-(b)
+                SET g.bigg__groupType="OrganizationAllMeasures"
+                SET g.bigg__groupLabel="ALLMEASURES"
+        """
+
+neo = GraphDatabase.driver(**config['neo4j'])
+with neo.session() as session:
+    usetypes = session.run("""Match (n:bigg__EnergyEfficienyMeasureType) return n.uri""").data()
+
+print(f"""
+                Match (mm:bigg__EnergyEfficiencyMeasureType)
+                with "{namespace}#GROUP-EEMTYPE-" + split(mm.uri,"#")[1] as uri
+                Merge (g:bigg__AnalyticalGroup:Resource{{uri:uri}})
+                WITH g
+                Match (mm)<-[:skos__broader*0..]-()<-[:bigg__hasEnergyEfficiencyMeasureType]-(b)
+                WHERE b.uri =~"{namespace}#.*"
+                Merge (g)<-[:bigg__groupsForAnalytics]-(b)
+                SET g.bigg__groupType="EnergyEfficiencyMeasureType"
+                SET g.bigg__groupLabel=split(mm.uri,"#")[1]
+""")
