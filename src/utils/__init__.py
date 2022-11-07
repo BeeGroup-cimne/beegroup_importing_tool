@@ -3,7 +3,6 @@ from . import utils
 from . import hbase
 from . import data_transformations
 from . import hdfs
-from . import ixon
 from . import kafka
 from . import mongo
 from . import nomenclature
