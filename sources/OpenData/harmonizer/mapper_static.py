@@ -18,11 +18,11 @@ def clean_linked_data(df, n):
     df['location_uri'] = df['location_subject'].apply(lambda x: n[x])
 
     df['hasAddressCity'] = df['poblacio'].map(
-        fuzz_location(Cache.municipality_dic_ES, ['ns1:name'], df['poblacio'].unique()))
+        fuzz_data(Cache.municipality_dic_ES, ['ns1:name'], df['poblacio'].unique()))
 
     df['hasAddressProvince'] = df['nom_provincia'].map(
-        fuzz_location(Cache.province_dic_ES, ['ns1:name', 'ns1:officialName'],
-                      df['nom_provincia'].dropna().unique()))
+        fuzz_data(Cache.province_dic_ES, ['ns1:name', 'ns1:officialName'],
+                  df['nom_provincia'].dropna().unique()))
 
     # Cadastral Reference
     df['cadastral_subject'] = df['referencia_cadastral'].apply(cadastral_info_subject)
