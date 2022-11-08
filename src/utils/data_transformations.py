@@ -70,7 +70,7 @@ def join_params(args, joiner='~'):
 def zfill_param(key, num):
     try:
         return key.zfill(num)
-    except Exception as  e:
+    except Exception as e:
         print(e)
         return None
 
@@ -142,11 +142,11 @@ def co2_subject(tariff_name):
     return f"CO2EMISIONS-{tariff_name}"
 
 
-def tariff_component_subject(tariff_source, tariff_key,  measured_property, tariff_type, freq):
+def tariff_component_subject(tariff_source, tariff_key, measured_property, tariff_type, freq):
     return f"TARIFF-{tariff_source}-{tariff_key}-{measured_property}-{tariff_type}-{freq}"
 
 
-def co2_list_subject(co2_source, co2_key,  measured_property, co2_type, freq):
+def co2_list_subject(co2_source, co2_key, measured_property, co2_type, freq):
     return f"CO2-{co2_source}-{co2_key}-{measured_property}-{co2_type}-{freq}"
 
 
@@ -176,3 +176,7 @@ def additional_epc_subject(key):
 def fuzz_location(location_dict, list_prop, unique_values):
     fuzz = partial(fuzzy_dictionary_match, map_dict=fuzz_params(location_dict, list_prop), default=None)
     return {k: fuzz(k) for k in unique_values}
+
+
+def owner_subject(key):
+    return f"OWNER-{key}"
