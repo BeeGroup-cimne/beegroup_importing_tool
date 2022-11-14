@@ -17,7 +17,7 @@ def gather_data(config, settings, args):
             list_sheets = pd.ExcelFile(path).sheet_names
 
             for sheet_name in list_sheets:
-                    log_string(f"{config['source']} - {file}")
+                    # log_string(f"{config['source']} - {file}")
                     df = pd.read_excel(path, skiprows=4, sheet_name=sheet_name)
                     df = df.iloc[2:].copy()
                     df = df.rename(columns=lambda x: x.strip())
@@ -67,3 +67,9 @@ def gather(arguments, config=None, settings=None):
     args = ap.parse_args(arguments)
 
     gather_data(config=config, settings=settings, args=args)
+
+    # import utils
+    # config = utils.utils.read_config('config.json')
+    # namespace = "https://eplanet.eu#"
+    # user = "eplanet"
+    # config.update({"source": "Greece"})

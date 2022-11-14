@@ -90,7 +90,7 @@ def gather(arguments, settings, config):
             for i in xl.sheet_names:
                 unique_id = f"{file}".split('_')[0]
 
-                if i in 'plyn':  # GAS
+                if 'plyn' in i:  # GAS
                     try:
                         df = pd.read_excel(f"{args.file}/{file}", skiprows=5, sheet_name=i)
                         df.dropna(how='all', axis='columns', inplace=True)
@@ -108,7 +108,7 @@ def gather(arguments, settings, config):
                     except Exception as ex:
                         log_string(ex)
 
-                elif i in 'elektřina':
+                elif 'elektřin' in i:
                     try:
                         df = pd.read_excel(f"{args.file}/{file}", sheet_name='elektřina',
                                            skiprows=6)
@@ -143,7 +143,7 @@ def gather(arguments, settings, config):
                                                               user=args.user, source=config['source']))
                     except Exception as ex:
                         log_string(ex)
-                elif i in 'souhrn':
+                elif 'souhrn' in i :
                     try:
                         df = pd.read_excel(f"{args.file}/{file}", sheet_name='souhrn', skiprows=99)
                         df.dropna(how='all', axis='columns', inplace=True)

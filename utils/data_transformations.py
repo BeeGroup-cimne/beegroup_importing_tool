@@ -66,7 +66,7 @@ def join_params(args, joiner='~'):
 def zfill_param(key, num):
     try:
         return key.zfill(num)
-    except Exception as  e:
+    except Exception as e:
         print(e)
         return None
 
