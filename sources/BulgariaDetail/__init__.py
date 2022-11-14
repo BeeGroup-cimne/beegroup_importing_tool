@@ -1,34 +1,31 @@
 import utils
 from sources import SourcePlugin
 from sources.Bulgaria.gather import gather
-from sources.Bulgaria.harmonizer import harmonize_command_line
-from sources.Bulgaria.harmonizer.mapper_buildings import harmonize_ts, harmonize_data
+from sources.Bulgaria.harmonizer.mapper_buildings import harmonize_data
 from utils.nomenclature import RAW_MODE
 
 
 class Plugin(SourcePlugin):
-    source_name = "bulgaria"
+    source_name = "BulgariaDetail"
 
     def gather(self, arguments):
         gather(arguments, settings=self.settings, config=self.config)
 
     def get_mapper(self, message):
-        if message["collection_type"] == 'BuildingInfo':
+        if message["collection_type"] == 'harmonize_detail':
             return harmonize_data
 
     def get_kwargs(self, message):
-        if message["collection_type"] == 'BuildingInfo':
+        if message["collection_type"] == 'harmonize_detail':
             return {
                 "namespace": message['namespace'],
                 "user": message['user'],
                 "config": self.config,
                 "collection_type": message['collection_type']
-             }
+            }
 
     def get_store_table(self, message):
         if message["collection_type"] == 'BuildingInfo':
-            return utils.nomenclature.raw_nomenclature("Bulgaria", RAW_MODE.STATIC, data_type='BuildingInfo',
+            return utils.nomenclature.raw_nomenclature(message['source'], RAW_MODE.STATIC,
+                                                       data_type=message["collection_type"],
                                                        frequency="", user=message['user'])
-
-    def harmonizer_command_line(self, arguments):
-        harmonize_command_line(arguments, config=self.config, settings=self.settings)

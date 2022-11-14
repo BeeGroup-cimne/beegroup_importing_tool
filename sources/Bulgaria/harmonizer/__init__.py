@@ -3,7 +3,7 @@ import re
 import utils
 from harmonizer.cache import Cache
 from utils.nomenclature import RAW_MODE
-from .mapper_buildings import harmonize_static
+from .mapper_buildings import harmonize_data
 
 
 def harmonize_command_line(arguments, config=None, settings=None):
@@ -33,5 +33,5 @@ def harmonize_command_line(arguments, config=None, settings=None):
         print("parsed. Mapping...")
         i += len(dic_list)
         print(i)
-        harmonize_static(dic_list, namespace=args.namespace, user=args.user, config=config)
+        harmonize_data(dic_list, namespace=args.namespace, user=args.user, config=config)
         break
