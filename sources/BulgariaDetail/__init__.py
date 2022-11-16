@@ -1,7 +1,8 @@
 import utils
 from sources import SourcePlugin
 from sources.Bulgaria.gather import gather
-from sources.Bulgaria.harmonizer.mapper_buildings import harmonize_data
+from sources.BulgariaDetail.harmonizer import harmonize_data
+
 from utils.nomenclature import RAW_MODE
 
 

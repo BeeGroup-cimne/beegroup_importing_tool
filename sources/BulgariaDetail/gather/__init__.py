@@ -203,7 +203,7 @@ def transform_data(data):
 def gather_data(config, settings, args):
     for file in os.listdir(args.file):
         if file.endswith('.xlsx'):
-            wb = openpyxl.load_workbook(f"data/bulgaria/{file}", data_only=True)
+            wb = openpyxl.load_workbook(os.path.join(args.file, file), data_only=True)
             contracts = gather_contacts(wb['Contacts'])
             building_description = gather_building_description(wb['Building Description'])
 
