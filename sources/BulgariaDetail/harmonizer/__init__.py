@@ -81,6 +81,49 @@ def clean_project(df):
               [x for x in df.columns if re.match("project_energy_saving_subject_.*", x)]]
 
 
+def clean_dataframe_eem_savings(df, eems_parted, start_column):
+    df['element_subject'] = df['subject'].apply(construction_element_subject)
+    saving_columns = []
+    for i, eem_type in enumerate(eems_parted):
+        list_i = i + start_column
+        df[f"eem_{list_i}_subject"] = df['subject'].apply(lambda x: f"{x}-{eem_type}").apply(eem_subject)
+        for j, e_saving_type in enumerate(enum_energy_saving_type):
+            df_t = df['subject'].apply(lambda x: f"{x}-{eem_type}-{e_saving_type}").apply(energy_saving_subject)
+            df_t.name = f"energy_saving_{list_i}_{j}_subject"
+            saving_columns.append(df_t)
+    df = pd.concat([df] + saving_columns, axis=1)
+    return df[['subject', 'element_subject', 'epc_date_before', 'epc_date'] +
+              [x for x in df.columns if re.match("eem_.*_subject", x)] +
+              [x for x in df.columns if re.match("measurement_.*", x)] +
+              [x for x in df.columns if re.match("energy_saving_.*_subject", x)]]
+
+
+def harmonize_eem_es(df, mapper, config):
+    parts_eem = 2
+    parts_saving = 2
+    start_column_eem = 0
+    for chunk in range(parts_eem):
+        k, m = divmod(len(enum_energy_efficiency_measurement_type), parts_eem)
+        eems_parted = [enum_energy_efficiency_measurement_type[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in
+                       range(parts_eem)]
+        df_eem = clean_dataframe_eem_savings(df.copy(), eems_parted[chunk], start_column_eem)
+        start_column_saving = 0
+        for chunk_saving in range(parts_saving):
+            k, m = divmod(len(enum_energy_saving_type), parts_saving)
+            saving_parted = [enum_energy_saving_type[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in
+                             range(parts_saving)]
+            mapper.select_chunk(eems_parted[chunk], start_column_eem, saving_parted[chunk_saving], start_column_saving)
+            g = generate_rdf(mapper.get_mappings("eem_savings"), df_eem)
+            g.serialize('output.ttl', format='ttl')
+            try:
+                save_rdf_with_source(g, config['source'], config['neo4j'])
+            except Exception:
+                g.serialize("error.ttl")
+                raise Exception("File in error.ttl")
+            start_column_saving += len(saving_parted[chunk_saving])
+        start_column_eem += len(eems_parted[chunk])
+
+
 def harmonize_data(data, **kwargs):
     # Variables
     namespace = kwargs['namespace']
@@ -106,5 +149,6 @@ def harmonize_data(data, **kwargs):
     save_rdf_with_source(g, config['source'], config['neo4j'])
 
     # EEM & Savings
+    harmonize_eem_es(df.copy(), mapper, config)
 
     # TS

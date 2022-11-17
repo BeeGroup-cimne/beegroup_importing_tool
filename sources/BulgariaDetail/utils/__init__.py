@@ -19,48 +19,6 @@ def set_municipality(df, column):
 
 
 
-# def clean_dataframe_eem_savings(df, eems_parted, start_column):
-#     df['subject'] = df['epc_id']
-#     df['element_subject'] = df['subject'].apply(construction_element_subject)
-#     df['epc_date'] = pd.to_datetime(df['epc_date'], infer_datetime_format=True)
-#     df['epc_date_before'] = df['epc_date'] - timedelta(days=365)
-#     df['epc_date'] = (df['epc_date'].astype('datetime64')).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
-#     df['epc_date_before'] = (df['epc_date_before'].astype('datetime64')).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
-#     saving_columns = []
-#     for i, eem_type in enumerate(eems_parted):
-#         list_i = i + start_column
-#         df[f"eem_{list_i}_subject"] = df['subject'].apply(lambda x: f"{x}-{eem_type}").apply(eem_subject)
-#         for j, e_saving_type in enumerate(enum_energy_saving_type):
-#             df_t = df['subject'].apply(lambda x: f"{x}-{eem_type}-{e_saving_type}").apply(energy_saving_subject)
-#             df_t.name = f"energy_saving_{list_i}_{j}_subject"
-#             saving_columns.append(df_t)
-#     df = pd.concat([df] + saving_columns, axis=1)
-#     return df[['subject', 'element_subject', 'epc_date_before', 'epc_date'] +
-#               [x for x in df.columns if re.match("eem_.*_subject", x)] +
-#               [x for x in df.columns if re.match("measurement_.*", x)] +
-#               [x for x in df.columns if re.match("energy_saving_.*_subject", x)]]
-
-
-# def clean_dataframe_project(df):
-#     df['subject'] = df['epc_id']
-#     df['project_subject'] = df['subject'].apply(project_subject)
-#     df['epc_date'] = pd.to_datetime(df['epc_date'], infer_datetime_format=True)
-#     df['epc_date_before'] = df['epc_date'] - timedelta(days=365)
-#     df['epc_date'] = (df['epc_date'].astype('datetime64')).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
-#     df['epc_date_before'] = (df['epc_date_before'].astype('datetime64')).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
-#
-#     for i, eem_type in enumerate(enum_energy_efficiency_measurement_type):
-#         df[f"eem_{i}_subject"] = df['subject'].apply(lambda x: f"{x}-{eem_type}").apply(eem_subject)
-#     for saving_type in enum_energy_saving_type:
-#         df[f'project_energy_saving_subject_{saving_type}'] = df['subject'] \
-#             .apply(lambda x: f"{x}-project-{saving_type}").apply(energy_saving_subject)
-#     return df[['subject', 'project_subject', 'epc_date_before', 'epc_date'] +
-#               [x for x in df.columns if re.match("eem_.*_subject", x)] +
-#               [x for x in df.columns if re.match("total_.*", x)] +
-#               [x for x in df.columns if re.match("energy_saving_.*_subject", x)] +
-#               [x for x in df.columns if re.match("project_energy_saving_subject_.*", x)]]
-
-
 # def harmonize_ts(data, **kwargs):
 #     namespace = kwargs['namespace']
 #     user = kwargs['user']
@@ -133,9 +91,7 @@ def set_municipality(df, column):
 #                           row_fields=['bucket', 'start', 'listKey'])
 #         print("finished")
 #
-#     # save_rdf_with_source(g, config['source'], config['neo4j'])
-#     # link_devices_with_source(df_building, n, config['neo4j'])
-#     #
+
 #     # parts_eem = 2
 #     # parts_saving = 2
 #     # start_column_eem = 0
@@ -158,8 +114,5 @@ def set_municipality(df, column):
 #     #             raise Exception("File in error.ttl")
 #     #         start_column_saving += len(saving_parted[chunk_saving])
 #     #     start_column_eem += len(eems_parted[chunk])
-#     #
-#     # df_project = clean_dataframe_project(df.copy())
-#     # g = generate_rdf(mapper.get_mappings("project_info"), df_project)
-#     # save_rdf_with_source(g, config['source'], config['neo4j'])
+
 #     # harmonize_ts(df_building.to_dict(orient="records"), namespace=namespace, user=user, config=config)
