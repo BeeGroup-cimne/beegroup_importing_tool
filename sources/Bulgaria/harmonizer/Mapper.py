@@ -1,11 +1,10 @@
-from slugify import slugify
-
 from sources.Bulgaria.constants import eem_headers, enum_energy_saving_type, \
     enum_energy_efficiency_measurement_type
 from utils.data_transformations import to_object_property
 from utils.rdf_utils.ontology.bigg_classes import Organization, Building, LocationInfo, BuildingSpace, Area, \
     EnergyPerformanceCertificate, BuildingSpaceUseType, AreaType, AreaUnitOfMeasurement, Device, \
-    EnergyEfficiencyMeasure, Sensor, EnergySaving, BuildingConstructionElement, RenovationProject, UtilityPointOfDelivery
+    EnergyEfficiencyMeasure, Sensor, EnergySaving, BuildingConstructionElement, RenovationProject, \
+    UtilityPointOfDelivery
 from utils.rdf_utils.ontology.namespaces_definition import Bigg, units, bigg_enums, countries
 
 
@@ -558,7 +557,6 @@ class Mapper(object):
                 f"project_energy_saving_{saving_type}": {
                     "type": Bigg.producesSaving,
                     "link": "subject"}})
-
 
         grouped_modules = {
             "building_info": [organization, location_organization, building_organization, buildings, building_space,
