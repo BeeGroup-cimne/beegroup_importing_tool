@@ -173,8 +173,9 @@ def additional_epc_subject(key):
     return f"ADDITIONAL-EPC-{key}"
 
 
-def fuzz_location(location_dict, list_prop, unique_values):
-    fuzz = partial(fuzzy_dictionary_match, map_dict=fuzz_params(location_dict, list_prop), default=None)
+def fuzz_location(location_dict, list_prop, unique_values, fix_score=90):
+    fuzz = partial(fuzzy_dictionary_match, map_dict=fuzz_params(location_dict, list_prop), default=None,
+                   fix_score=fix_score)
     return {k: fuzz(k) for k in unique_values}
 
 
