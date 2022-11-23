@@ -1,14 +1,20 @@
+import hashlib
 from datetime import timedelta
 
 from neo4j import GraphDatabase
 from rdflib import Namespace
 from slugify import slugify
 
+import settings
 from sources.Bulgaria.constants import enum_energy_efficiency_measurement_type, enum_energy_saving_type, eem_headers
 from sources.Bulgaria.harmonizer.Mapper import Mapper
 from sources.Bulgaria.harmonizer.mapper_buildings import set_source_id
 from sources.BulgariaDetail.utils import set_taxonomy, set_municipality
 from utils.data_transformations import *
+from utils.hbase import save_to_hbase
+from utils.neo4j import create_sensor
+from utils.nomenclature import harmonized_nomenclature
+from utils.rdf_utils.ontology.namespaces_definition import bigg_enums, units
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.rdf_utils.save_rdf import save_rdf_with_source, link_devices_with_source
 
@@ -156,76 +162,73 @@ def clean_ts(df, source):
     return df[['subject', 'device_subject'] + [x for x in df.columns if re.match("consumption.*", x)]]
 
 
-def harmonize_td(df, config, n, freq='PT1Y'):
+def is_str(value):
+    return int(value) if value is not None and value.isnumeric() else 0
+
+
+def harmonize_ts(df, config, n, user, freq='PT1Y'):
     neo4j_connection = config['neo4j']
     neo = GraphDatabase.driver(**neo4j_connection)
     hbase_conn2 = config['hbase_store_harmonized_data']
     df_ts = clean_ts(df, config['source'])
 
-    rows_names = ["Heavy fuel oil",
-                  "Diesel oil",
-                  "LPG",
-                  "Diesel oil 2",
-                  "Natural gas",
-                  "Coal",
-                  "Pellets",
-                  "Wood",
-                  "Other (specify)",
-                  "Heat energy",
-                  "Electricity"
-                  ]
-    # todo: sum columns that refers the same type of consumption and rename columns that has measured_property_list
-    # todo: loop rows and measured_properties
-    # measured_property_list = ['EnergyConsumptionOil', 'EnergyConsumptionCoal',
-    #                           'EnergyConsumptionGas', 'EnergyConsumptionOthers',
-    #                           'EnergyConsumptionDistrictHeating',
-    #                           'EnergyConsumptionGridElectricity', 'EnergyConsumptionTotal']
+    for index, row in df_ts.iterrows():
+        pair_values = []
+        pair_values.append(
+            (is_str(row.get('consumption_0')) + is_str(row.get('consumption_1')), 'EnergyConsumptionOil'))
 
-    # with neo.session() as session:
-    #     for i in range(len(measured_property_list):
-    #         print(measured_property_list[i])
-    #         for index, row in df.iterrows():
-    #             device_uri = str(n[row['device_subject']])
-    #
-    #             sensor_id = sensor_subject(config['source'], row['subject'], measured_property_list[i], "RAW",
-    #                                        freq)
-    #             sensor_uri = str(n[sensor_id])
-    #             measurement_id = hashlib.sha256(sensor_uri.encode("utf-8"))
-    #             measurement_id = measurement_id.hexdigest()
-    #             measurement_uri = str(n[measurement_id])
-    #
-    #             create_sensor(session=session, device_uri=device_uri, sensor_uri=sensor_uri, unit_uri=units["KiloW-HR"],
-    #                           property_uri=bigg_enums[measured_property_list[i]],
-    #                           estimation_method_uri=bigg_enums.Naive,
-    #                           measurement_uri=measurement_uri, is_regular=True,
-    #                           is_cumulative=False, is_on_change=False, freq=freq, agg_func="SUM",
-    #                           dt_ini=pd.Timestamp(row['epc_date_before']),
-    #                           dt_end=pd.Timestamp(row['epc_date']), ns_mappings=settings.namespace_mappings)
-    #         reduced_df = df[[measured_property_df[i]]]
-    #
-    #         reduced_df['listKey'] = measurement_id
-    #         reduced_df['isReal'] = False
-    #         reduced_df['bucket'] = ((pd.to_datetime(df['epc_date_before']).values.astype(
-    #             int) // 10 ** 9) // settings.ts_buckets) % settings.buckets
-    #         reduced_df['start'] = (pd.to_datetime(df['epc_date_before']).values.astype(int)) // 10 ** 9
-    #         reduced_df['end'] = (pd.to_datetime(df['epc_date']).values.astype(int)) // 10 ** 9
-    #
-    #         reduced_df.rename(
-    #             columns={measured_property_df[i]: "value"},
-    #             inplace=True)
-    #
-    #         device_table = f"harmonized_online_{measured_property_list[i]}_100_SUM_{freq}_{user}"
-    #
-    #         save_to_hbase(reduced_df.to_dict(orient="records"), device_table, hbase_conn2,
-    #                       [("info", ['end', 'isReal']), ("v", ['value'])],
-    #                       row_fields=['bucket', 'listKey', 'start'])
-    #
-    #         period_table = f"harmonized_batch_{measured_property_list[i]}_100_SUM_{freq}_{user}"
-    #
-    #         save_to_hbase(reduced_df.to_dict(orient="records"), period_table, hbase_conn2,
-    #                       [("info", ['end', 'isReal']), ("v", ['value'])],
-    #                       row_fields=['bucket', 'start', 'listKey'])
-    #     print("finished")
+        pair_values.append((is_str(row.get('consumption_3')), 'EnergyConsumptionCoal'))
+
+        pair_values.append(
+            (is_str(row.get('consumption_4')) + is_str(row.get('consumption_5')), 'EnergyConsumptionGas'))
+
+        pair_values.append(
+            (is_str(row.get('consumption_2')) + is_str(row.get('consumption_6')) + is_str(
+                row.get('consumption_7')) + is_str(row.get('consumption_8')), 'EnergyConsumptionOthers'))
+
+        pair_values.append((is_str(row.get('consumption_9')), 'EnergyConsumptionDistrictHeating'))
+        pair_values.append((is_str(row.get('consumption_10')), 'EnergyConsumptionGridElectricity'))
+        pair_values.append((is_str(row.get('consumption_11')), 'EnergyConsumptionTotal'))
+
+        for value, value_type in pair_values:
+            with neo.session() as session:
+                device_uri = str(n[row['device_subject']])
+
+                sensor_id = sensor_subject(config['source'], row['subject'], value_type, "RAW",
+                                           freq)
+                sensor_uri = str(n[sensor_id])
+                measurement_id = hashlib.sha256(sensor_uri.encode("utf-8"))
+                measurement_id = measurement_id.hexdigest()
+                measurement_uri = str(n[measurement_id])
+
+                create_sensor(session=session, device_uri=device_uri, sensor_uri=sensor_uri,
+                              unit_uri=units["KiloW-HR"],
+                              property_uri=bigg_enums[value_type],
+                              estimation_method_uri=bigg_enums.Naive,
+                              measurement_uri=measurement_uri, is_regular=True,
+                              is_cumulative=False, is_on_change=False, freq=freq, agg_func="SUM",
+                              dt_ini=pd.Timestamp(row['epc_date_before']),
+                              dt_end=pd.Timestamp(row['epc_date']), ns_mappings=settings.namespace_mappings)
+
+            data = {'listKey': measurement_id, 'isReal': False,
+                    'bucket': ((pd.to_datetime(df['epc_date_before']).values.astype(
+                        int) // 10 ** 9) // settings.ts_buckets) % settings.buckets,
+                    'start': (pd.to_datetime(df['epc_date_before']).values.astype(int)) // 10 ** 9,
+                    'end': (pd.to_datetime(df['epc_date']).values.astype(int)) // 10 ** 9, 'value': value}
+
+            device_table = harmonized_nomenclature(mode='online', data_type=value_type, R=True, C=True,
+                                                   O=True, freq=freq, user=user)
+
+            save_to_hbase([data], device_table, hbase_conn2,
+                          [("info", ['end', 'isReal']), ("v", ['value'])],
+                          row_fields=['bucket', 'listKey', 'start'])
+
+            period_table = harmonized_nomenclature(mode='batch', data_type=value_type, R=True, C=True,
+                                                   O=True, freq=freq, user=user)
+
+            save_to_hbase([data], period_table, hbase_conn2,
+                          [("info", ['end', 'isReal']), ("v", ['value'])],
+                          row_fields=['bucket', 'start', 'listKey'])
 
 
 def harmonize_data(data, **kwargs):
@@ -257,3 +260,4 @@ def harmonize_data(data, **kwargs):
     harmonize_eem_es(df_eem_es, mapper, config)
 
     # TS
+    harmonize_ts(df, config, n, user)
