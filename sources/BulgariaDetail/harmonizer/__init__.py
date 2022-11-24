@@ -9,13 +9,14 @@ import settings
 from harmonizer.cache import Cache
 from sources.Bulgaria.constants import enum_energy_efficiency_measurement_type, enum_energy_saving_type, eem_headers
 from sources.Bulgaria.harmonizer.Mapper import Mapper
+from sources.Bulgaria.harmonizer.mapper_buildings import set_source_id
 from utils.data_transformations import *
 from utils.hbase import save_to_hbase
 from utils.neo4j import create_sensor
 from utils.nomenclature import harmonized_nomenclature
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums, units
 from utils.rdf_utils.rdf_functions import generate_rdf
-from utils.rdf_utils.save_rdf import save_rdf_with_source
+from utils.rdf_utils.save_rdf import save_rdf_with_source, link_devices_with_source
 
 
 def set_taxonomy(df, column):
@@ -40,7 +41,7 @@ def clean_general(df, kwargs):
                  'area_gross_floor_area': 'gross_floor_area'},
         inplace=True)
 
-    # set_source_id(df, kwargs['user'], kwargs['config']['neo4j'])
+    set_source_id(df, kwargs['user'], kwargs['config']['neo4j'])
     set_taxonomy(df, 'type_of_building')
     set_municipality(df, 'municipality')
 
@@ -260,23 +261,23 @@ def harmonize_data(data, **kwargs):
     # Clean Data
     df = pd.DataFrame.from_records(data)
     df = clean_general(df, kwargs).copy()
-    #
-    # # Buildings
-    # df_building = clean_building_info(df.copy(), config['source'])
-    # g = generate_rdf(mapper.get_mappings("building_info"), df_building)
-    # # g.serialize('out_building.ttl', format='ttl')
-    # save_rdf_with_source(g, config['source'], config['neo4j'])
-    # link_devices_with_source(df_building, n, config['neo4j'])
-    #
-    # # Projects
-    # df_project = clean_project(df.copy())
-    # g = generate_rdf(mapper.get_mappings("project_info"), df_project)
-    # # g.serialize('out_projects.ttl', format='ttl')
-    # save_rdf_with_source(g, config['source'], config['neo4j'])
-    #
-    # # EEM & Savings
-    # df_eem_es = clean_eem_savings(df.copy(), config['source'])
-    # harmonize_eem_es(df_eem_es, mapper, config)
+
+    # Buildings
+    df_building = clean_building_info(df.copy(), config['source'])
+    g = generate_rdf(mapper.get_mappings("building_info"), df_building)
+    # g.serialize('out_building.ttl', format='ttl')
+    save_rdf_with_source(g, config['source'], config['neo4j'])
+    link_devices_with_source(df_building, n, config['neo4j'])
+
+    # Projects
+    df_project = clean_project(df.copy())
+    g = generate_rdf(mapper.get_mappings("project_info"), df_project)
+    # g.serialize('out_projects.ttl', format='ttl')
+    save_rdf_with_source(g, config['source'], config['neo4j'])
+
+    # EEM & Savings
+    df_eem_es = clean_eem_savings(df.copy(), config['source'])
+    harmonize_eem_es(df_eem_es, mapper, config)
 
     # TS
     harmonize_ts(df, config, n, user)
