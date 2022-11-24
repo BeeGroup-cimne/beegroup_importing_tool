@@ -10,5 +10,5 @@ namespace_mappings = {"bigg": "bigg", "wgs": "wgs"}
 ts_buckets = 10000000
 buckets = 20
 sources_priorities = ["Org", "GPG", "bulgaria", "BIS", "gemweb", "datadis", "CEEC3X",
-                      "genercat", "nedgia", "weather","analytics", "OpenData"]
+                      "genercat", "nedgia", "weather", "analytics", "OpenData", "BulgariaDetail"]
 countries = ["ES", "BG"]

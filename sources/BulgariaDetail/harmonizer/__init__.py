@@ -6,10 +6,10 @@ from rdflib import Namespace
 from slugify import slugify
 
 import settings
+from harmonizer.cache import Cache
 from sources.Bulgaria.constants import enum_energy_efficiency_measurement_type, enum_energy_saving_type, eem_headers
 from sources.Bulgaria.harmonizer.Mapper import Mapper
 from sources.Bulgaria.harmonizer.mapper_buildings import set_source_id
-from sources.BulgariaDetail.utils import set_taxonomy, set_municipality
 from utils.data_transformations import *
 from utils.hbase import save_to_hbase
 from utils.neo4j import create_sensor
@@ -17,6 +17,19 @@ from utils.nomenclature import harmonized_nomenclature
 from utils.rdf_utils.ontology.namespaces_definition import bigg_enums, units
 from utils.rdf_utils.rdf_functions import generate_rdf
 from utils.rdf_utils.save_rdf import save_rdf_with_source, link_devices_with_source
+
+
+def set_taxonomy(df, column):
+    df['buildingSpaceUseType'] = df[column].map(get_taxonomy_mapping(
+        taxonomy_file="sources/Bulgaria/harmonizer/TAX_BULGARIA.xlsx",
+        default="Other")).apply(partial(to_object_property,
+                                        namespace=bigg_enums))
+
+
+def set_municipality(df, column):
+    municipality_map = fuzz_location(Cache.municipality_dic_BG, ['ns1:name', 'ns1:shortName'],
+                                     df[column].unique())
+    df.loc[:, 'hasAddressCity'] = df[column].map(municipality_map)
 
 
 def clean_general(df, kwargs):
@@ -29,7 +42,7 @@ def clean_general(df, kwargs):
         inplace=True)
 
     set_source_id(df, kwargs['user'], kwargs['config']['neo4j'])
-    set_taxonomy(df, 'municipality')
+    set_taxonomy(df, 'type_of_building')
     set_municipality(df, 'municipality')
 
     df['subject'] = df['epc_id']
@@ -40,6 +53,8 @@ def clean_general(df, kwargs):
     df['epc_date_before'] = (df['epc_date_before'].astype('datetime64')).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
     df['epc_before_subject'] = df['subject'].apply(lambda x: x + '-before').apply(epc_subject)
     df['epc_after_subject'] = df['subject'].apply(lambda x: x + '-after').apply(epc_subject)
+
+    return df
 
 
 def clean_building_info(df, source):
@@ -147,7 +162,7 @@ def harmonize_eem_es(df, mapper, config):
                              range(parts_saving)]
             mapper.select_chunk(eems_parted[chunk], start_column_eem, saving_parted[chunk_saving], start_column_saving)
             g = generate_rdf(mapper.get_mappings("eem_savings"), df)
-            g.serialize('output.ttl', format='ttl')
+            # g.serialize('out_eem_es.ttl', format='ttl')
             try:
                 save_rdf_with_source(g, config['source'], config['neo4j'])
             except Exception:
@@ -159,7 +174,8 @@ def harmonize_eem_es(df, mapper, config):
 
 def clean_ts(df, source):
     df['device_subject'] = df['subject'].apply(partial(device_subject, source=source))
-    return df[['subject', 'device_subject'] + [x for x in df.columns if re.match("consumption.*", x)]]
+    return df[['subject', 'device_subject', 'epc_date_before', 'epc_date'] + [x for x in df.columns if
+                                                                              re.match("consumption.*", x)]]
 
 
 def is_str(value):
@@ -191,44 +207,45 @@ def harmonize_ts(df, config, n, user, freq='PT1Y'):
         pair_values.append((is_str(row.get('consumption_11')), 'EnergyConsumptionTotal'))
 
         for value, value_type in pair_values:
-            with neo.session() as session:
-                device_uri = str(n[row['device_subject']])
+            if value > 0:
+                with neo.session() as session:
+                    device_uri = str(n[row['device_subject']])
 
-                sensor_id = sensor_subject(config['source'], row['subject'], value_type, "RAW",
-                                           freq)
-                sensor_uri = str(n[sensor_id])
-                measurement_id = hashlib.sha256(sensor_uri.encode("utf-8"))
-                measurement_id = measurement_id.hexdigest()
-                measurement_uri = str(n[measurement_id])
+                    sensor_id = sensor_subject(config['source'], row['subject'], value_type, "RAW",
+                                               freq)
+                    sensor_uri = str(n[sensor_id])
+                    measurement_id = hashlib.sha256(sensor_uri.encode("utf-8"))
+                    measurement_id = measurement_id.hexdigest()
+                    measurement_uri = str(n[measurement_id])
 
-                create_sensor(session=session, device_uri=device_uri, sensor_uri=sensor_uri,
-                              unit_uri=units["KiloW-HR"],
-                              property_uri=bigg_enums[value_type],
-                              estimation_method_uri=bigg_enums.Naive,
-                              measurement_uri=measurement_uri, is_regular=True,
-                              is_cumulative=False, is_on_change=False, freq=freq, agg_func="SUM",
-                              dt_ini=pd.Timestamp(row['epc_date_before']),
-                              dt_end=pd.Timestamp(row['epc_date']), ns_mappings=settings.namespace_mappings)
+                    create_sensor(session=session, device_uri=device_uri, sensor_uri=sensor_uri,
+                                  unit_uri=units["KiloW-HR"],
+                                  property_uri=bigg_enums[value_type],
+                                  estimation_method_uri=bigg_enums.Naive,
+                                  measurement_uri=measurement_uri, is_regular=True,
+                                  is_cumulative=False, is_on_change=False, freq=freq, agg_func="SUM",
+                                  dt_ini=pd.Timestamp(row['epc_date_before']),
+                                  dt_end=pd.Timestamp(row['epc_date']), ns_mappings=settings.namespace_mappings)
 
-            data = {'listKey': measurement_id, 'isReal': False,
-                    'bucket': ((pd.to_datetime(df['epc_date_before']).values.astype(
-                        int) // 10 ** 9) // settings.ts_buckets) % settings.buckets,
-                    'start': (pd.to_datetime(df['epc_date_before']).values.astype(int)) // 10 ** 9,
-                    'end': (pd.to_datetime(df['epc_date']).values.astype(int)) // 10 ** 9, 'value': value}
+                    data = {'listKey': measurement_id, 'isReal': False,
+                            'bucket': (pd.to_datetime(
+                                row['epc_date_before']).value // settings.ts_buckets) % settings.buckets,
+                            'start': pd.to_datetime(row['epc_date_before']).value,
+                            'end': pd.to_datetime(row['epc_date']).value, 'value': value}
 
-            device_table = harmonized_nomenclature(mode='online', data_type=value_type, R=True, C=True,
-                                                   O=True, freq=freq, user=user)
+                    device_table = harmonized_nomenclature(mode='online', data_type=value_type, R=True, C=True,
+                                                           O=True, freq=freq, user=user)
 
-            save_to_hbase([data], device_table, hbase_conn2,
-                          [("info", ['end', 'isReal']), ("v", ['value'])],
-                          row_fields=['bucket', 'listKey', 'start'])
+                    save_to_hbase([data], device_table, hbase_conn2,
+                                  [("info", ['end', 'isReal']), ("v", ['value'])],
+                                  row_fields=['bucket', 'listKey', 'start'])
 
-            period_table = harmonized_nomenclature(mode='batch', data_type=value_type, R=True, C=True,
-                                                   O=True, freq=freq, user=user)
+                    period_table = harmonized_nomenclature(mode='batch', data_type=value_type, R=True, C=True,
+                                                           O=True, freq=freq, user=user)
 
-            save_to_hbase([data], period_table, hbase_conn2,
-                          [("info", ['end', 'isReal']), ("v", ['value'])],
-                          row_fields=['bucket', 'start', 'listKey'])
+                    save_to_hbase([data], period_table, hbase_conn2,
+                                  [("info", ['end', 'isReal']), ("v", ['value'])],
+                                  row_fields=['bucket', 'start', 'listKey'])
 
 
 def harmonize_data(data, **kwargs):
@@ -241,18 +258,19 @@ def harmonize_data(data, **kwargs):
 
     # Clean Data
     df = pd.DataFrame.from_records(data)
-    clean_general(df, kwargs)
+    df = clean_general(df, kwargs).copy()
 
     # Buildings
     df_building = clean_building_info(df.copy(), config['source'])
     g = generate_rdf(mapper.get_mappings("building_info"), df_building)
-    g.serialize('out.ttl', format='ttl')
+    # g.serialize('out_building.ttl', format='ttl')
     save_rdf_with_source(g, config['source'], config['neo4j'])
     link_devices_with_source(df_building, n, config['neo4j'])
 
     # Projects
     df_project = clean_project(df.copy())
     g = generate_rdf(mapper.get_mappings("project_info"), df_project)
+    # g.serialize('out_projects.ttl', format='ttl')
     save_rdf_with_source(g, config['source'], config['neo4j'])
 
     # EEM & Savings

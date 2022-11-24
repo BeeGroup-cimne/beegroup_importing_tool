@@ -290,7 +290,6 @@ def save_data(data, data_type, row_keys, column_map, config, settings, args):
 def gather(arguments, settings, config):
     ap = argparse.ArgumentParser(description='Gathering data from Bulgaria')
     ap.add_argument("-st", "--store", required=True, help="Where to store the data", choices=["kafka", "hbase"])
-    ap.add_argument("-t", "--type", required=True, help="Type of data", choices=["detail", "summary"])
     ap.add_argument("--user", "-u", help="The user importing the data", required=True)
     ap.add_argument("--namespace", "-n", help="The subjects namespace uri", required=True)
     ap.add_argument("-f", "--file", help="Excel file path to parse", required=True)

@@ -1,6 +1,7 @@
 import utils
 from sources import SourcePlugin
-from sources.Bulgaria.gather import gather
+from sources.BulgariaDetail.gather import gather
+
 from sources.BulgariaDetail.harmonizer import harmonize_data
 
 from utils.nomenclature import RAW_MODE
