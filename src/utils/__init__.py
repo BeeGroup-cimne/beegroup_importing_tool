@@ -7,3 +7,4 @@ from . import kafka
 from . import mongo
 from . import nomenclature
 from . import security
+from . import neo4j_to_rdf

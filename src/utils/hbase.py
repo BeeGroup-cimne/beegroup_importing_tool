@@ -92,38 +92,37 @@ def get_hbase_data_batch(hbase_conf, hbase_table, row_start=None, row_stop=None,
 def get_hbase_data_batch_bucket(hbase_conf, hbase_table, row_start=None, row_stop=None, row_prefix=None, columns=None,
                                 _filter=None, timestamp=None, include_timestamp=False, batch_size=100000,
                                 scan_batching=None, limit=None, sorted_columns=False, reverse=False, buckets=20):
-    for buck in range(buckets):
-        if row_prefix:
-            row_start = "~".join([str(buck), row_prefix])
-            row_stop = (row_start[:-1] + chr(ord(row_start[-1]) + 1))
+    if row_prefix:
+        row_start = row_prefix
+        row_stop = (row_start[:-1] + chr(ord(row_start[-1]) + 1))
+
+    if limit:
+        if limit > batch_size:
+            current_limit = batch_size
+        else:
+            current_limit = limit
+    else:
+        current_limit = batch_size
+    current_register = 0
+    while True:
+        hbase = happybase.Connection(**hbase_conf)
+        table = hbase.table(hbase_table)
+        data = list(table.scan(row_start=row_start, row_stop=row_stop, columns=columns, filter=_filter,
+                               timestamp=timestamp, include_timestamp=include_timestamp, batch_size=batch_size,
+                               scan_batching=scan_batching, limit=current_limit, sorted_columns=sorted_columns,
+                               reverse=reverse))
+        if not data:
+            break
+        yield data
+        if len(data) <= 1:
+            break
+
+        last_record = data[-1][0].decode()
+        current_register += len(data)
 
         if limit:
-            if limit > batch_size:
-                current_limit = batch_size
+            if current_register >= limit:
+                break
             else:
-                current_limit = limit
-        else:
-            current_limit = batch_size
-        current_register = 0
-        while True:
-            hbase = happybase.Connection(**hbase_conf)
-            table = hbase.table(hbase_table)
-            data = list(table.scan(row_start=row_start, row_stop=row_stop, columns=columns, filter=_filter,
-                                   timestamp=timestamp, include_timestamp=include_timestamp, batch_size=batch_size,
-                                   scan_batching=scan_batching, limit=current_limit, sorted_columns=sorted_columns,
-                                   reverse=reverse))
-            if not data:
-                break
-            yield data
-            if len(data) <= 1:
-                break
-
-            last_record = data[-1][0].decode()
-            current_register += len(data)
-
-            if limit:
-                if current_register >= limit:
-                    break
-                else:
-                    current_limit = min(batch_size, limit - current_register)
-            row_start = last_record[:-1] + chr(ord(last_record[-1]) + 1)
+                current_limit = min(batch_size, limit - current_register)
+        row_start = last_record[:-1] + chr(ord(last_record[-1]) + 1)

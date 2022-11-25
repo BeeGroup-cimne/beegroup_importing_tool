@@ -82,7 +82,7 @@ print(f"""
                 with "{namespace}#GROUP-EEMTYPE-" + split(mm.uri,"#")[1] as uri
                 Merge (g:bigg__AnalyticalGroup:Resource{{uri:uri}})
                 WITH g
-                Match (mm)<-[:skos__broader*0..]-()<-[:bigg__hasEnergyEfficiencyMeasureType]-(b)
+                Match (mm)<-[:skos__broader*0..]-()<-[:bigg__hasEnergyEfficiencyMeasureType]-(b:bigg__EnergyEfficiencyMeasure)
                 WHERE b.uri =~"{namespace}#.*"
                 Merge (g)<-[:bigg__groupsForAnalytics]-(b)
                 SET g.bigg__groupType="EnergyEfficiencyMeasureType"

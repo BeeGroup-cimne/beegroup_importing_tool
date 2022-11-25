@@ -22,7 +22,7 @@ def create_dev_agg(measured_property, device_query, freq, agg_name, required, ag
     WHERE {device_query} 
           AND s.{bigg}__timeSeriesFrequency="{freq}" 
           AND EXISTS((s)-[:{bigg}__hasMeasuredProperty]->(prop))
-    WITH bs, d, prop, ts, split(bs.uri, "#")[1]+"-AGGREGATOR-{id_prop}-{agg_name}" as uri
+    WITH bs, d, prop, ts, bs.uri + "-AGGREGATOR-{id_prop}-{agg_name}" as uri
     MERGE (da:{bigg}__DeviceAggregator:Resource{{uri:uri}})
     MERGE (da)-[:{bigg}__includesDevice]->(d)
     WITH da, apoc.text.join(collect("<mi>"+split(ts.uri,"#")[1]+"</mi>"), "<mo>"+"+"+"</mo>") as key1, prop, bs

@@ -195,9 +195,9 @@ def create_co2_component(session, co2_factor_list_uri, property_uri, estimation_
     MATCH (prop_unit: {bigg}__MeasurementUnit {{uri:"{related_unit}"}})
     MATCH (tc {{uri:"{co2_factor_list_uri}"}})   
     MERGE (tc)<-[:{bigg}__hasCO2EmissionsFactorList]-(co2)
-    Merge(tc)-[:{bigg}__hasC02MeasuredUnit]->(unit)
-    Merge(tc)-[:{bigg}__hasC02RelatedMeasuredUnit]->(prop_unit)
-    Merge(tc)-[:{bigg}__hasC02RelatedMeasuredProperty]->(mes_prop)
+    Merge(tc)-[:{bigg}__hasCO2MeasuredUnit]->(unit)
+    Merge(tc)-[:{bigg}__hasCO2RelatedMeasuredUnit]->(prop_unit)
+    Merge(tc)-[:{bigg}__hasCO2RelatedMeasuredProperty]->(mes_prop)
     Merge(ms: {bigg}__CO2EmissionsPoint:Resource:{bigg}__TimeSeriesPoint{{uri: "{measurement_uri}"}})
     Merge(tc)-[:{bigg}__hasCO2EmissionsFactorValue]->(ms)
     SET

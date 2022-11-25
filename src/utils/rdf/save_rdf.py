@@ -103,6 +103,39 @@ def __neo4j_import__(ses, v):
     return resp
 
 
+def update_relationships(graph, rel_map, connection):
+    neo = GraphDatabase.driver(**connection)
+    with neo.session() as session:
+        namespaces = session.run(f"""
+                   MATCH (n:`_NsPrefDef`)
+                   WITH keys(n) as k, n
+                   RETURN n
+                   """).single().data().get('n')
+    neo.close()
+    namespaces_i = {}
+    for k, v in namespaces.items():
+        namespaces_i[v] = k
+
+    for p, query_params in rel_map.items():
+        rdf_vars = {}
+        if query_params['rdf']:
+            q_response = graph.query(query_params['rdf']['query'].format(p=p))
+            for key, pos in query_params['rdf']['response'].items():
+                rdf_vars[key] = []
+                for x in q_response:
+                    rdf_vars[key].append(x[pos].toPython())
+        if query_params['cypher']:
+            try:
+                ns, prop = p.split("#")
+                ns += "#"
+                prop = f'{namespaces_i[ns]}__{prop}'
+            except:
+                prop = None
+            if prop:
+                cquery = query_params['cypher']['query'].format(p=prop, **rdf_vars)
+                with neo.session() as session:
+                    namespaces = session.run(f"{cquery} DELETE r")
+
 def save_rdf_with_source(graph, source, connection):
     if source not in settings.sources_priorities:
         raise Exception("Error, add source to priority list in settings")
