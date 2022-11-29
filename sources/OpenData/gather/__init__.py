@@ -7,22 +7,24 @@ from utils.nomenclature import raw_nomenclature, RAW_MODE
 from utils.utils import log_string
 
 
-def gather_data(config, settings, args):
-    limit = 1000
-    offset = 0
-
+def gather_data(config, settings, args, limit=1000, offset=0, counter=0):
     while True:
         log_string(f"Gather data limit={limit}, offset={offset}")
         try:
-            df = CEEE().query(limit=limit, offset=offset * limit)
+            if args.where:
+                df = CEEE().query(offset=offset + limit * counter, limit=limit,
+                                  where=args.where)
+            else:
+                df = CEEE().query(offset=offset + limit * counter, limit=limit)
 
             save_data(data=df.to_dict(orient="records"), data_type='EnergyPerformanceCertificate',
                       row_keys=['referencia_cadastral', 'num_cas'], column_map=[("info", "all")],
                       config=config, settings=settings, args=args)
-            if len(df.index) == limit:
-                offset += 1
-            else:
+
+            if len(df.index) != limit:
                 break
+
+            counter += 1
         except Exception as ex:
             log_string(f"Error during the gathering process: {ex}")
             break
@@ -65,6 +67,8 @@ def gather(arguments, settings, config):
     ap.add_argument("-st", "--store", required=True, help="Where to store the data", choices=["kafka", "hbase"])
     ap.add_argument("--user", "-u", help="The user importing the data", required=True)
     ap.add_argument("--namespace", "-n", help="The subjects namespace uri", required=True)
+    ap.add_argument("--where", "-w", help="Where condition")
+
     args = ap.parse_args(arguments)
 
     gather_data(config=config, settings=settings, args=args)
