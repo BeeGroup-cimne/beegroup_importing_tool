@@ -15,6 +15,14 @@ To run the import application, execute the python script with the following para
 python3 -m gather -so OpenData -n <namespace> -st <storage> -u <user_importing>
 ```
 
+```bash
+python3 -m gather -so OpenData -n <namespace> -st <storage> -u <user_importing> --when "data_entrada='2020-01-01'"
+```
+
+```bash
+python3 -m gather -so OpenData -n <namespace> -st <storage> -u <user_importing> --when "codi_postal='25'"
+```
+
 ## Harmonization
 
 The harmonization of the response will be done with the following mapping.
