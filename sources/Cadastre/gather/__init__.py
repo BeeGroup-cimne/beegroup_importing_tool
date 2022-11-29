@@ -52,7 +52,7 @@ def gather(arguments, settings, config):
 
     args = ap.parse_args(arguments)
 
-    if args.type == 'INSPIRE' and args.file:
-        ap.error('--type can only be set when --file=<file_path>.')
+    if args.type == 'INSPIRE' and not args.file:
+        ap.error('--type=INSPIRE can only be set when --file=<file_path>.')
 
     gather_data(config=config, settings=settings, args=args)
