@@ -1,4 +1,5 @@
 import argparse
+from time import sleep
 
 from sources.OpenData.DadesObertes.CEEE.client import CEEE
 from utils.hbase import save_to_hbase
@@ -26,8 +27,9 @@ def gather_data(config, settings, args, limit=1000, offset=0, counter=0):
 
             counter += 1
         except Exception as ex:
+            sleep(3)
             log_string(f"Error during the gathering process: {ex}")
-            break
+            continue
 
 
 def save_data(data, data_type, row_keys, column_map, config, settings, args):

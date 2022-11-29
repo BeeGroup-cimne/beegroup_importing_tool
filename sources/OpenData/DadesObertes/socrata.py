@@ -24,6 +24,5 @@ class SocrataClient:
         return None
 
     def query(self, limit=None, offset=None, **kwargs):
-        print(kwargs)
         results = self.client.get(self.dataset_id, limit=limit, offset=offset, **kwargs)
         return pd.DataFrame.from_records(results)
