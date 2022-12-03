@@ -1,8 +1,6 @@
 import pandas as pd
 import rdflib
 from neo4j import GraphDatabase
-
-import settings
 from utils.hbase import save_to_hbase
 from utils.rdf.save_rdf import __neo4j_import__
 from utils.utils import read_config
@@ -10,8 +8,7 @@ import glob
 import json
 
 
-def load_ttl_to_neo4j(directory, user):
-    config = read_config(settings.conf_file)
+def load_ttl_to_neo4j(directory, user, config):
     g_total = rdflib.Graph()
     for x in glob.glob(f"{directory}/*.ttl"):
         # load ttl to neo4j

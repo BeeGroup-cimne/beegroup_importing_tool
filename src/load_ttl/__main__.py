@@ -1,7 +1,8 @@
 import argparse
 import os
+import settings
 from load_ttl import load_ttl_to_neo4j
-
+from utils.utils import read_config
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Load ttl and JSON to database')
     parser.add_argument("--directory", "-d", help="The directory to load", required=True)
@@ -11,5 +12,5 @@ if __name__ == "__main__":
         args = parser.parse_args(args_t)
     else:
         args = parser.parse_args()
-
-    load_ttl_to_neo4j(args.directory, args.user)
+    config = read_config(settings.conf_file)
+    load_ttl_to_neo4j(args.directory, args.user, config)
