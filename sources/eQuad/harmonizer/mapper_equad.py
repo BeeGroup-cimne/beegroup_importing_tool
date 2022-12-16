@@ -27,7 +27,7 @@ def calc_tarriff_avg(data):
     return mean(values) if values else None
 
 
-def clean_data(data):
+def general_data(data):
     df = pd.DataFrame(data)
     df = df.applymap(decode_hbase)
 
@@ -71,7 +71,7 @@ def clean_data(data):
                        "operationStartDate": "projectOperationalDate", "payback": "projectSimplePaybackTime",
                        "installationBeginDate": "projectStartDate"}, inplace=True)
 
-    # projectInvestment
+    # TODO: projectInvestment
 
     df['projectReceivedGrantFunding'] = df['incentives'].apply(lambda x: calc_investment(x) > 0)
     df['projectGrantsShareOfCosts'] = df['incentives'].apply(calc_investment)
@@ -84,6 +84,30 @@ def clean_data(data):
 
     df['tariffAveragePrice'] = df['sites'].apply(lambda x: calc_tarriff_avg(x))
 
+    # Energy Efficiency Measure
+    list_eem = []
+    for index, row in df.iterrows():
+        for site in row['sites']:
+            for ecms in site.get('ecms'):
+                print(ecms)
+                list_eem.append({"_id": "",
+                                 "energyEfficiencyMeasureDescription": ecms.get('descriptionNew'),
+                                 "energyEfficiencyMeasureInvestmentCurrency": row['hasProjectInvestmentCurrency'],
+                                 "energyEfficiencyMeasureOperationalDate": row['operationStartDate'],
+                                 "energyEfficiencyMeasureType": ecms.get('typeOfMeasure'),
+                                 "energyEfficiencyMeasureCO2Reduction": ecms.get('tCO2').get('amount'),
+                                 "energyEfficiencyMeasureFinancialSavings": ecms.get('demandSavings').get(
+                                     'amount') + ecms.get(
+                                     'sellingSavings').get('amount') + ecms.get('consumptionSavings').get('amount'),
+                                 "energyEfficiencyMeasureLifetime": ecms.get('usefulLife'),
+                                 "energySavingEndDate": row['operationEndDate'],
+                                 "energySavingStartDate": row['operationStartDate'],
+                                 "energySavingType": ecms.get('category')
+                                 }
+                                )
+
+    # TODO: energyEfficiencyMeasureType and energySavingType taxonomy
+    print(list_eem)
 
     return df
 
@@ -96,7 +120,7 @@ def harmonize_data(data, **kwargs):
     neo4j_connection = config['neo4j']
     neo = GraphDatabase.driver(**neo4j_connection)
 
-    df = clean_data(data, n, neo)
+    df = general_data(data)
 
     # if not df.empty:
     #     mapper = Mapper(config['source'], n)
