@@ -63,15 +63,18 @@ def gather(arguments, config=None, settings=None):
     response_token = get_token(**config['eQuad'])
 
     if response_token.ok:
-        token = response_token.json()['token']
+        token = response_token.json().get('token')
     else:
         raise response_token.raise_for_status()
 
-    response_projects = get_projects(token=token)
+    if token:
+        response_projects = get_projects(token=token)
 
-    if response_projects.ok:
-        save_data(data=response_projects.json(), data_type='Projects',
-                  row_keys=['_id'], column_map=[("info", "all")],
-                  config=config, settings=settings, args=args)
+        if response_projects.ok:
+            save_data(data=response_projects.json(), data_type='Projects',
+                      row_keys=['_id'], column_map=[("info", "all")],
+                      config=config, settings=settings, args=args)
+        else:
+            raise response_projects.raise_for_status()
     else:
-        raise response_projects.raise_for_status()
+        raise Exception("Authentication failed.")
