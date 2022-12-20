@@ -4,8 +4,10 @@ import pandas as pd
 from neo4j import GraphDatabase
 from rdflib import Namespace
 
+from sources.eQuad.harmonizer.Mapper import Mapper
 from utils.data_transformations import project_subject, fuzz_data, load_dic, decode_hbase, building_department_subject, \
-    location_info_subject, building_subject, building_space_subject
+    location_info_subject, building_subject, building_space_subject, eem_subject
+from utils.rdf_utils.rdf_functions import generate_rdf
 
 
 def calc_investment(data) -> float:
@@ -63,6 +65,8 @@ def general_data(data):
     df = pd.DataFrame(data)
     df = df.applymap(decode_hbase)
 
+    df['subject'] = df['_id']
+
     # Organization
     df['organization_subject'] = df['customer'].apply(
         lambda x: building_department_subject(f"eQuad-{x.get('companyName')}") if isinstance(x, dict) else None)
@@ -72,6 +76,7 @@ def general_data(data):
 
     # Building
     df['building_subject'] = df['_id'].apply(building_subject)
+    df['managesBuilding'] = df['building_subject'].apply(lambda x: n[x])
 
     # Building Space
     df['building_subject'] = df['_id'].apply(building_space_subject)
@@ -119,14 +124,9 @@ def general_data(data):
     # Energy Efficiency Measure
     list_eem = []
     for index, row in df.iterrows():
-        print(row.get('engineeringAndDesignCosts'))
-        # OPEX = row['totalAuditCosts'] + row['totalEquipmentCost'] + row['totalInstallationCost'] + row[
-        #     'totalConstructionCost'] * (1 + row['markupCost'] / 100)
-        # CAPEX = 0
-        # eem_investment = OPEX + CAPEX
         for site in row['sites']:
             for ecms in site.get('ecms'):
-                list_eem.append({"_id": "",
+                list_eem.append({"eem_subject": eem_subject(f"{row.get('_id')}-{ecms.get('typeOfMeasure')}"),
                                  "energyEfficiencyMeasureDescription": ecms.get('descriptionNew'),
                                  "energyEfficiencyMeasureInvestmentCurrency": row['hasProjectInvestmentCurrency'],
                                  "energyEfficiencyMeasureOperationalDate": row['operationStartDate'],
@@ -144,9 +144,7 @@ def general_data(data):
 
     # TODO: energyEfficiencyMeasureType and energySavingType taxonomy
 
-    print(list_eem)
-
-    return df
+    return df, pd.DataFrame(list_eem)
 
 
 def harmonize_data(data, **kwargs):
@@ -157,12 +155,17 @@ def harmonize_data(data, **kwargs):
     neo4j_connection = config['neo4j']
     neo = GraphDatabase.driver(**neo4j_connection)
 
-    df = general_data(data)
+    df_general, df_eem = general_data(data)
 
-    # if not df.empty:
-    #     mapper = Mapper(config['source'], n)
-    #     g = generate_rdf(mapper.get_mappings("all"), df)
-    #
-    #     g.serialize('output.ttl', format="ttl")
-    #
-    #     save_rdf_with_source(g, config['source'], config['neo4j'])
+    mapper = Mapper(config['source'], n)
+
+    if not df_general.empty and not df_eem.empty:
+        g = generate_rdf(mapper.get_mappings("project"), df_general)
+        g.serialize('output.ttl', format="ttl")
+
+        # save_rdf_with_source(g, config['source'], config['neo4j'])
+
+        g = generate_rdf(mapper.get_mappings("eem"), df_eem)
+        g.serialize('output.ttl', format="ttl")
+
+        # save_rdf_with_source(g, config['source'], config['neo4j'])
