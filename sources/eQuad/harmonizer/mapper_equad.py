@@ -29,21 +29,27 @@ def calc_tarriff_avg(data):
 
 def calc_project_investment(row):
     # Present Project Cost
-    engineeringAndDesignCosts = row.get('engineeringAndDesignCosts') if row.get('engineeringAndDesignCosts') else 0
-    equipmentCosts = row.get('equipmentCosts') if row.get('equipmentCosts') else 0
-    installationAndConstructionCosts = row.get('installationAndConstructionCosts') if row.get(
+    engineeringAndDesignCosts = pd.DataFrame(row.get('engineeringAndDesignCosts'))['amount'].sum() if row.get(
+        'engineeringAndDesignCosts') else 0
+
+    equipmentCosts = pd.DataFrame(row.get('equipmentCosts'))['amount'].sum() if row.get('equipmentCosts') else 0
+
+    installationAndConstructionCosts = pd.DataFrame(row.get('installationAndConstructionCosts'))[
+        'amount'].sum() if row.get(
         'installationAndConstructionCosts') else 0
-    salesAndBusinessDevelopmentCosts = row.get('salesAndBusinessDevelopmentCosts') if row.get(
+
+    salesAndBusinessDevelopmentCosts = pd.DataFrame(row.get('salesAndBusinessDevelopmentCosts'))[
+        'amount'].sum() if row.get(
         'salesAndBusinessDevelopmentCosts') else 0
-    legalAndInsuranceCosts = row.get('legalAndInsuranceCosts') if row.get('legalAndInsuranceCosts') else 0
-    otherCosts = row.get('otherCosts') if row.get('otherCosts') else 0
+
+    legalAndInsuranceCosts = pd.DataFrame(row.get('legalAndInsuranceCosts'))['amount'].sum() if row.get(
+        'legalAndInsuranceCosts') else 0
+
+    otherCosts = pd.DataFrame(row.get('otherCosts'))['amount'].sum() if row.get('otherCosts') else 0
+
     markupCost = row.get('markupCost') if row.get('markupCost') else 0
 
-    calc_present_project_cost = pd.DataFrame(engineeringAndDesignCosts)['amount'].sum() + pd.DataFrame(equipmentCosts)[
-        'amount'].sum() + pd.DataFrame(installationAndConstructionCosts)['amount'].sum() + \
-                                pd.DataFrame(legalAndInsuranceCosts)['amount'].sum() + \
-                                pd.DataFrame(salesAndBusinessDevelopmentCosts)['amount'].sum() + \
-                                pd.DataFrame(otherCosts)['amount'].sum() / (1 - markupCost)
+    calc_present_project_cost = engineeringAndDesignCosts + equipmentCosts + installationAndConstructionCosts + salesAndBusinessDevelopmentCosts + legalAndInsuranceCosts + otherCosts + markupCost
 
     # Future Project Cost
 
@@ -97,7 +103,7 @@ def general_data(data):
                        "operationStartDate": "projectOperationalDate", "payback": "projectSimplePaybackTime",
                        "installationBeginDate": "projectStartDate"}, inplace=True)
 
-    # TODO: projectInvestment
+    df['projectInvestment'] = df.apply(lambda x: calc_project_investment(x), axis=1)
 
     df['projectReceivedGrantFunding'] = df['incentives'].apply(lambda x: calc_investment(x) > 0)
     df['projectGrantsShareOfCosts'] = df['incentives'].apply(calc_investment)
