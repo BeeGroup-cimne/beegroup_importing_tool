@@ -1,4 +1,5 @@
-from utils.rdf_utils.ontology.bigg_classes import Project, Organization, Building, LocationInfo, BuildingSpace
+from utils.rdf_utils.ontology.bigg_classes import Project, Organization, Building, LocationInfo, BuildingSpace, \
+    EnergyEfficiencyMeasure, Element, EnergySaving
 from utils.rdf_utils.ontology.namespaces_definition import Bigg
 
 
@@ -6,6 +7,13 @@ class Mapper(object):
     def __init__(self, source, namespace):
         self.source = source
         Project.set_namespace(namespace)
+        Organization.set_namespace(namespace)
+        Building.set_namespace(namespace)
+        BuildingSpace.set_namespace(namespace)
+        LocationInfo.set_namespace(namespace)
+        EnergyEfficiencyMeasure.set_namespace(namespace)
+        Element.set_namespace(namespace)
+        EnergySaving.set_namespace(namespace)
 
     def get_mappings(self, group):
         organization = {
@@ -55,12 +63,10 @@ class Mapper(object):
                         "key": "organizationName",
                         "operations": []
                     },
-                }
-            },
-            "links": {
-                "buildings": {
-                    "type": Bigg.managesBuilding,
-                    "link": "subject"
+                    "managesBuilding": {
+                        "key": "managesBuilding",
+                        "operations": []
+                    },
                 }
             }
         }
@@ -72,26 +78,23 @@ class Mapper(object):
                 "origin": "row"
             },
             "params": {
-
                 "mapping": {
                     "subject": {
                         "key": "building_subject",
                         "operations": []
                     },
-                }
-            },
-            "links": {
-                "building_space": {
-                    "type": Bigg.hasSpace,
-                    "link": "subject"
-                },
-                "location_info": {
-                    "type": Bigg.hasLocationInfo,
-                    "link": "subject"
-                },
-                "project": {
-                    "type": Bigg.hasProject,
-                    "link": "subject"
+                    "hasSpace": {
+                        "key": "hasSpace",
+                        "operations": []
+                    },
+                    "hasLocationInfo": {
+                        "key": "hasLocationInfo",
+                        "operations": []
+                    },
+                    "hasProject": {
+                        "key": "hasProject",
+                        "operations": []
+                    },
                 }
             }
         }
@@ -132,7 +135,47 @@ class Mapper(object):
                 },
                 "mapping": {
                     "subject": {
-                        "key": "building_subject",
+                        "key": "building_space_subject",
+                        "operations": []
+                    },
+                    "energyEfficiencyMeasureDescription": {
+                        "key": "energyEfficiencyMeasureDescription",
+                        "operations": []
+                    },
+                    "energyEfficiencyMeasureInvestmentCurrency": {
+                        "key": "energyEfficiencyMeasureInvestmentCurrency",
+                        "operations": []
+                    },
+                    "energyEfficiencyMeasureOperationalDate": {
+                        "key": "energyEfficiencyMeasureOperationalDate",
+                        "operations": []
+                    },
+                    "energyEfficiencyMeasureType": {
+                        "key": "energyEfficiencyMeasureType",
+                        "operations": []
+                    },
+                    "energyEfficiencyMeasureCO2Reduction": {
+                        "key": "energyEfficiencyMeasureCO2Reduction",
+                        "operations": []
+                    },
+                    "energyEfficiencyMeasureFinancialSavings": {
+                        "key": "energyEfficiencyMeasureFinancialSavings",
+                        "operations": []
+                    },
+                    "energyEfficiencyMeasureLifetime": {
+                        "key": "energyEfficiencyMeasureLifetime",
+                        "operations": []
+                    },
+                    "energySavingEndDate": {
+                        "key": "energySavingEndDate",
+                        "operations": []
+                    },
+                    "energySavingStartDate": {
+                        "key": "energySavingStartDate",
+                        "operations": []
+                    },
+                    "isAssociatedWithElement": {
+                        "key": "element_uri",
                         "operations": []
                     }
                 }
@@ -155,8 +198,8 @@ class Mapper(object):
                         "key": "projectDescription",
                         "operations": []
                     },
-                    "projectTitle": {
-                        "key": "projectTitle",
+                    "projectName": {
+                        "key": "projectName",
                         "operations": []
                     },
                     "projectDiscountRate": {
@@ -191,8 +234,8 @@ class Mapper(object):
                         "key": "projectInvestment",
                         "operations": []
                     },
-                    "projectReceivedGrantFunding": {
-                        "key": "projectReceivedGrantFunding",
+                    "projectReceivedGrantFounding": {
+                        "key": "projectReceivedGrantFounding",
                         "operations": []
                     },
                     "projectGrantsShareOfCosts": {
@@ -203,16 +246,113 @@ class Mapper(object):
                         "key": "hasProjectInvestmentCurrency",
                         "operations": []
                     },
-                    "tariffAveragePrice": {
-                        "key": "tariffAveragePrice",
+                    # "tariffAveragePrice": {
+                    #     "key": "tariffAveragePrice",
+                    #     "operations": []
+                    # }
+                }
+            }
+        }
+
+        element = {
+            "name": "project",
+            "class": Element,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "element_subject",
                         "operations": []
-                    }
+                    },
+                }
+            }
+        }
+
+        eem = {
+            "name": "project",
+            "class": EnergyEfficiencyMeasure,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "eem_subject",
+                        "operations": []
+                    },
+                    "energyEfficiencyMeasureDescription": {
+                        "key": "energyEfficiencyMeasureDescription",
+                        "operations": []
+                    },
+                    "hasEnergyEfficiencyMeasureInvestmentCurrency": {
+                        "key": "energyEfficiencyMeasureInvestmentCurrency",
+                        "operations": []
+                    },
+                    "energyEfficiencyMeasureOperationalDate": {
+                        "key": "energyEfficiencyMeasureOperationalDate",
+                        "operations": []
+                    },
+                    # "energyEfficiencyMeasureType": {
+                    #     "key": "energyEfficiencyMeasureType",
+                    #     "operations": []
+                    # },
+                    "energyEfficiencyMeasureCO2Reduction": {
+                        "key": "energyEfficiencyMeasureCO2Reduction",
+                        "operations": []
+                    },
+                    "energyEfficiencyMeasureFinancialSavings": {
+                        "key": "energyEfficiencyMeasureFinancialSavings",
+                        "operations": []
+                    },
+                    "energyEfficiencyMeasureLifetime": {
+                        "key": "energyEfficiencyMeasureLifetime",
+                        "operations": []
+                    },
+                    "affectsElement": {
+                        "key": "affectsElement",
+                        "operations": []
+                    },
+                    "producesSaving": {
+                        "key": "producesSaving",
+                        "operations": []
+                    },
+                }
+            }
+        }
+
+        energy_saving = {
+            "name": "project",
+            "class": EnergySaving,
+            "type": {
+                "origin": "row"
+            },
+            "params": {
+                "mapping": {
+                    "subject": {
+                        "key": "energy_saving_subject",
+                        "operations": []
+                    },
+                    "energySavingEndDate": {
+                        "key": "energySavingEndDate",
+                        "operations": []
+                    },
+                    "energySavingStartDate": {
+                        "key": "energySavingStartDate",
+                        "operations": []
+                    },
+                    # "energySavingType": {
+                    #     "key": "energySavingType",
+                    #     "operations": []
+                    # }
                 }
             }
         }
 
         grouped_modules = {
-            "all": [organization, building_organization, buildings, location_info, building_space, project],
-            "emm": []
+            "project": [organization, building_organization, buildings, location_info, building_space, project,
+                        element],
+            "eem": [eem, energy_saving]
         }
         return grouped_modules[group]
