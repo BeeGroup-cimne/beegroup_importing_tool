@@ -1,20 +1,44 @@
+
+
 import rdflib
 from neo4j import GraphDatabase
 from rdflib import Graph, RDF
 import settings
+from ontology.namespaces_definition import *
 
 
-def multi_value_classes():
-    import ontology.namespaces_definition.Bigg as Bigg
-    multi_value_classes_dic = {
-        Bigg.LocationInfo: {Bigg.hasAddressCountry: None, Bigg.hasAddressProvince: None, Bigg.hasAddressCity: None,
-                            Bigg.hasAddressClimateZone: None},
-        Bigg.CadastralInfo: {Bigg.hasLandType: None},
-        Bigg.Building: {Bigg.hasBuildingConstructionType: None, Bigg.hasBuildingOwnership: None},
-        Bigg.BuildingSpace: {Bigg.hasBuildingSpaceUseType: None, Bigg.hasIndoorQualityPerception: None,
-                             Bigg.hasArea: Bigg.hasAreaType}
-    }
-    return multi_value_classes_dic
+multi_value_classes = {
+    Bigg.LocationInfo: {Bigg.hasAddressCountry: None, Bigg.hasAddressProvince: None, Bigg.hasAddressCity: None,
+                        Bigg.hasAddressClimateZone: None},
+    Bigg.CadastralInfo: {Bigg.hasLandType: None},
+    Bigg.Building: {Bigg.hasBuildingConstructionType: None, Bigg.hasBuildingOwnership: None},
+    Bigg.BuildingSpace: {Bigg.hasBuildingSpaceUseType: None, Bigg.hasIndoorQualityPerception: None,
+                         Bigg.hasArea: Bigg.hasAreaType}
+}
+
+# def __neo4j_with_source(ses, source, data_links={}):
+#     for subject, links in data_links.items():
+#         n_query = f"""
+#             Match (n{{uri: "{subject}"}})
+#         """
+#         for link_attr in links:
+#             l, o, s_diff = link_attr
+#             n_query += f"""
+#                 WITH n
+#                 MATCH (s{{uri: "{o}"}})
+#                 WITH n, s
+#                     OPTIONAL MATCH (n)-[l:{l}]->(s) WHERE l.source is null DELETE l
+#                 WITH n, s
+#                 MERGE (n)-[l:{l}{{source: "{source}"}}]->(s)
+#                 WITH n, l, s
+#                 SET
+#                 l.selected = CASE
+#                     WHEN EXISTS(l.selected) THEN l.selected
+#                     ELSE s.ttt__{s_diff}__selected[0]
+#                     END
+#                 REMOVE s.ttt__{s_diff}__selected
+#             """
+#         ses.run(n_query)
 
 
 def __set_source_link(neo, source, data_link, prop_node):
@@ -46,7 +70,7 @@ def __set_source_link(neo, source, data_link, prop_node):
 
     source_order = "CASE r.source " + " ".join([f"WHEN '{s}' THEN {i}" for i, s in enumerate(settings.sources_priorities)]) + " END as sort"
 
-    for class_, attr_list in multi_value_classes().items():
+    for class_, attr_list in multi_value_classes.items():
         cls_ns, cls = class_.split('#')
         cls_ns = namespaces_i[cls_ns+"#"]
         for attribute, special in attr_list.items():
@@ -128,7 +152,7 @@ def save_rdf_with_source(graph, source, connection):
         namespaces_i[v] = k
 
     multi_value_subjects = {}
-    for class_ in multi_value_classes().keys():
+    for class_ in multi_value_classes.keys():
         multi_value_subjects[class_] = list(set(graph.subjects(RDF.type, class_)))
     data_link = set()
     prop_node = {}
@@ -158,7 +182,7 @@ def save_rdf_with_source(graph, source, connection):
                             prop_node[cln] = set()
                             prop_node[cln].add(att)
                     gtemp.add((s, rdflib.URIRef(f"{p}@{source}"), o))
-                elif p in multi_value_classes()[class_].keys():
+                elif p in multi_value_classes[class_].keys():
                     if att:
                         data_link.add(att)
                     gtemp.add((s, rdflib.URIRef(f"{p}@{source}"), o))

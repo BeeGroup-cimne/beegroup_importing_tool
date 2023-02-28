@@ -142,6 +142,30 @@ def create_sensor(session, device_uri, sensor_uri, unit_uri, property_uri, estim
     """)
 
 
+def create_KPI(session, calculation_item_uri, kpi_uri_assesment, unit_uri, property_uri, estimation_method_uri, measurement_uri,
+               kpi_uri, is_regular, is_cumulative, is_on_change, freq, agg_func, dt_ini, dt_end, ns_mappings):
+    create_timeseries(session=session, ts_uri=kpi_uri_assesment, property_uri=property_uri,
+                      estimation_method_uri=estimation_method_uri, is_regular=is_regular, is_cumulative=is_cumulative,
+                      is_on_change=is_on_change, freq=freq, agg_func=agg_func, dt_ini=dt_ini, dt_end=dt_end,
+                      ns_mappings=ns_mappings)
+
+    bigg = ns_mappings['bigg']
+    session.run(f"""
+        MATCH (calculation_item {{uri:"{calculation_item_uri}"}})
+        MATCH (msu: {bigg}__hasKPIUnit {{uri:"{unit_uri}"}})
+        MATCH (s {{uri:"{kpi_uri_assesment}"}})   
+        Merge (kpi:Resource:{bigg}__KeyPerformanceIndicator{{uri:"{kpi_uri}"}})   
+        MERGE (s)<-[:{bigg}__assessesSingleKPI]-(calculation_item)
+        MERGE (ms: {bigg}__SingleKPIAssessmentPoint:Resource:{bigg}__TimeSeriesPoint{{uri: "{measurement_uri}"}})
+        Merge(s)-[:{bigg}__hasKPIUnit]->(msu)
+        Merge(s)-[:{bigg}__hasSingleKPIPoint]->(ms)
+        Merge(s)-[:bigg__quantifiesKPI]->(kpi)
+        SET
+            s : {bigg}__SingleKPIAssessment
+            s : {bigg}__KPIAssessment
+        return s
+    """)
+
 def create_tariff(session, tariff_dict, data_source, ns_mappings):
     bigg = ns_mappings['bigg']
     tariff_dict = {f"{bigg}__{k}" if k != "uri" else k: v for k, v in tariff_dict.items()}
