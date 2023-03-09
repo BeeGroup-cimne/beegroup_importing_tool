@@ -54,10 +54,20 @@ def load_dictionary():
                             o_value.append(f"{o}@{lan}")
                         else:
                             o_value.append(str(o))
-                    session.run(f"""
-                    Match(n{{uri:"{s}"}})
-                    SET n.{namespaces_i[ns]}__{f}={o_value if len(o_value) >= 1 and lan else '"' + str(o_value[0]) + '"'}
-                    """)
-            #
-            # v = v.replace("'", "`")
+                    try:
+                        query = f"""
+                        Match(n{{uri:"{s}"}})
+                        SET n.{namespaces_i[ns]}__{f}={o_value if len(o_value) >= 1 and lan else '"' + str(o_value[0]) + '"'}
+                        """
+                        session.run(query)
+                    except Exception as e:
+                        print(query)
+                        print(f"error {e}")
+                        query = f"""
+                        Match(n{{uri:"{s}"}})
+                        SET n.{namespaces_i[ns]}__{f}={o_value[0:-20] if len(o_value) >= 1 and lan else '"' + str(o_value[0]) + '"'}
+                        """
+                        session.run(query)
+                        print(query)
+
 

@@ -2,6 +2,7 @@ import glob
 import rdflib
 import requests
 from utils.rdf.rdf_functions import get_namespace_subject
+
 main_files = [
     {
         "n": "ontology/ontologies/Bigg.ttl",
@@ -70,7 +71,7 @@ def namespace_definition_dictionary(dictionary_name, namespace_uri, dictionary):
     enums = dictionary.query("""Select Distinct ?s WHERE{?s a ?o}""")
     object_str = f"""
 {dictionary_name.lower()}_terms = [{", ".join([f'"{get_namespace_subject(x[0])[1]}"' for x in enums])}]
-    
+
 {dictionary_name} = ClosedNamespace(uri="{namespace_uri}", terms={dictionary_name.lower()}_terms)
 """
     return object_str
@@ -84,7 +85,7 @@ def namespace_definition_ontology(ontology_name, namespace_uri, onto):
         f"Select ?dt WHERE {{ ?dt a owl:ObjectProperty }}")
 
     object_str = f"""
-    
+
 {ontology_name.lower()}_class_terms = [{", ".join([f'"{x[0].split("#")[1]}"' for x in class_def])}]
 {ontology_name.lower()}_dprop_terms = [{", ".join([f'"{x[0].split("#")[1]}"' for x in data_properties])}]
 {ontology_name.lower()}_oprop_terms = [{", ".join([f'"{x[0].split("#")[1]}"' for x in object_properties])}]
@@ -125,12 +126,12 @@ def ontology_class_implementations(ontology_name, namespace_uri, onto):
 
     for s in class_def_super:
         class_def_super[s].append(ThingClass)
-    
-    
+
     for class_d, super_class in class_def_super.items():
-        joined_py_class = [f"{ontology_name}.{class_d.split('#')[1]}"] + [f"{ontology_name}.{x.split('#')[1]}" for x in super_class]
+        joined_py_class = [f"{ontology_name}.{class_d.split('#')[1]}"] + [f"{ontology_name}.{x.split('#')[1]}" for x in
+                                                                          super_class]
         object_str += f"""
-        
+
 class {class_d.split("#")[1]}(BIGGObjects):
     __rdf_type__ = {joined_py_class}
 """
@@ -194,7 +195,6 @@ def generate_definition_file():
 
 
 def generate_class_file():
-
     with open(f"{STORE_CLASS_DEFINITIONS}", "w") as file:
         file.write(static_class())
     for owl_file in glob.glob(ONTOLOGY):
